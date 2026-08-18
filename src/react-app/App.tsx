@@ -40,6 +40,10 @@ function App() {
 					count is {count}
 				</button>
 				<p>
+					sistema para cadastro de Assistidos e controle de doações em
+					instituições de caridade.
+				</p>
+				<p>
 					Edit <code>src/App.tsx</code> and save to test HMR
 				</p>
 			</div>

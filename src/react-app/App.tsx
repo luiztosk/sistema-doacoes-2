@@ -44,6 +44,10 @@ function App() {
 					instituições de caridade.
 				</p>
 				<p>
+					se tudo der certo este será um build oculto visível somente 
+					no branch stage e pelo link id
+				</p>
+				<p>
 					Edit <code>src/App.tsx</code> and save to test HMR
 				</p>
 			</div>

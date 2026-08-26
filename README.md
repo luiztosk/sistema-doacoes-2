@@ -7,7 +7,14 @@ pronto para ser usado por uma instituição (nossa parceira é a Paróquia Nossa
 projeto Estrela Solidária, já desenvolvemos um protótipo simples semestre passado e agora a ideia é
 reimplementar na nuvem).
 
-Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](sd2.tosk.dev)
+Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://sd2.tosk.dev)
+
+## Documentação
+
+- [Arquitetura e decisões técnicas](./docs/arquitetura.md) — stack, fluxo de deploy e migração do sistema legado
+- [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
+- [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
+- [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
 
 ## Para rodar o projeto no seu computador:
 

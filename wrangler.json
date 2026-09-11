@@ -3,7 +3,9 @@
 	"name": "sistema-doacoes-2",
 	"main": "./src/worker/index.ts",
 	"compatibility_date": "2025-10-08",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"observability": {
 		"enabled": true
 	},
@@ -11,5 +13,13 @@
 	"assets": {
 		"directory": "./dist/client",
 		"not_found_handling": "single-page-application"
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "prod_sistema_doacoes_2",
+			"database_name": "prod-sistema-doacoes-2",
+			"database_id": "56833f61-dbf3-4271-b1e5-f64218564ae3",
+			"migrations_dir": "drizzle/migrations"
+		}
+	]
 }

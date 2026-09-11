@@ -55,8 +55,8 @@ function App() {
 				<button
 					onClick={() => {
 						fetch("/api/")
-							.then((res) => res.json() as Promise<{ name: string }>)
-							.then((data) => setName(data.name));
+							.then((res) => res.json() as Promise<any>)
+							.then((data) => setName(data[0].ContactName));
 					}}
 					aria-label="get name"
 				>

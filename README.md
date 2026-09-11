@@ -28,11 +28,23 @@ git clone https://github.com/luiztosk/sistema-doacoes-2.git && cd sistema-doacoe
 npm install
 ```
 
-3. Inicie o servidor de desenvolvimento com
+3. Inicialize o DB local (wrangler/D1)
+```bash
+npm run local-db-init
+```
+
+4. Inicie o servidor de desenvolvimento com
 ```bash
 npm run dev
 ```
-Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
+
+Pode acessar o app local em: [http://localhost:8787](http://localhost:8787).
+
+E para testar a API:
+```bash
+curl localhost:8787/api/
+```
+> deve retornar um JSON com uma lista de contatos, no momento atual.
 
 ## Contribuindo com o projeto (membros do grupo)
 

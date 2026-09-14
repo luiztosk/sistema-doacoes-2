@@ -1,0 +1,23 @@
+[
+  {
+    "id": "org-1",
+    "name": "Associação Bom Pastor",
+    "address": "Rua São João, 100",
+    "email": "contato@bompastor.org.br",
+    "phone": "(11) 3333-1000"
+  },
+  {
+    "id": "org-2",
+    "name": "Fundação Ajuda Solidária",
+    "address": "Av. Brasil, 500",
+    "email": "fundacao.ajuda@email.com",
+    "phone": "(11) 3333-2000"
+  },
+  {
+    "id": "org-3",
+    "name": "Instituto Esperança Viva",
+    "address": "Rua da Paz, 250",
+    "email": "esperanca.viva@instituicao.org",
+    "phone": "(11) 3333-3000"
+  }
+]

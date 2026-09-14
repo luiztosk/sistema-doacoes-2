@@ -7,6 +7,7 @@ export const organization = sqliteTable("organization", {
   email: text("email"),
   phone: text("phone"),
 });
+export type InsertOrganization = typeof organization.$inferInsert
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),

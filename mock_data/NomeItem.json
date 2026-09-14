@@ -1,0 +1,686 @@
+[
+  {
+    "id": "1",
+    "nome": "Blusa infantil M",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "2",
+    "nome": "Blusa infantil G",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "3",
+    "nome": "Calça jeans infantil 36",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "4",
+    "nome": "Vestido festa infantil",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "5",
+    "nome": "Camisa social branca",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "6",
+    "nome": "Casaco inverno adulto P",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "7",
+    "nome": "Saia rodada 40",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "8",
+    "nome": "Macacão bebê recém-nascido",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "9",
+    "nome": "Meias algodão pares",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "10",
+    "nome": "Jaqueta jeans adulto M",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "11",
+    "nome": "Shorts jeans 38",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "12",
+    "nome": "Blusa manga longa infantil",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "13",
+    "nome": "Calça moletom 42",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "14",
+    "nome": "Vestido verão floral",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "15",
+    "nome": "Casaco infantil 10 anos",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "16",
+    "nome": "Conjunto lingerie",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "17",
+    "nome": "Cuecas caixa 6 unidades",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "18",
+    "nome": "Sutiã numeração 36",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "19",
+    "nome": "Camiseta básica preta G",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "20",
+    "nome": "Calça social cinza 44",
+    "categoriaId": "1",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "21",
+    "nome": "Tenis casual 38",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "22",
+    "nome": "Sapato social feminino 36",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "23",
+    "nome": "Sandália plataforma 40",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "24",
+    "nome": "Tênis esportivo 42",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "25",
+    "nome": "Chinelo borracha 34",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "26",
+    "nome": "Botina couro 38",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "27",
+    "nome": "Sapato infantil 28",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "28",
+    "nome": "Tênis corrida 44",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "29",
+    "nome": "Sandália feminina salto 39",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "30",
+    "nome": "Bota cano longo 40",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "31",
+    "nome": "Tênis escolar 35",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "32",
+    "nome": "Sapato masculino social 42",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "33",
+    "nome": "Meia calça preta",
+    "categoriaId": "3",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "34",
+    "nome": "Cadeira de jantar madeira",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "35",
+    "nome": "Mesa de centro vidro",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "36",
+    "nome": "Guarda-roupa 3 portas",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "37",
+    "nome": "Sofá 3 lugares tecido",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "38",
+    "nome": "Cama casal 190cm",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "39",
+    "nome": "Comodê 3 gavetas",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "40",
+    "nome": "Estante livros 5 prateleiras",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "41",
+    "nome": "Mesa de escritório branca",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "42",
+    "nome": "Poltrona conforto bege",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "43",
+    "nome": "Cama de solteiro 150cm",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "44",
+    "nome": "Guarda-roupa 2 portas",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "45",
+    "nome": "Cadeira escritório giratória",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "46",
+    "nome": "Mesa de jantar 6 lugares",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "47",
+    "nome": "Armário cozinha 2 portas",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "48",
+    "nome": "Mesa de cabeceira",
+    "categoriaId": "4",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "49",
+    "nome": "Frigideira antiaderente 24cm",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "50",
+    "nome": "Jogo panela 5 peças",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "51",
+    "nome": "Tigela vidro conjunto 6",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "52",
+    "nome": "Talheres aço inox 48 peças",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "53",
+    "nome": "Prato raso cerâmica 12",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "54",
+    "nome": "Xícara café porcelana 6",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "55",
+    "nome": "Servente madeira 3 peças",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "56",
+    "nome": "Jogo de copos 12 unidades",
+    "categoriaId": "8",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "57",
+    "nome": "Forno microondas 30L",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "58",
+    "nome": "Liquidificador 500W",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "59",
+    "nome": "Ferro de passar a vapor",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "60",
+    "nome": "Batedeira planetária",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "61",
+    "nome": "Torradeira automática",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "62",
+    "nome": "Cafeteira elétrica 10 xícaras",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "63",
+    "nome": "Forno elétrico portátil",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "64",
+    "nome": "Chaleira elétrica 1.5L",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "65",
+    "nome": "Aspirador de pó vertical",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "66",
+    "nome": "Ventilador de teto 3 pás",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "67",
+    "nome": "Ar condicionado split 9000 BTUs",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "68",
+    "nome": "Ferro a vapor 1200W",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "69",
+    "nome": "Batedeira de mão 400W",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "70",
+    "nome": "Purificador de água",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "71",
+    "nome": "Panela pressão 4L",
+    "categoriaId": "5",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "72",
+    "nome": "Bíblia Sagrada",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "73",
+    "nome": "Dicionário português",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "74",
+    "nome": "Coleção completa Harry Potter",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "75",
+    "nome": "Livro infantil Chapeuzinho Vermelho",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "76",
+    "nome": "Romance bestseller",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "77",
+    "nome": "Livro didático matemática",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "78",
+    "nome": "Enciclopédia infantil 5 volumes",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "79",
+    "nome": "Coletânea de contos",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "80",
+    "nome": "Livro receitas tradicionais",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "81",
+    "nome": "Álbum de fotografias",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "82",
+    "nome": "Biblioteca portátil Kindle",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "83",
+    "nome": "Livro autoajuda sucesso",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "84",
+    "nome": "Revista antiga coleção",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "85",
+    "nome": "Livro história do Brasil",
+    "categoriaId": "6",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "86",
+    "nome": "Boneca boneca de pano",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "87",
+    "nome": "Jogo de bola de futebol",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "88",
+    "nome": "Carrinho de controle remoto",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "89",
+    "nome": "Quebra-cabeça 1000 peças",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "90",
+    "nome": "Boneco ação super-herói",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "91",
+    "nome": "Jogo de tabuleiro família",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "92",
+    "nome": "Bola de gude conjunto 50",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "93",
+    "nome": "Pipa varal completo",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "94",
+    "nome": "Escorregador plástico",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "95",
+    "nome": "Bicicleta infantil 12 polegadas",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "96",
+    "nome": "Jogo de montar blocos 200 peças",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "97",
+    "nome": "Fantasia princesa completa",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "98",
+    "nome": "Patinete dobrável",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "99",
+    "nome": "Jogo de cartas crianças",
+    "categoriaId": "7",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "100",
+    "nome": "Sabonete artesanal",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "101",
+    "nome": "Shampoo cabelo longo",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "102",
+    "nome": "Condicionador nutrição profunda",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "103",
+    "nome": "Pasta de dente flúor 90g",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "104",
+    "nome": "Escova dentes macia",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "105",
+    "nome": "Desodorante roll-on",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "106",
+    "nome": "Creme hidratante corporal",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "107",
+    "nome": "Sabão em pó 1kg",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "108",
+    "nome": "Amaciante tecido 500ml",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "109",
+    "nome": "Detergente líquido 500ml",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "110",
+    "nome": "Esponja cozinha 10 unidades",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "111",
+    "nome": "Pano limpeza microfibra",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "112",
+    "nome": "Escova banheiro completa",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "113",
+    "nome": "Papel higiênico 12 rolos",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  },
+  {
+    "id": "114",
+    "nome": "Absorvente íntimo 36 unidades",
+    "categoriaId": "9",
+    "organizationId": "org-1"
+  }
+]

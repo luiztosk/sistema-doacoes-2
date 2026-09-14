@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@better-auth/drizzle-adapter": "^1.7.4",
+		"better-auth": "^1.7.4",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^1.0.0-rc.4",
 		"hono": "^4.13.3",
@@ -23,7 +24,7 @@
 		"@cloudflare/vite-plugin": "^1.54.8",
 		"@cloudflare/workers-types": "^5.20260911.1",
 		"@eslint/js": "9.39.1",
-		"@types/node": "24.10.1",
+		"@types/node": "^24.10.1",
 		"@types/react": "19.2.7",
 		"@types/react-dom": "19.2.3",
 		"@vitejs/plugin-react": "5.1.1",
@@ -46,8 +47,13 @@
 		"deploy": "wrangler deploy",
 		"dev": "npm run build && wrangler dev",
 		"lint": "eslint .",
-		"local-db-init": "wrangler d1 execute prod-sistema-doacoes-2 --local --file=./src/worker/db/migration.sql",
-		"remote-db-init": "wrangler d1 execute prod-sistema-doacoes-2 --remote --file=./src/worker/db/migration.sql",
+
+		"generate-sql": "drizzle-kit generate",
+		"local-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --local",
+		"remote-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
+
+		"db-seed": "npx tsx src/worker/db/seed.ts",
+
 		"preview": "npm run build && vite preview"
 	},
 	"type": "module"

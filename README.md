@@ -13,7 +13,9 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 
 - [Arquitetura e decisões técnicas](./docs/arquitetura.md) — stack, fluxo de deploy e migração do sistema legado
 - [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
+- [Modelo de dados](./docs/modelos-db.md) — entidades de domínio, D1 e Drizzle ORM
 - [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
+- [Contrato da API](./docs/api-endpoints.md) — rotas, autenticação, autorização e formatos de requisição e resposta
 - [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
 
 ## Para rodar o projeto no seu computador:
@@ -28,12 +30,17 @@ git clone https://github.com/luiztosk/sistema-doacoes-2.git && cd sistema-doacoe
 npm install
 ```
 
-3. Inicialize o DB local (wrangler/D1)
+3. Execute os testes unitários
+```bash
+npm test
+```
+
+4. Inicialize o DB local (wrangler/D1)
 ```bash
 npm run local-db-init
 ```
 
-4. Inicie o servidor de desenvolvimento com
+5. Inicie o servidor de desenvolvimento com
 ```bash
 npm run dev
 ```

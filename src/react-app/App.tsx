@@ -7,6 +7,10 @@ import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
 import honoLogo from "./assets/hono.svg";
 import "./App.css";
 
+type ApiCustomer = {
+	ContactName: string | null;
+};
+
 function App() {
 	const [count, setCount] = useState(0);
 	const [name, setName] = useState("unknown");
@@ -55,8 +59,8 @@ function App() {
 				<button
 					onClick={() => {
 						fetch("/api/")
-							.then((res) => res.json() as Promise<any>)
-							.then((data) => setName(data[0].ContactName));
+							.then((res) => res.json() as Promise<ApiCustomer[]>)
+							.then((data) => setName(data[0]?.ContactName ?? "unknown"));
 					}}
 					aria-label="get name"
 				>

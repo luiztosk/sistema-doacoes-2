@@ -45,7 +45,7 @@
 		"cf-typegen": "wrangler types",
 		"check": "tsc && vite build && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
-		"dev": "npm run build && wrangler dev",
+		"dev": "vite dev",
 		"lint": "eslint .",
 
 		"generate-sql": "drizzle-kit generate",

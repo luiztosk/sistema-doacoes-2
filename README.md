@@ -28,7 +28,7 @@ git clone https://github.com/luiztosk/sistema-doacoes-2.git && cd sistema-doacoe
 npm install
 ```
 
-3. Inicialize o DB local (wrangler/D1)
+3. Inicialize o DB local (wrangler/D1) (também roda as migrations, toda vez que for preciso)
 ```bash
 npm run local-db-init
 ```
@@ -40,11 +40,15 @@ npm run dev
 
 Pode acessar o app local em: [http://localhost:8787](http://localhost:8787).
 
-E para testar a API:
+## Testando a API:
+
+A forma mais simples é fazendo um GET com o curl:
 ```bash
-curl localhost:8787/api/
+curl localhost:5173/api/
 ```
-> deve retornar um JSON com uma lista de contatos, no momento atual.
+> deve retornar um JSON com uma lista de assistido, no momento atual.
+
+Os demais testes estão na pasta `./insomnia`, basta importar o Environment e a Collection no seu Insomnia (Vault Local).
 
 ## Contribuindo com o projeto (membros do grupo)
 
@@ -72,7 +76,7 @@ podemos usar tbm o Vitest, que é uma ferramenta de testes.
 - nuvem: Cloudflare Workers
 - banco de dados: Cloudflare D1
 - controle versão: git + GitHub
-- testes: Vitest
+- testes: Insomnia (API)
 
 ## Materiais para estudo / referência bibliográfica
 

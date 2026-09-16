@@ -1,90 +1,99 @@
-# React + Vite + Hono + Cloudflare Workers
+# Sistema Doações 2
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+Este é nosso sistema desenvolvido para o Projeto Integrador 2 da Univesp, segundo semestre de 2026.
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+Nosso objetivo é criar um sistema de cadastro de Assistidos e gerenciamento de Doações, hospedado na nuvem,
+pronto para ser usado por uma instituição (nossa parceira é a Paróquia Nossa Senhora das Estrelas, através do
+projeto Estrela Solidária, já desenvolvemos um protótipo simples semestre passado e agora a ideia é
+reimplementar na nuvem).
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
+Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://sd2.tosk.dev)
 
-<!-- dash-content-start -->
+## Documentação
 
-🚀 Supercharge your web development with this powerful stack:
+- [Arquitetura e decisões técnicas](./docs/arquitetura.md) — stack, fluxo de deploy e migração do sistema legado
+- [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
+- [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
+- [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
 
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
+## Para rodar o projeto no seu computador:
 
-### ✨ Key Features
-
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
-
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
+1. Clone o repositório numa pasta local
 ```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
+git clone https://github.com/luiztosk/sistema-doacoes-2.git && cd sistema-doacoes-2
 ```
 
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
-
-## Development
-
-Install dependencies:
-
+2. Instale as dependencias
 ```bash
 npm install
 ```
 
-Start the development server with:
+3. Inicialize o DB local (wrangler/D1) (também roda as migrations, toda vez que for preciso)
+```bash
+npm run local-db-init
+```
 
+4. Inicie o servidor de desenvolvimento com
 ```bash
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+Pode acessar o app local em: [http://localhost:8787](http://localhost:8787).
 
-## Production
+## Testando a API:
 
-Build your project for production:
-
+A forma mais simples é fazendo um GET com o curl:
 ```bash
-npm run build
+curl localhost:5173/api/
 ```
+> deve retornar um JSON com uma lista de assistido, no momento atual.
 
-Preview your build locally:
+Os demais testes estão na pasta `./insomnia`, basta importar o Environment e a Collection no seu Insomnia (Vault Local).
 
-```bash
-npm run preview
-```
+## Contribuindo com o projeto (membros do grupo)
 
-Deploy your project to Cloudflare Workers:
+1. Me avise pelo Whatsapp pra eu adicionar sua conta como contributor
+2. Crie um feature branch específico
+3. Faça o push do feature branch (vou dar mais detalhes aqui, preciso lembrar como fizemos no semestre passado)
+4. Faça o Pull Request aqui pelo github, pra eu poder fazer o merge
+   - podemos subir uma versão de teste separada primeiro, de um commit específico, me avise
+   - se estiver tudo certo então faço o merge no main e passa a ser a versão oficial
+    > configurei o Cloudflare Worker pra assim que altero o main, ele já builda e faz o deploy
 
-```bash
-npm run build && npm run deploy
-```
 
-Monitor your workers:
+## Planejamento do "tema" do projeto, ou seja, quais ferramentas e frameworks serão usados
 
-```bash
-npx wrangler tail
-```
+Eu tinha falado em usar o Next.js, porém hoje pesquisei mais a fundo e resolvi que o framework Hono será uma 
+escolha mais acertada no Cloudflare. Ele lida tanto com o backend/API quanto renderiza HTML também. 
+Porém para definir o uso de API, e tbm pq o próprio guia do CF já faz assim, podemos usar uma SPA 
+(single page application, um webapp) em React no frontend, e fazer as chamadas a essa API.
 
-## Additional Resources
+Além disso, no exempo tbm é usado o Vite, que é uma ferramenta que ajuda no build, e vai ser útil pq já 
+podemos usar tbm o Vitest, que é uma ferramenta de testes.
 
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+- framework backend/API: Hono
+- framework frontend: React SPA
+- nuvem: Cloudflare Workers
+- banco de dados: Cloudflare D1
+- controle versão: git + GitHub
+- testes: Insomnia (API)
+
+## Materiais para estudo / referência bibliográfica
+
+Pra quem está participando da parte mais técnica como o Leo, esse Hono é baseado no Express.js porém é bem mais simples de usar, é integrado no Cloudflare e já inclui alguns middleware, facilita bastante.
+
+[Se quiserem saber mais sobre o Hono](https://www.youtube.com/watch?v=1XyL9cbFooE&t=72s)
+
+[O guia oficial do Hono no Cloudflare](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/hono/)
+
+[Guia dessa stack nos docs do Hono](https://hono.dev/docs/getting-started/cloudflare-workers-vite)
+
+Não encontrei materiais em Português, mas acredito que tenha algo, e se encontrarem algum tutorial de Express.js, a forma de escrever as rotas é parecido.
+
+A parte de acessibilidade deixei em aberto, podemos pensar nisso no decorrer do projeto, e pode inclusive entrar naquela agenda quinzenal um momento só pra ver isso. E como já temos o protótipo do semestre anterior, dá pra alguém escrever um Guia do Usuário, pois as telas serão parecidas.
+
+## Projeto anterior em Flask e SQLite
+
+[repositório](https://github.com/LuisGabriel01/sistema-doacoes)
+
+seguiremos o fluxo de telas -> [video demonstração](https://www.youtube.com/watch?v=8LkkXIC9ppg)

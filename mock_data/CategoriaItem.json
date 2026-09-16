@@ -1,0 +1,11 @@
+[
+  {"id":"1","nome":"Roupas","organizationId":"org-1"},
+  {"id":"2","nome":"Alimentos","organizationId":"org-1"},
+  {"id":"3","nome":"Sapatos","organizationId":"org-1"},
+  {"id":"4","nome":"Móveis","organizationId":"org-1"},
+  {"id":"5","nome":"Eletrodomésticos","organizationId":"org-1"},
+  {"id":"6","nome":"Livros","organizationId":"org-1"},
+  {"id":"7","nome":"Brinquedos","organizationId":"org-1"},
+  {"id":"8","nome":"Utensílios Domésticos","organizationId":"org-1"},
+  {"id":"9","nome":"Produtos de Higiene","organizationId":"org-1"}
+]

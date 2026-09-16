@@ -22,33 +22,41 @@ const coletas = coletaData as any[];
 const entregas = entregaData as any[];
 const itens: InsertItem[] = itemData as InsertItem[];
 
-function toColeta(row: any) {
+function toDate(row: any) {
     row.dataHora = row.dataHora ? new Date(row.dataHora) : null
-    return row as InsertColeta
+    return row
 }
-
-function toEntrega(row: any) {
-    row.dataHora = row.dataHora ? new Date(row.dataHora) : null
-    return row as InsertEntrega
-}
+const toEntrega = (values: any[]) => values.map(row => toDate(row) as InsertEntrega)
+const toColeta = (values: any[]) => values.map(row => toDate(row) as InsertColeta)
 
 async function seed() {
-  const { env } = await getPlatformProxy();
-  const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
+    const { env, dispose } = await getPlatformProxy();
+    const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
+    console.log('Seeding database...');
 
-  console.log('Seeding local database...');
+    type insertTuple = [string, any[], any]
+    const inserts: insertTuple[] = [
+        ["organization", organizations, organization],
+        ["assistido", assistidos, assistido],
+        ["doador", doadores, doador],
+        ["categoriaItem", categorias, categoriaItem],
+        ["nomeItem", nomesItem, nomeItem],
+        ["coletas", toColeta(coletas), coleta],
+        ["entregas", toEntrega(entregas), entrega],
+        ["itens", itens, item]
+    ]
 
-  for (const a of organizations) await db.insert(organization).values(a);
-  for (const a of assistidos) await db.insert(assistido).values(a)
-  console.log(await db.select().from(assistido))
-  for (const a of doadores) await db.insert(doador).values(a)
-  for (const a of categorias) await db.insert(categoriaItem).values(a)
-  for (const a of nomesItem) await db.insert(nomeItem).values(a)
-  for (const a of coletas) await db.insert(coleta).values(toColeta(a))
-  for (const a of entregas) await db.insert(entrega).values(toEntrega(a))
-  for (const a of itens) await db.insert(item).values(a)
+    async function insertValues([name, values, table]: insertTuple) {
+        // insert one by one due to SQLite query limit
+        for (const a of values) await db.insert(table).values(a).onConflictDoNothing();
+        console.log('finish inserting into: ', name)
+    }
 
-  console.log('Seeding complete!');
+    for (const insert of inserts) {
+        await insertValues(insert)
+    }
+    console.log('Seeding complete!');
+    await dispose()
 }
 
-seed().catch(console.error);
+await seed().catch(console.error);

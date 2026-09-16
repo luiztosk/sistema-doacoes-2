@@ -22,7 +22,6 @@ app.get('/api/:id', async (c) => {
     const id = c.req.param('id')
     const db = drizzle(c.env.prod_sistema_doacoes_2);
     const result = await db.select().from(assistido).where(eq(assistido.id, id))
-    // const result = await db.select().from(assistido).wh
     return c.json({ assistidos: result });
 })
 

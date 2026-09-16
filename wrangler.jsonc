@@ -17,9 +17,12 @@
 	"d1_databases": [
 		{
 			"binding": "prod_sistema_doacoes_2",
+			// enable remote to seed remote D1:
+			// "remote": true,
 			"database_name": "prod-sistema-doacoes-2",
 			"database_id": "56833f61-dbf3-4271-b1e5-f64218564ae3",
-			"migrations_dir": "drizzle/migrations"
+			"migrations_dir": "drizzle/migrations",
+			"migrations_pattern": "drizzle/migrations/*/migration.sql"
 		}
 	]
 }

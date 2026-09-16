@@ -1,0 +1,58 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: API
+meta:
+  id: wrk_37836c6a5b4d4e82b3a1ad7b01a10c4c
+  created: 1789571323055
+  modified: 1789571323055
+  description: ""
+collection:
+  - url: "{{ _.BASE_URL }}/api/"
+    name: assistidos
+    meta:
+      id: req_0d2e9e119d7f40cfb50cb901f4b0a943
+      created: 1789571362396
+      modified: 1789573538693
+      isPrivate: false
+      description: ""
+      sortKey: -1789571362396
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.BASE_URL }}/api/2"
+    name: assistidos/id
+    meta:
+      id: req_8864bf9a659e454aa4e8763a87adc31e
+      created: 1789573547278
+      modified: 1789573565298
+      isPrivate: false
+      description: ""
+      sortKey: -1789571362346
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_423be8efaced917af3aeb3d330e159eae12bd62c
+    created: 1789571323068
+    modified: 1789571323068
+environments:
+  name: Base Environment
+  meta:
+    id: env_423be8efaced917af3aeb3d330e159eae12bd62c
+    created: 1789571323065
+    modified: 1789571323065
+    isPrivate: false

@@ -9,7 +9,6 @@ import "./App.css";
 
 function App() {
 	const [count, setCount] = useState(0);
-	const [name, setName] = useState("unknown");
 	const [tableData, setTableData] = useState<any>(null);
 	const [idValue, setIdValue] = useState("1");
 

@@ -15,6 +15,7 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 - [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
 - [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
 - [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
+- [Fluxos de tela do sistema legado](./docs/fluxo-telas/README.md) — transcrição visual do vídeo, fluxos confirmados e adaptações para o PI II
 
 ## Para rodar o projeto no seu computador:
 

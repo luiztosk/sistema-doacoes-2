@@ -1,6 +1,5 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { organization } from "./auth-schema";
-// import { InferInsertModel } from "drizzle-orm";
 export * from "./auth-schema";
 
 export const assistido = sqliteTable("assistido", {
@@ -36,7 +35,6 @@ export const assistido = sqliteTable("assistido", {
   criancaEscola: integer("crianca_escola", { mode: "boolean" }),
   observacoes: text("observacoes"),
 });
-export type InsertAssistido = typeof assistido.$inferInsert;
 
 export const doador = sqliteTable("doador", {
   id: text("id").primaryKey(),
@@ -54,7 +52,6 @@ export const doador = sqliteTable("doador", {
   cidade: text("cidade"),
   uf: text("uf", { length: 2 }),
 });
-export type InsertDoador = typeof doador.$inferInsert;
 
 export const categoriaItem = sqliteTable("categoria_item", {
   id: text("id").primaryKey(),
@@ -63,7 +60,6 @@ export const categoriaItem = sqliteTable("categoria_item", {
     .references(() => organization.id),
   nome: text("nome").notNull(),
 });
-export type InsertCategoriaItem = typeof categoriaItem.$inferInsert;
 
 export const nomeItem = sqliteTable("nome_item", {
   id: text("id").primaryKey(),
@@ -75,7 +71,6 @@ export const nomeItem = sqliteTable("nome_item", {
     .references(() => categoriaItem.id),
   nome: text("nome").notNull(),
 });
-export type InsertNomeItem = typeof nomeItem.$inferInsert;
 
 export const coleta = sqliteTable("coleta", {
   id: text("id").primaryKey(),
@@ -85,7 +80,6 @@ export const coleta = sqliteTable("coleta", {
   doadorId: text("doador_id").references(() => doador.id),
   dataHora: integer("data_hora", { mode: "timestamp" }),
 });
-export type InsertColeta = typeof coleta.$inferInsert;
 
 export const entrega = sqliteTable("entrega", {
   id: text("id").primaryKey(),
@@ -95,7 +89,6 @@ export const entrega = sqliteTable("entrega", {
   assistidoId: text("assistido_id").references(() => assistido.id),
   dataHora: integer("data_hora", { mode: "timestamp" }),
 });
-export type InsertEntrega = typeof entrega.$inferInsert;
 
 export const item = sqliteTable("item", {
   id: text("id").primaryKey(),
@@ -113,4 +106,3 @@ export const item = sqliteTable("item", {
   doadorId: text("doador_id").references(() => doador.id),
   assistidoId: text("assistido_id").references(() => assistido.id),
 });
-export type InsertItem = typeof item.$inferInsert;

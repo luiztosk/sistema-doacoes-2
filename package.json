@@ -28,6 +28,7 @@
 		"@types/react": "19.2.7",
 		"@types/react-dom": "19.2.3",
 		"@vitejs/plugin-react": "5.1.1",
+		"csv-parse": "^7.0.2",
 		"drizzle-kit": "^1.0.0-rc.4",
 		"eslint": "9.39.2",
 		"eslint-plugin-react-hooks": "7.0.1",
@@ -47,13 +48,10 @@
 		"deploy": "wrangler deploy",
 		"dev": "vite dev",
 		"lint": "eslint .",
-
 		"generate-sql": "drizzle-kit generate",
 		"local-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --local",
 		"remote-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
-
 		"db-seed": "npx tsx src/worker/db/seed.ts",
-
 		"preview": "npm run build && vite preview"
 	},
 	"type": "module"

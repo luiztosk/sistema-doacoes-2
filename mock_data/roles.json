@@ -1,6 +1,0 @@
-[
-    {
-        "name": "user", 
-        "permissions": ["user-read", "user-write"]
-    }
-]

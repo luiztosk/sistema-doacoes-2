@@ -37,7 +37,8 @@ Registro das decisões técnicas do PI II. Última atualização: 26/08/2026.
 
 O sistema anterior (Flask + SQLAlchemy + SQLite) está em
 [LuisGabriel01/sistema-doacoes](https://github.com/LuisGabriel01/sistema-doacoes),
-preservado na tag `pi1-final`. Ele serve como referência de:
+fixado para esta análise no commit `7741bd9` (a tag `pi1-final` citada
+anteriormente não existe no repositório legado). Ele serve como referência de:
 
 - **Modelo de dados**: tabelas `instituicao`, `doador`, `assistido`, `coleta`,
   `entrega`, `item`, `categoria_item`, `nome_item` (ver ERM no README do repo legado)

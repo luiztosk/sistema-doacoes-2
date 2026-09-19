@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { parse } from 'csv-parse/sync';
-import { drizzle, DrizzleD1Database } from 'drizzle-orm/d1';
+import { InfoField, parse } from 'csv-parse/sync';
+import { drizzle } from 'drizzle-orm/d1';
 import { getPlatformProxy } from 'wrangler';
 import { D1Database } from '@cloudflare/workers-types';
 import { assistido, doador, categoriaItem, nomeItem, coleta, entrega, item } from './schema';
@@ -19,35 +19,36 @@ const tables = [
         entrega,
         item,
 ]
+const BASE_DIR = 'mock_data'
 
-async function insertValues<T extends AnySQLiteTable>(table: T, db: DrizzleD1Database){
-    const filePath = path.join('mock_data', getTableName(table) + '.csv')
+function csv_as_DateNull(value: string, context: InfoField) {
+    if (value === '' && !context.quoting) 
+        return null
+    if (context.column === 'dataHora') 
+        return new Date(value)
+    return value
+}
+
+async function readCSV<T extends AnySQLiteTable>(table: T): Promise<InferInsertModel<T>[]> {
+    const filePath = path.join(BASE_DIR, getTableName(table) + '.csv')
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const records = parse(fileContent, {
         columns: true,
         skip_empty_lines: true,
-        cast: (value, context) => {
-            if (value === '' && !context.quoting) {
-                return null
-            }
-            if (context.column === 'dataHora') {
-                return new Date(value)
-            }
-            return value
-        }
+        cast: csv_as_DateNull,
     }) as InferInsertModel<T>[];
-
-    for (const row of records) {
-        await db.insert(table).values(row).onConflictDoNothing();
-    } 
+    return records
 }
+
 async function seed() {
     const { env, dispose } = await getPlatformProxy();
     const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
     console.log('Seeding database...');
 
     for (const table of tables) {
-        await insertValues(table, db)
+        for (const row of await readCSV(table)) {
+            await db.insert(table).values(row).onConflictDoNothing();
+        } 
     }
 
     console.log('Seeding complete!');

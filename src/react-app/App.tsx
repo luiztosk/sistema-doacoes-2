@@ -5,6 +5,8 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
 import honoLogo from "./assets/hono.svg";
+// import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+// import { AuthProvider } from "@/components/providers";
 import "./App.css";
 
 function App() {
@@ -13,6 +15,8 @@ function App() {
 	const [idValue, setIdValue] = useState("1");
 
 	return (
+		// <QueryClientProvider client={new QueryClient()}>
+		// <AuthProvider authClient={authClient}>
 		<>
 			<div>
 				<a href="https://vite.dev" target="_blank">
@@ -111,6 +115,8 @@ function App() {
 				</div>
 			</div>
 			<p className="read-the-docs">Click on the logos to learn more</p>
+		{/* // </AuthProvider> */}
+		{/* // </QueryClientProvider> */}
 		</>
 	);
 }

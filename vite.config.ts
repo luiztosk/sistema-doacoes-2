@@ -1,7 +1,19 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel"
 import { cloudflare } from "@cloudflare/vite-plugin";
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [react(), cloudflare()],
+	plugins: [
+		babel({
+			presets: [reactCompilerPreset()],
+		}),
+		react(), 
+		cloudflare(),
+		tailwindcss(),
+	],
+	resolve: {
+		tsconfigPaths: true,
+	},
 });

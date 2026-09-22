@@ -9,21 +9,21 @@ import { Eye, EyeOff } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/react-app/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel
-} from "@/components/ui/field"
+} from "@/react-app/components/ui/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput
-} from "@/components/ui/input-group"
-import { cn } from "@/lib/utils"
+} from "@/react-app/components/ui/input-group"
+import { cn } from "@/react-app/lib/utils"
 import { isAuthFormFieldInvalid, useAuthForm } from "./auth-form"
 import { PasswordStrengthMeter } from "./password-strength-meter"
 

@@ -23,5 +23,5 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["src/react-app", "src/lib", "src/components", "src/components/providers.tsx", "src/lib"]
+	"include": ["src/react-app", "src/react-app/lib", "src/react-app/components"]
 }

@@ -12,9 +12,9 @@ import { CalendarIcon, Check, ChevronDownIcon, Copy } from "lucide-react"
 import { type ComponentType, useRef, useState } from "react"
 import { toast } from "sonner"
 
-import { buttonVariants } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Checkbox } from "@/components/ui/checkbox"
+import { buttonVariants } from "@/react-app/components/ui/button"
+import { Calendar } from "@/react-app/components/ui/calendar"
+import { Checkbox } from "@/react-app/components/ui/checkbox"
 import {
   Combobox,
   ComboboxContent,
@@ -22,25 +22,25 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList
-} from "@/components/ui/combobox"
+} from "@/react-app/components/ui/combobox"
 import {
   Field,
   FieldContent,
   FieldError,
   FieldLabel
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/react-app/components/ui/field"
+import { Input } from "@/react-app/components/ui/input"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput
-} from "@/components/ui/input-group"
+} from "@/react-app/components/ui/input-group"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
-} from "@/components/ui/popover"
+} from "@/react-app/components/ui/popover"
 import {
   Select,
   SelectContent,
@@ -48,11 +48,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
+} from "@/react-app/components/ui/select"
+import { Slider } from "@/react-app/components/ui/slider"
+import { Switch } from "@/react-app/components/ui/switch"
+import { Textarea } from "@/react-app/components/ui/textarea"
+import { cn } from "@/react-app/lib/utils"
 
 export type AdditionalFieldProps = {
   name: string

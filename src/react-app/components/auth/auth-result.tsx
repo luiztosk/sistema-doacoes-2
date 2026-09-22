@@ -7,15 +7,15 @@ import { useAuth } from "@better-auth-ui/react"
 import { CircleCheckIcon, CircleXIcon, TriangleAlertIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/react-app/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+} from "@/react-app/components/ui/card"
+import { cn } from "@/react-app/lib/utils"
 
 type AuthResultProps = {
   className?: string

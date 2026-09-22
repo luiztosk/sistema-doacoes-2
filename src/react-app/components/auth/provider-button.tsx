@@ -16,9 +16,9 @@ import {
 import { useIsMutating } from "@tanstack/react-query"
 import type { ComponentProps } from "react"
 
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { cn } from "@/lib/utils"
+import { Button } from "@/react-app/components/ui/button"
+import { Spinner } from "@/react-app/components/ui/spinner"
+import { cn } from "@/react-app/lib/utils"
 import { LastUsedBadge } from "./last-login-method/last-used-badge"
 
 export type ProviderButtonProps = {

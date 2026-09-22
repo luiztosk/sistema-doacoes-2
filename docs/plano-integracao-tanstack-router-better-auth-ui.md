@@ -10,16 +10,20 @@ Este plano separa a integração em fases pequenas. Cada fase deve ser concluíd
 
 ## 1. Estado atual e problemas a resolver
 
-O frontend atual ainda está baseado no template do Vite:
+O frontend agora usa TanStack Router como entrada principal:
 
-- [`src/react-app/main.tsx`](../src/react-app/main.tsx) renderiza apenas `<App />`.
-- [`src/react-app/App.tsx`](../src/react-app/App.tsx) contém a tela de exemplo, cria um novo `QueryClient()` a cada renderização e referencia um `authClient` inexistente.
-- [`src/components/providers.tsx`](../src/components/providers.tsx) configura `ThemeProvider` e o `AuthProvider` do Better Auth UI, mas usa hooks do TanStack Router sem existir um `RouterProvider`.
-- Não há route tree, `createRouter`, `RouterProvider` ou rotas de autenticação.
-- Os componentes copiados usam imports como `@/lib/auth-client` e `@/lib/utils`, mas os arquivos estão em `src/components/lib/...`.
+- [`src/react-app/main.tsx`](../src/react-app/main.tsx) monta `RouterProvider`.
+- [`src/react-app/router.tsx`](../src/react-app/router.tsx) contém o route tree manual.
+- [`src/react-app/routes/__root.tsx`](../src/react-app/routes/__root.tsx) fornece o layout e a navegação principal.
+- [`src/react-app/routes/index.tsx`](../src/react-app/routes/index.tsx) é a rota `/`.
+- [`src/react-app/routes/about.tsx`](../src/react-app/routes/about.tsx) é a rota `/about`.
+- [`src/react-app/routes/test-query.tsx`](../src/react-app/routes/test-query.tsx) isola o sample do Vite em `/test-query` para testes futuros.
+- [`src/components/auth/auth-provider.tsx`](../src/components/auth/auth-provider.tsx) é o wrapper real do Better Auth UI; `src/components/providers.tsx` não existe.
+- [`src/lib/auth-client.ts`](../src/lib/auth-client.ts) é o cliente frontend compartilhado.
+- `src/lib` e `src/components` permanecem fora de `src/react-app`. Os módulos atuais usados pelo frontend são client-only, mas movê-los é uma decisão de organização, não um requisito do bundler; `src/worker` deve continuar fora da árvore frontend.
 - O backend Better Auth está configurado em [`src/worker/auth.ts`](../src/worker/auth.ts) com `basePath: "/api/auth"` e somente o plugin `organization()`.
-- [`tsconfig.json`](../tsconfig.json) contém `ignoreDeprecations: "6.0"`, incompatível com TypeScript 5.9.3.
-- [`tsconfig.app.json`](../tsconfig.app.json) não recebe os aliases `@/*` configurados no tsconfig raiz.
+- [`tsconfig.json`](../tsconfig.json) contém `ignoreDeprecations: "6.0"`; o TypeScript instalado aceita a configuração, mas a remoção pode ser feita como limpeza.
+- [`tsconfig.app.json`](../tsconfig.app.json) inclui `src/react-app`, `src/lib` e `src/components`.
 
 A documentação [`plano-ui-stack.md`](./plano-ui-stack.md) é a referência da stack, mas ainda descreve parte do estado anterior. [`adaptacoes-nova-stack.md`](./fluxo-telas/adaptacoes-nova-stack.md) também está desatualizada e deve ser revisada após a implementação.
 
@@ -91,14 +95,14 @@ O frontend não deve habilitar recursos que o backend não oferece. Antes de ati
 
 Objetivo: fazer o projeto compilar antes de adicionar novas rotas.
 
-- [ ] Remover ou corrigir `ignoreDeprecations` em `tsconfig.json`.
-- [ ] Garantir que `tsconfig.app.json` resolva `@/*` para `./src/*`.
-- [ ] Confirmar que `src/lib` e `src/components/lib` sejam incluídos corretamente.
-- [ ] Corrigir imports quebrados nos arquivos copiados, especialmente:
+- [x] Remover ou corrigir `ignoreDeprecations` em `tsconfig.json`.
+- [x] Garantir que `tsconfig.app.json` resolva `@/*` para `./src/*`.
+- [x] Confirmar que `src/lib` esteja incluído corretamente; `src/components/lib` não existe mais neste fluxo.
+- [x] Corrigir imports quebrados nos arquivos copiados, especialmente:
   - `@/lib/auth-client`;
   - `@/lib/utils`;
   - `@/lib/auth/*`.
-- [ ] Não tentar corrigir erros de rotas antes de resolver aliases e imports.
+- [x] Não tentar corrigir erros de rotas antes de resolver aliases e imports.
 
 Critério de conclusão: `npx tsc -p tsconfig.app.json --noEmit` não falha por módulos inexistentes ou configuração incompatível.
 
@@ -108,10 +112,10 @@ Critério de conclusão: `npx tsc -p tsconfig.app.json --noEmit` não falha por 
 
 Objetivo: ter uma única configuração frontend reutilizável pelos providers e componentes.
 
-- [ ] Criar `src/lib/auth-client.ts`.
-- [ ] Configurar `createAuthClient` com a base correta do backend.
-- [ ] Exportar apenas o cliente necessário para o frontend.
-- [ ] Remover referências a `authClient` não importado em `App.tsx`.
+- [x] Criar `src/lib/auth-client.ts`.
+- [x] Configurar `createAuthClient` com a base correta do backend.
+- [x] Exportar apenas o cliente necessário para o frontend.
+- [x] Remover referências a `authClient` não importado em `App.tsx`.
 - [ ] Definir uma política única para callbacks OAuth e redirects.
 
 Critério de conclusão: o cliente é importado sem erro e consegue chamar o endpoint `/api/auth` durante o desenvolvimento.
@@ -122,37 +126,35 @@ Critério de conclusão: o cliente é importado sem erro e consegue chamar o end
 
 Objetivo: substituir a renderização direta de `<App />` por um route tree tipado.
 
-- [ ] Instalar/configurar `@tanstack/router-plugin`, se for adotado o fluxo de rotas geradas.
-- [ ] Criar a rota raiz e o layout principal.
-- [ ] Criar `createRouter` e exportar a instância usada pelo frontend.
-- [ ] Criar `src/react-app/main.tsx` montando `RouterProvider`.
-- [ ] Mover o conteúdo atual de `App.tsx` para uma rota pública ou removê-lo temporariamente.
-- [ ] Configurar links internos com o `Link` do TanStack Router.
+- [x] Usar um route tree manual, sem instalar `@tanstack/router-plugin`.
+- [x] Criar a rota raiz e o layout principal.
+- [x] Criar `createRouter` e exportar a instância usada pelo frontend.
+- [x] Criar `src/react-app/main.tsx` montando `RouterProvider`.
+- [x] Mover o conteúdo atual de `App.tsx` para uma rota pública ou removê-lo temporariamente.
+- [x] Configurar links internos com o `Link` do TanStack Router.
 
-Estrutura mínima sugerida:
+Estrutura atual, com rotas definidas manualmente:
 
 ```text
-src/
+src/react-app/
+  main.tsx
   router.tsx
   routes/
     __root.tsx
     index.tsx
-    auth/
-      sign-in.tsx
-      sign-up.tsx
-      forgot-password.tsx
-      reset-password.tsx
-      verify-email.tsx
-      callback.tsx
-    settings/
-      account.tsx
-  react-app/
-    main.tsx
+    about.tsx
+    test-query.tsx
 ```
 
-Se o projeto não usar rotas geradas pelo plugin, manter a mesma separação com um route tree criado manualmente; o importante é haver uma única fonte de rotas.
+O arquivo [`src/react-app/router.tsx`](../src/react-app/router.tsx) é a única fonte de verdade do route tree. O projeto não usa rotas geradas por `@tanstack/router-plugin`; portanto, não há arquivos em `src/routes/` nem um `src/router.tsx` separado.
 
-Critério de conclusão: a aplicação abre em `/`, navega entre pelo menos duas rotas sem recarregar a página e não usa mais o sample do Vite como entrada principal.
+As rotas públicas atuais são:
+
+- `/` — [`src/react-app/routes/index.tsx`](../src/react-app/routes/index.tsx);
+- `/about` — [`src/react-app/routes/about.tsx`](../src/react-app/routes/about.tsx);
+- `/test-query` — [`src/react-app/routes/test-query.tsx`](../src/react-app/routes/test-query.tsx), mantido como área de testes futura para autenticação e queries.
+
+Critério de conclusão: a aplicação abre em `/`, navega entre pelo menos duas rotas sem recarregar a página e o sample do Vite não é mais a entrada principal.
 
 ---
 
@@ -165,11 +167,11 @@ Objetivo: garantir que todos os hooks tenham contexto.
 - [ ] Mover `ThemeProvider` e `AuthProvider` para o layout raiz ou para um provider renderizado dentro da rota raiz.
 - [ ] Passar o mesmo `queryClient` ao `AuthProvider` quando necessário.
 - [ ] Remover o `QueryClientProvider` duplicado/ineficiente de `App.tsx`.
-- [ ] Revisar o uso de `useParams({ slug })` em `providers.tsx`: ele só deve existir se a rota realmente fornecer `slug`; caso contrário, remover o parâmetro.
+- [ ] Revisar o uso de `useParams({ slug })` em `src/components/auth/auth-provider.tsx`: ele só deve existir se a rota realmente fornecer `slug`; caso contrário, remover o parâmetro.
 - [ ] Adaptar a função `navigate` ao formato esperado pelo Better Auth UI, incluindo `to` e `replace` quando aplicável.
 - [ ] Configurar o `Link` do Better Auth UI para usar o `Link` do TanStack Router.
 
-Critério de conclusão: `Providers` pode ser renderizado dentro do layout raiz sem erros de contexto e os links de autenticação navegam pela SPA.
+Critério de conclusão: `src/components/auth/auth-provider.tsx` pode ser renderizado dentro do layout raiz sem erros de contexto e os links de autenticação navegam pela SPA.
 
 ---
 

@@ -7,15 +7,15 @@ import {
   useRequestPasswordReset
 } from "@better-auth-ui/react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/react-app/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+} from "@/react-app/components/ui/field"
+import { Input } from "@/react-app/components/ui/input"
+import { cn } from "@/react-app/lib/utils"
 import { isAuthFormFieldInvalid, useAuthForm } from "./auth-form"
 import { RESET_LINK_SENT_STORAGE_KEY } from "./reset-link-sent"
 

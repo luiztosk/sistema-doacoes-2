@@ -4,10 +4,10 @@ import {
 } from "@better-auth-ui/core"
 import { useAuth, useSignOut } from "@better-auth-ui/react"
 import { useSyncExternalStore } from "react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { cn } from "@/lib/utils"
+import { Alert, AlertDescription, AlertTitle } from "@/react-app/components/ui/alert"
+import { Button } from "@/react-app/components/ui/button"
+import { Spinner } from "@/react-app/components/ui/spinner"
+import { cn } from "@/react-app/lib/utils"
 
 const subscribeToLocation = () => () => undefined
 

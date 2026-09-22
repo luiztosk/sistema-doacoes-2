@@ -1,22 +1,19 @@
-// src/App.tsx
-
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
-import honoLogo from "./assets/hono.svg";
-// import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-// import { AuthProvider } from "@/components/providers";
-import "./App.css";
+import { createRoute } from "@tanstack/react-router";
 
-function App() {
+import reactLogo from "../assets/react.svg";
+import viteLogo from "/vite.svg";
+import cloudflareLogo from "../assets/Cloudflare_Logo.svg";
+import honoLogo from "../assets/hono.svg";
+
+import { Route as RootRoute } from "./__root";
+
+function TestQuery() {
 	const [count, setCount] = useState(0);
 	const [tableData, setTableData] = useState<any>(null);
 	const [idValue, setIdValue] = useState("1");
 
 	return (
-		// <QueryClientProvider client={new QueryClient()}>
-		// <AuthProvider authClient={authClient}>
 		<>
 			<div>
 				<a href="https://vite.dev" target="_blank">
@@ -44,17 +41,17 @@ function App() {
 				>
 					count is {count}
 				</button>
-			<p>
-				sistema para cadastro de Assistidos e controle de doações em
-				instituições de caridade.
-			</p>
-			<p>
-				se tudo der certo este será um build oculto visível somente
-				no branch stage e pelo link id
-			</p>
-			<p>
-				Edit <code>src/App.tsx</code> and save to test HMR
-			</p>
+				<p>
+					sistema para cadastro de Assistidos e controle de doações em
+					instituições de caridade.
+				</p>
+				<p>
+					se tudo der certo este será um build oculto visível somente
+					no branch stage e pelo link id
+				</p>
+				<p>
+					Edit <code>src/react-app/routes/test-query.tsx</code> and save to test HMR
+				</p>
 			</div>
 			{tableData && (
 				<aside
@@ -115,10 +112,12 @@ function App() {
 				</div>
 			</div>
 			<p className="read-the-docs">Click on the logos to learn more</p>
-		{/* // </AuthProvider> */}
-		{/* // </QueryClientProvider> */}
 		</>
 	);
 }
 
-export default App;
+export const Route = createRoute({
+	getParentRoute: () => RootRoute,
+	path: "/test-query",
+	component: TestQuery,
+});

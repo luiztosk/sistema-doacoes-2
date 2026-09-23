@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as TestQueryRouteImport } from './routes/test-query'
+import { Route as AuthPathRouteImport } from './routes/auth/$path'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,49 +24,49 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TestQueryRoute = TestQueryRouteImport.update({
   id: '/test-query',
   path: '/test-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthPathRoute = AuthPathRouteImport.update({
+  id: '/auth/$path',
+  path: '/auth/$path',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/test-query': typeof TestQueryRoute
+  '/auth/$path': typeof AuthPathRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/test-query': typeof TestQueryRoute
+  '/auth/$path': typeof AuthPathRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/test-query': typeof TestQueryRoute
+  '/auth/$path': typeof AuthPathRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/auth' | '/test-query'
+  fullPaths: '/' | '/about' | '/test-query' | '/auth/$path'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/auth' | '/test-query'
-  id: '__root__' | '/' | '/about' | '/auth' | '/test-query'
+  to: '/' | '/about' | '/test-query' | '/auth/$path'
+  id: '__root__' | '/' | '/about' | '/test-query' | '/auth/$path'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AuthRoute: typeof AuthRoute
   TestQueryRoute: typeof TestQueryRoute
+  AuthPathRoute: typeof AuthPathRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,18 +85,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/test-query': {
       id: '/test-query'
       path: '/test-query'
       fullPath: '/test-query'
       preLoaderRoute: typeof TestQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/$path': {
+      id: '/auth/$path'
+      path: '/auth/$path'
+      fullPath: '/auth/$path'
+      preLoaderRoute: typeof AuthPathRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -105,8 +105,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AuthRoute: AuthRoute,
   TestQueryRoute: TestQueryRoute,
+  AuthPathRoute: AuthPathRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

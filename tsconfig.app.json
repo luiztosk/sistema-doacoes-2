@@ -23,5 +23,5 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["src/react-app", "src/react-app/lib", "src/react-app/components", "src/components/auth/user/user-avatar.tsx", "src/components/auth/user/user-view.tsx"]
+	"include": ["src/react-app", "src/react-app/lib", "src/react-app/components", "src/react-app/components/auth/user/user-avatar.tsx", "src/react-app/components/auth/user/user-view.tsx"]
 }

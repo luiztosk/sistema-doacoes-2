@@ -56,6 +56,7 @@
 		"@cloudflare/vite-plugin": "^1.54.8",
 		"@cloudflare/workers-types": "^5.20260911.1",
 		"@eslint/js": "9.39.1",
+		"@tanstack/router-plugin": "^1.168.40",
 		"@types/node": "^24.10.1",
 		"@types/react": "19.2.7",
 		"@types/react-dom": "19.2.3",
@@ -80,10 +81,11 @@
 		"deploy": "wrangler deploy",
 		"dev": "vite dev",
 		"lint": "eslint .",
-		"generate-sql": "drizzle-kit generate",
-		"local-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --local",
-		"remote-db-init": "npm run generate-sql && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
+		"gen-auth": "npx auth@latest generate --config=./src/worker/auth.ts --output=./src/worker/db/auth-schema.ts",
+		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "npx tsx src/worker/db/seed.ts",
+		"local-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --local && wrangler types && npm run db-seed",
+		"remote-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
 		"preview": "npm run build && vite preview"
 	},
 	"type": "module"

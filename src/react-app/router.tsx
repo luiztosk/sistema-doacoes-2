@@ -1,18 +1,14 @@
 import { createRouter } from "@tanstack/react-router";
 
-import { Route as AboutRoute } from "./routes/about";
-import { Route as IndexRoute } from "./routes/index";
-import { Route as RootRoute } from "./routes/__root";
-import { Route as TestQueryRoute } from "./routes/test-query";
 
-const routeTree = RootRoute.addChildren([
-	IndexRoute,
-	AboutRoute,
-	TestQueryRoute,
-]);
+import { routeTree } from "./route-tree";
+import { queryClient } from "@/react-app/lib/query-client";
 
 export const router = createRouter({
 	routeTree,
+	context: {
+		queryClient
+	}
 });
 
 declare module "@tanstack/react-router" {

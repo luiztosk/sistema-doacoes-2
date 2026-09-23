@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { drizzle } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
 import { D1Database } from '@cloudflare/workers-types';
-import { createAuthHandler } from "./auth";
+// import { createAuthHandler } from "./auth";
+import { auth } from "./auth";
 
 import { assistido } from './db/schema';
 
@@ -26,8 +27,9 @@ app.get('/api/:id', async (c) => {
 })
 
 app.all("/api/auth/*", async (c) => {
-    const handler = createAuthHandler(c.env);
-    return handler(c.req.raw);
+    // const handler = createAuthHandler(c.env);
+    // return handler(c.req.raw);
+    return auth.handler(c.req.raw);
 });
 
 export default app;

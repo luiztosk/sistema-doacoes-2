@@ -5,12 +5,12 @@ import { drizzle } from 'drizzle-orm/d1';
 import { getPlatformProxy } from 'wrangler';
 import { D1Database } from '@cloudflare/workers-types';
 import { assistido, doador, categoriaItem, nomeItem, coleta, entrega, item } from './schema';
-import { organization } from './schema'
+// import { organization } from './schema'
 import { getTableName, InferInsertModel } from 'drizzle-orm';
 import { AnySQLiteTable } from 'drizzle-orm/sqlite-core';
 
 const tables = [
-        organization,
+        // organization,
         assistido,
         doador,
         categoriaItem,

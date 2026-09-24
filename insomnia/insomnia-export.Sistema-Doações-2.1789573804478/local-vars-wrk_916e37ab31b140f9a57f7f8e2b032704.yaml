@@ -14,4 +14,4 @@ environments:
     modified: 1789572927192
     isPrivate: false
   data:
-    BASE_URL: localhost:5173
+    BASE_URL: http://localhost:5173

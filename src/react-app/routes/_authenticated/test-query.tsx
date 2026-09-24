@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { createRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import reactLogo from "../assets/react.svg";
+import reactLogo from "@/react-app/assets/react.svg";
 import viteLogo from "/vite.svg";
-import cloudflareLogo from "../assets/Cloudflare_Logo.svg";
-import honoLogo from "../assets/hono.svg";
-
-import { Route as RootRoute } from "./__root";
+import cloudflareLogo from "@/react-app/assets/Cloudflare_Logo.svg";
+import honoLogo from "@/react-app/assets/hono.svg";
 
 function TestQuery() {
 	const [count, setCount] = useState(0);
@@ -78,7 +76,7 @@ function TestQuery() {
 			<div className="card">
 				<button
 					onClick={() => {
-						fetch("/api/")
+						fetch("/api/assistidos")
 							.then((res) => res.json() as Promise<any>)
 							.then((data) => setTableData(data.assistidos || data));
 					}}
@@ -100,7 +98,7 @@ function TestQuery() {
 					</select>
 					<button
 						onClick={() => {
-							fetch(`/api/${idValue}`)
+							fetch(`/api/assistidos/${idValue}`)
 								.then((res) => res.json() as Promise<any>)
 								.then((data) => setTableData(data.assistidos || data));
 						}}
@@ -116,8 +114,6 @@ function TestQuery() {
 	);
 }
 
-export const Route = createRoute({
-	getParentRoute: () => RootRoute,
-	path: "/test-query",
+export const Route = createFileRoute('/_authenticated/test-query')({
 	component: TestQuery,
 });

@@ -1,17 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Auth } from "@/react-app/components/auth/auth";
+import { LoginForm } from "@/react-app/components/auth/LoginForm";
 
 function AuthPage() {
-	const { path } = Route.useParams();
-
 	return (
 		<div className="flex min-h-[calc(100vh-12rem)] items-center justify-center py-8">
-			<Auth path={path ?? ""} />
+			<LoginForm />
 		</div>
 	);
 }
 
-export const Route = createFileRoute('/auth/$path')({
+export const Route = createFileRoute('/auth/login')({
 	component: AuthPage,
 });

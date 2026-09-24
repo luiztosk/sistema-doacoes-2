@@ -7,9 +7,13 @@ import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
 import honoLogo from "./assets/hono.svg";
 import "./App.css";
 
+type LegacyAssistidosResponse = {
+	assistidos: Record<string, unknown>[];
+};
+
 function App() {
 	const [count, setCount] = useState(0);
-	const [tableData, setTableData] = useState<any>(null);
+	const [tableData, setTableData] = useState<unknown>(null);
 	const [idValue, setIdValue] = useState("1");
 
 	return (
@@ -78,8 +82,8 @@ function App() {
 				<button
 					onClick={() => {
 						fetch("/api/")
-							.then((res) => res.json() as Promise<any>)
-							.then((data) => setTableData(data.assistidos || data));
+							.then((res) => res.json() as Promise<LegacyAssistidosResponse>)
+							.then((data) => setTableData(data.assistidos));
 					}}
 					aria-label="fetch table"
 				>
@@ -100,8 +104,10 @@ function App() {
 					<button
 						onClick={() => {
 							fetch(`/api/${idValue}`)
-								.then((res) => res.json() as Promise<any>)
-								.then((data) => setTableData(data.assistidos || data));
+								.then(
+									(res) => res.json() as Promise<LegacyAssistidosResponse>,
+								)
+								.then((data) => setTableData(data.assistidos));
 						}}
 						aria-label="fetch by id"
 						style={{ marginLeft: 8 }}

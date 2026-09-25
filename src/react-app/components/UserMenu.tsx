@@ -15,6 +15,11 @@ export function UserMenu() {
     <li>
       {session ? <Link to='/auth/logout'>Sair</Link> : <Link to='/auth/login'>Entrar</Link>}
     </li>
+    {!session && (
+      <li>
+        <Link to='/auth/signup'>Cadastrar-se</Link>
+      </li>
+    )}
     </ul>
   )
 }

@@ -1,7 +1,7 @@
 // src/components/auth/LoginForm.tsx
 import { useForm } from '@tanstack/react-form'
 import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { authClient } from '@/react-app/lib/auth-client'
 import { sessionQueryOptions } from '@/react-app/lib/auth-queries'
 
@@ -65,6 +65,10 @@ export function LoginForm() {
             </Button>
           )} />
         </form>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Don't have an account?{' '}
+          <Link to="/auth/signup" className="underline">Sign up</Link>
+        </p>
       </CardContent>
     </Card>
   )

@@ -1,0 +1,17 @@
+type: environment.insomnia.rest/5.0
+schema_version: "5.1"
+name: local vars
+meta:
+  id: wrk_916e37ab31b140f9a57f7f8e2b032704
+  created: 1789570488073
+  modified: 1789570488073
+  description: ""
+environments:
+  name: Base Environment
+  meta:
+    id: env_ad1ff364ed875f772ef2918eada5838b84a2e3dd
+    created: 1789570488075
+    modified: 1789572927192
+    isPrivate: false
+  data:
+    BASE_URL: localhost:5173

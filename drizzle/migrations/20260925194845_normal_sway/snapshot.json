@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "8ddb0668-4da7-4611-b96d-9676b8dff097",
+  "id": "9d74cd91-8506-4271-998d-e51d0b123b03",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -55,10 +55,6 @@
       "entityType": "tables"
     },
     {
-      "name": "team",
-      "entityType": "tables"
-    },
-    {
       "name": "user",
       "entityType": "tables"
     },
@@ -73,16 +69,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "assistido"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "assistido"
     },
@@ -352,16 +338,6 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "categoria_item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "nome",
       "entityType": "columns",
       "table": "categoria_item"
@@ -373,16 +349,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "coleta"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "coleta"
     },
@@ -413,16 +379,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "doador"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "doador"
     },
@@ -538,16 +494,6 @@
     },
     {
       "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "entrega"
-    },
-    {
-      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -573,16 +519,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "item"
     },
@@ -662,16 +598,6 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "nome_item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "categoria_id",
       "entityType": "columns",
       "table": "nome_item"
@@ -702,16 +628,6 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "user_id",
-      "entityType": "columns",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "account_id",
       "entityType": "columns",
       "table": "account"
@@ -723,6 +639,16 @@
       "default": null,
       "generated": null,
       "name": "provider_id",
+      "entityType": "columns",
+      "table": "account"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "user_id",
       "entityType": "columns",
       "table": "account"
     },
@@ -800,7 +726,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "created_at",
       "entityType": "columns",
@@ -848,7 +774,7 @@
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -858,11 +784,11 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "'pending'",
       "generated": null,
-      "name": "inviter_id",
+      "name": "status",
       "entityType": "columns",
       "table": "invitation"
     },
@@ -880,19 +806,19 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "created_at",
       "entityType": "columns",
       "table": "invitation"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "updated_at",
+      "name": "inviter_id",
       "entityType": "columns",
       "table": "invitation"
     },
@@ -928,9 +854,9 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "'member'",
       "generated": null,
       "name": "role",
       "entityType": "columns",
@@ -943,16 +869,6 @@
       "default": null,
       "generated": null,
       "name": "created_at",
-      "entityType": "columns",
-      "table": "member"
-    },
-    {
-      "type": "integer",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "updated_at",
       "entityType": "columns",
       "table": "member"
     },
@@ -978,11 +894,11 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "address",
+      "name": "slug",
       "entityType": "columns",
       "table": "organization"
     },
@@ -992,7 +908,17 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "email",
+      "name": "logo",
+      "entityType": "columns",
+      "table": "organization"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
       "entityType": "columns",
       "table": "organization"
     },
@@ -1002,7 +928,7 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "phone",
+      "name": "metadata",
       "entityType": "columns",
       "table": "organization"
     },
@@ -1017,12 +943,12 @@
       "table": "session"
     },
     {
-      "type": "text",
+      "type": "integer",
       "notNull": true,
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "user_id",
+      "name": "expires_at",
       "entityType": "columns",
       "table": "session"
     },
@@ -1040,17 +966,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "expires_at",
-      "entityType": "columns",
-      "table": "session"
-    },
-    {
-      "type": "integer",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "created_at",
       "entityType": "columns",
@@ -1088,53 +1004,23 @@
     },
     {
       "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "table": "session"
+    },
+    {
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "id",
+      "name": "active_organization_id",
       "entityType": "columns",
-      "table": "team"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "team"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "name",
-      "entityType": "columns",
-      "table": "team"
-    },
-    {
-      "type": "integer",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "table": "team"
-    },
-    {
-      "type": "integer",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "table": "team"
+      "table": "session"
     },
     {
       "type": "text",
@@ -1190,7 +1076,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "created_at",
       "entityType": "columns",
@@ -1200,7 +1086,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "updated_at",
       "entityType": "columns",
@@ -1250,7 +1136,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "created_at",
       "entityType": "columns",
@@ -1260,56 +1146,11 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "(cast(unixepoch('subsecond') * 1000 as integer))",
       "generated": null,
       "name": "updated_at",
       "entityType": "columns",
       "table": "verification"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_assistido_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "assistido"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_categoria_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "categoria_item"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_coleta_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "coleta"
     },
     {
       "columns": [
@@ -1328,36 +1169,6 @@
     },
     {
       "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_doador_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "doador"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_entrega_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "entrega"
-    },
-    {
-      "columns": [
         "assistido_id"
       ],
       "tableTo": "assistido",
@@ -1370,21 +1181,6 @@
       "name": "fk_entrega_assistido_id_assistido_id_fk",
       "entityType": "fks",
       "table": "entrega"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "item"
     },
     {
       "columns": [
@@ -1463,21 +1259,6 @@
     },
     {
       "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_nome_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "nome_item"
-    },
-    {
-      "columns": [
         "categoria_id"
       ],
       "tableTo": "categoria_item",
@@ -1500,7 +1281,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_account_user_id_user_id_fk",
       "entityType": "fks",
@@ -1515,7 +1296,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_invitation_organization_id_organization_id_fk",
       "entityType": "fks",
@@ -1530,7 +1311,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_invitation_inviter_id_user_id_fk",
       "entityType": "fks",
@@ -1545,7 +1326,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_member_organization_id_organization_id_fk",
       "entityType": "fks",
@@ -1560,7 +1341,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_member_user_id_user_id_fk",
       "entityType": "fks",
@@ -1575,26 +1356,11 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "nameExplicit": false,
       "name": "fk_session_user_id_user_id_fk",
       "entityType": "fks",
       "table": "session"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_team_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "team"
     },
     {
       "columns": [
@@ -1709,15 +1475,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "team_pk",
-      "table": "team",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "user_pk",
       "table": "user",
       "entityType": "pks"
@@ -1730,6 +1487,118 @@
       "name": "verification_pk",
       "table": "verification",
       "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "account_userId_idx",
+      "entityType": "indexes",
+      "table": "account"
+    },
+    {
+      "columns": [
+        {
+          "value": "organization_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "invitation_organizationId_idx",
+      "entityType": "indexes",
+      "table": "invitation"
+    },
+    {
+      "columns": [
+        {
+          "value": "email",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "invitation_email_idx",
+      "entityType": "indexes",
+      "table": "invitation"
+    },
+    {
+      "columns": [
+        {
+          "value": "organization_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "member_organizationId_idx",
+      "entityType": "indexes",
+      "table": "member"
+    },
+    {
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "member_userId_idx",
+      "entityType": "indexes",
+      "table": "member"
+    },
+    {
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "organization_slug_uidx",
+      "entityType": "indexes",
+      "table": "organization"
+    },
+    {
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "session_userId_idx",
+      "entityType": "indexes",
+      "table": "session"
+    },
+    {
+      "columns": [
+        {
+          "value": "identifier",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "verification_identifier_idx",
+      "entityType": "indexes",
+      "table": "verification"
     },
     {
       "columns": [

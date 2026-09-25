@@ -1,7 +1,7 @@
 // src/components/DashboardHeader.tsx
 import { useQuery } from '@tanstack/react-query'
 import { sessionQueryOptions } from '@/react-app/lib/auth-queries'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 
 export function UserMenu() {
   const { data: session } = useQuery(sessionQueryOptions)

@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "0e3ecee8-0333-4ea6-b8cd-8799dd8b4e7f",
+  "id": "9d74cd91-8506-4271-998d-e51d0b123b03",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -69,16 +69,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "assistido"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "assistido"
     },
@@ -348,16 +338,6 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "categoria_item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "nome",
       "entityType": "columns",
       "table": "categoria_item"
@@ -369,16 +349,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "coleta"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "coleta"
     },
@@ -409,16 +379,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "doador"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "doador"
     },
@@ -534,16 +494,6 @@
     },
     {
       "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
-      "entityType": "columns",
-      "table": "entrega"
-    },
-    {
-      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -569,16 +519,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "item"
     },
@@ -649,16 +589,6 @@
       "default": null,
       "generated": null,
       "name": "id",
-      "entityType": "columns",
-      "table": "nome_item"
-    },
-    {
-      "type": "text",
-      "notNull": true,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "organization_id",
       "entityType": "columns",
       "table": "nome_item"
     },
@@ -1224,51 +1154,6 @@
     },
     {
       "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_assistido_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "assistido"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_categoria_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "categoria_item"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_coleta_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "coleta"
-    },
-    {
-      "columns": [
         "doador_id"
       ],
       "tableTo": "doador",
@@ -1284,36 +1169,6 @@
     },
     {
       "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_doador_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "doador"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_entrega_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "entrega"
-    },
-    {
-      "columns": [
         "assistido_id"
       ],
       "tableTo": "assistido",
@@ -1326,21 +1181,6 @@
       "name": "fk_entrega_assistido_id_assistido_id_fk",
       "entityType": "fks",
       "table": "entrega"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "item"
     },
     {
       "columns": [
@@ -1416,21 +1256,6 @@
       "name": "fk_item_assistido_id_assistido_id_fk",
       "entityType": "fks",
       "table": "item"
-    },
-    {
-      "columns": [
-        "organization_id"
-      ],
-      "tableTo": "organization",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_nome_item_organization_id_organization_id_fk",
-      "entityType": "fks",
-      "table": "nome_item"
     },
     {
       "columns": [

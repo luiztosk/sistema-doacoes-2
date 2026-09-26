@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "9d74cd91-8506-4271-998d-e51d0b123b03",
+  "id": "5eea81d6-5227-4695-9d2d-a8e5f281adf7",
   "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
+    "e11a8b97-e421-440a-ac87-87a6902e7f04"
   ],
   "ddl": [
     {
@@ -163,7 +163,7 @@
       "table": "assistido"
     },
     {
-      "type": "text(2)",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -354,7 +354,7 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -473,7 +473,7 @@
       "table": "doador"
     },
     {
-      "type": "text(2)",
+      "type": "text",
       "notNull": false,
       "autoincrement": false,
       "default": null,
@@ -494,7 +494,7 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -559,26 +559,6 @@
       "default": null,
       "generated": null,
       "name": "entrega_id",
-      "entityType": "columns",
-      "table": "item"
-    },
-    {
-      "type": "text",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "doador_id",
-      "entityType": "columns",
-      "table": "item"
-    },
-    {
-      "type": "text",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "assistido_id",
       "entityType": "columns",
       "table": "item"
     },
@@ -1229,36 +1209,6 @@
     },
     {
       "columns": [
-        "doador_id"
-      ],
-      "tableTo": "doador",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_item_doador_id_doador_id_fk",
-      "entityType": "fks",
-      "table": "item"
-    },
-    {
-      "columns": [
-        "assistido_id"
-      ],
-      "tableTo": "assistido",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "nameExplicit": false,
-      "name": "fk_item_assistido_id_assistido_id_fk",
-      "entityType": "fks",
-      "table": "item"
-    },
-    {
-      "columns": [
         "categoria_id"
       ],
       "tableTo": "categoria_item",
@@ -1491,6 +1441,118 @@
     {
       "columns": [
         {
+          "value": "lower(\"nome\")",
+          "isExpression": true
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "categoria_item_nome_uniq",
+      "entityType": "indexes",
+      "table": "categoria_item"
+    },
+    {
+      "columns": [
+        {
+          "value": "doador_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "coleta_doadorId_idx",
+      "entityType": "indexes",
+      "table": "coleta"
+    },
+    {
+      "columns": [
+        {
+          "value": "assistido_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "entrega_assistidoId_idx",
+      "entityType": "indexes",
+      "table": "entrega"
+    },
+    {
+      "columns": [
+        {
+          "value": "status",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "item_status_idx",
+      "entityType": "indexes",
+      "table": "item"
+    },
+    {
+      "columns": [
+        {
+          "value": "coleta_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "item_coletaId_idx",
+      "entityType": "indexes",
+      "table": "item"
+    },
+    {
+      "columns": [
+        {
+          "value": "entrega_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "item_entregaId_idx",
+      "entityType": "indexes",
+      "table": "item"
+    },
+    {
+      "columns": [
+        {
+          "value": "lower(\"nome\")",
+          "isExpression": true
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "nome_item_nome_uniq",
+      "entityType": "indexes",
+      "table": "nome_item"
+    },
+    {
+      "columns": [
+        {
+          "value": "categoria_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "nome_item_categoriaId_idx",
+      "entityType": "indexes",
+      "table": "nome_item"
+    },
+    {
+      "columns": [
+        {
           "value": "user_id",
           "isExpression": false
         }
@@ -1617,6 +1679,162 @@
       "name": "user_email_unique",
       "entityType": "uniques",
       "table": "user"
+    },
+    {
+      "value": "length(trim(\"nome\")) > 0",
+      "name": "assistido_nome_nao_vazio",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"cep\" IS NULL OR (length(\"cep\") = 8 AND \"cep\" NOT GLOB '*[^0-9]*')",
+      "name": "assistido_cep_formato",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"uf\" IS NULL OR \"uf\" IN ('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')",
+      "name": "assistido_uf_valida",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"tipo_imovel\" IS NULL OR \"tipo_imovel\" IN ('ALUGADO', 'PROPRIO')",
+      "name": "assistido_tipo_imovel_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"tipo_imovel\" IS NULL OR (\"tipo_imovel\" = 'PROPRIO' AND \"valor_aluguel\" IS NULL) OR (\"tipo_imovel\" = 'ALUGADO' AND \"valor_aluguel\" > 0)",
+      "name": "assistido_valor_aluguel_compatipo_imovel",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"estado_civil\" IS NULL OR \"estado_civil\" IN ('SOLTEIRO', 'CASADO', 'DIVORCIADO', 'VIUVO', 'UNIAO_ESTAVEL')",
+      "name": "assistido_estado_civil_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"valor_aluguel\" IS NULL OR \"valor_aluguel\" >= 0",
+      "name": "assistido_valor_aluguel_nao_negativo",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"renda\" IS NULL OR \"renda\" >= 0",
+      "name": "assistido_renda_nao_negativa",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"numero_adultos\" IS NULL OR \"numero_adultos\" >= 0",
+      "name": "assistido_numero_adultos_nao_negativo",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"criancas_pequenas\" IS NULL OR \"criancas_pequenas\" >= 0",
+      "name": "assistido_criancas_pequenas_nao_negativo",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"adolescentes\" IS NULL OR \"adolescentes\" >= 0",
+      "name": "assistido_adolescentes_nao_negativo",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"doentes\" IN (0, 1)",
+      "name": "assistido_doentes_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"bolsa_familia\" IN (0, 1)",
+      "name": "assistido_bolsa_familia_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"aposentado\" IN (0, 1)",
+      "name": "assistido_aposentado_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"pensao\" IN (0, 1)",
+      "name": "assistido_pensao_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"cesta_basica\" IN (0, 1)",
+      "name": "assistido_cesta_basica_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"atividade_remunerada\" IN (0, 1)",
+      "name": "assistido_atividade_remunerada_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "\"crianca_escola\" IN (0, 1)",
+      "name": "assistido_crianca_escola_valido",
+      "entityType": "checks",
+      "table": "assistido"
+    },
+    {
+      "value": "length(trim(\"nome\")) > 0",
+      "name": "categoria_item_nome_nao_vazio",
+      "entityType": "checks",
+      "table": "categoria_item"
+    },
+    {
+      "value": "length(trim(\"nome\")) > 0",
+      "name": "doador_nome_nao_vazio",
+      "entityType": "checks",
+      "table": "doador"
+    },
+    {
+      "value": "\"uf\" IS NULL OR \"uf\" IN ('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')",
+      "name": "doador_uf_valida",
+      "entityType": "checks",
+      "table": "doador"
+    },
+    {
+      "value": "\"cep\" IS NULL OR (length(\"cep\") = 8 AND \"cep\" NOT GLOB '*[^0-9]*')",
+      "name": "doador_cep_formato",
+      "entityType": "checks",
+      "table": "doador"
+    },
+    {
+      "value": "\"status\" IN ('AGUARDA_COLETA', 'EM_ESTOQUE', 'ENTREGUE')",
+      "name": "item_status_valido",
+      "entityType": "checks",
+      "table": "item"
+    },
+    {
+      "value": "\"status\" <> 'ENTREGUE' OR \"entrega_id\" IS NOT NULL",
+      "name": "item_entregue_exige_entrega",
+      "entityType": "checks",
+      "table": "item"
+    },
+    {
+      "value": "\"entrega_id\" IS NULL OR \"coleta_id\" IS NOT NULL",
+      "name": "item_entrega_exige_coleta",
+      "entityType": "checks",
+      "table": "item"
+    },
+    {
+      "value": "length(trim(\"nome\")) > 0",
+      "name": "nome_item_nome_nao_vazio",
+      "entityType": "checks",
+      "table": "nome_item"
     }
   ],
   "renames": []

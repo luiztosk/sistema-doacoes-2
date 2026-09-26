@@ -110,12 +110,6 @@ async function validateItem(
 			"Entrega",
 		);
 	}
-	if (payload.doadorId) {
-		await requireDoador(db, payload.doadorId);
-	}
-	if (payload.assistidoId) {
-		await requireAssistido(db, payload.assistidoId);
-	}
 
 	if (!existing) {
 		if (payload.status && payload.status !== "AGUARDA_COLETA") {
@@ -146,16 +140,12 @@ async function validateItem(
 			payload.entregaId === undefined
 				? existing.entregaId
 				: payload.entregaId;
-		const assistidoId =
-			payload.assistidoId === undefined
-				? existing.assistidoId
-				: payload.assistidoId;
 
-		if (!entregaId || !assistidoId) {
+		if (!entregaId) {
 			throw new ApiError(
 				400,
 				"DELIVERY_REQUIRED",
-				"Um item entregue deve informar entregaId e assistidoId.",
+				"Um item entregue deve informar entregaId.",
 			);
 		}
 	}

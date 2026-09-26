@@ -82,20 +82,44 @@ corpo não é enviado como `application/json`.
   existir no banco.
 - Um item novo começa em `AGUARDA_COLETA`.
 - A única sequência permitida é `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`.
-- Um item marcado como `ENTREGUE` precisa de `entregaId` e `assistidoId`.
+- Um item marcado como `ENTREGUE` precisa de `entregaId`.
+- Quem doou e quem recebeu saem da coleta e da entrega, não de colunas do item —
+  ver [`modelos-db.md`](./modelos-db.md#item).
 - Exclusões bloqueadas por relacionamentos retornam `409` em vez de expor o erro
   interno do banco.
+
+## Valores recusados pelo banco
+
+O schema tem `check()` que valem para qualquer escrita
+([#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43)), então o D1
+recusa nome em branco, `renda` negativa, UF fora das 27, status desconhecido,
+booleanos que não sejam 0/1, `uf` com 3 letras, CEP fora de 8 dígitos e
+`ENTREGUE` sem `entregaId` — inclusive em escrita que não passa pela API (D1
+Studio, `npm run db-seed`, scripts). A lista completa está em
+[`modelos-db.md`](./modelos-db.md#integridade-no-banco-check).
+
+O catálogo tem unicidade case-insensitive (`categoria_item.nome` e
+`nome_item.nome`): duas categorias que só diferem em maiúsculas/minúsculas
+colidem. Isso sai como `409`, que é o status certo — duas linhas do mesmo
+registro, não um valor inválido.
+
+Isso é o piso de integridade, não a validação da API: a camada de entrada ainda
+**desserializa** e não valida (seção abaixo). Um `POST` com `renda: -500` é
+aceito pela desserialização e só volta como erro do banco, e esse erro ainda sai
+como `409 CONFLICT` — `handleApiError` trata CHECK, FK e unique com o mesmo
+regex. Separar `400 INVALID_VALUE` (com o campo) de `409` depende do zod da
+[#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42).
 
 ## ⚠️ Validação de valores pendente
 
 A camada de entrada hoje **desserializa**, não valida. Ou seja, a API aceita
-valores que deveriam ser recusados:
+valores que deveriam ser recusados — e o banco é quem acaba recusando:
 
 | Aceito hoje | Deveria | Onde será resolvido |
 |---|---|---|
 | `nome: "   "` | texto não vazio | zod (`createInsertSchema` + `min(1)`) |
-| `renda: -500` | maior ou igual a zero | zod (`min(0)`) e `CHECK` no banco |
-| `uf: "abc"` | sigla de UF com 2 letras | zod (`regex`) e `CHECK` no banco |
+| `renda: -500` | maior ou igual a zero | zod (`min(0)`) — o `CHECK` já cobre o banco |
+| `uf: "abc"` | sigla de UF | zod (`enum`) — o `CHECK` já cobre o banco |
 | `uf: "sp"` | normalizado para `SP` | zod (`transform`) |
 
 O motivo de não existir aqui: `drizzle-zod` já gera `z.string()`, `z.number()`,
@@ -104,9 +128,10 @@ para o que o schema não expressa. Escrever essas regras à mão nesta camada se
 duplicar o que a biblioteca entrega.
 
 Pendências abertas: [#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42)
-(zod) e [#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43)
-(`check()` no banco). Enquanto isso, não use dados reais — ver a seção LGPD de
-[`seguranca.md`](./seguranca.md).
+(zod), que é a que resolve a maior parte, e
+[#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43) (o `check()` já
+está no banco; falta o `400` com o nome do campo). Enquanto isso, não use dados
+reais — ver a seção LGPD de [`seguranca.md`](./seguranca.md).
 
 ## Limitação conhecida
 

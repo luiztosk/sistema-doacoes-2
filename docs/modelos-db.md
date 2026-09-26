@@ -16,7 +16,13 @@ Fecha a issue #21 e serve de base para a implementação do schema (issue #11).
   `docs/seguranca.md`). Nenhuma query pode ser feita sem esse filtro.
 - Booleanos: `integer(..., { mode: "boolean" })` no Drizzle.
 - Datas: `integer(..., { mode: "timestamp" })`.
-- Enums: `text` com check de valores no código (D1 não tem ENUM nativo).
+- Enums: `text` com `enum` do Drizzle, que **só tipa o TypeScript** e não emite
+  nada no DDL. Como o D1 não tem `ENUM` nativo, cada enum tem um `check()` no
+  banco com a mesma lista de valores — é o `check()` que faz o D1 recusar um
+  valor fora do domínio. Ver [Integridade no banco](#integridade-no-banco-check).
+- `uf` também é um enum (as 27 unidades federativas), não um `text` de 2 letras:
+  `text("uf", { length: 2 })` vira `text(2)`, que no SQLite é **afinidade de
+  tipo**, não constraint, e o D1 aceitaria `abc`.
 
 ## Tabelas de autenticação (Better Auth — não criar manualmente)
 
@@ -45,7 +51,7 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 | `complemento` | text | opcional |
 | `bairro` | text | ViaCEP |
 | `cidade` | text | ViaCEP |
-| `uf` | text(2) | ViaCEP |
+| `uf` | text | sigla de UF, enum das 27, opcional |
 | `tipo_imovel` | text | `ALUGADO` \| `PROPRIO`, opcional |
 | `valor_aluguel` | integer | centavos, opcional |
 | `estado_civil` | text | `SOLTEIRO` \| `CASADO` \| `DIVORCIADO` \| `VIUVO` \| `UNIAO_ESTAVEL`, opcional |
@@ -92,8 +98,11 @@ Eventos de doação. `coleta` = doação recebida de um doador;
 
 | Tabela | Colunas |
 |---|---|
-| `coleta` | `id` text PK, `organization_id` FK, `doador_id` FK → doador.id (opcional), `data_hora` timestamp |
-| `entrega` | `id` text PK, `organization_id` FK, `assistido_id` FK → assistido.id (opcional), `data_hora` timestamp |
+| `coleta` | `id` text PK, `organization_id` FK, `doador_id` FK → doador.id (**obrigatório**), `data_hora` timestamp |
+| `entrega` | `id` text PK, `organization_id` FK, `assistido_id` FK → assistido.id (**obrigatório**), `data_hora` timestamp |
+
+Sem doador ou sem assistido o evento não existe: uma coleta órfã não diz de quem
+foi a doação, e uma entrega órfã não diz para quem foi.
 
 ### `item`
 
@@ -107,9 +116,13 @@ numa coleta e termina numa entrega.
 | `nome_id` | text FK → nome_item.id | |
 | `status` | text | `AGUARDA_COLETA` → `EM_ESTOQUE` → `ENTREGUE` |
 | `coleta_id` | text FK → coleta.id | preenchido na coleta |
-| `doador_id` | text FK → doador.id | denormalizado da coleta, p/ consulta rápida |
 | `entrega_id` | text FK → entrega.id | preenchido na entrega |
-| `assistido_id` | text FK → assistido.id | denormalizado da entrega |
+
+Quem doou e quem recebeu **não** são colunas do `item`: saem da coleta e da
+entrega (`item → coleta → doador`, `item → entrega → assistido`). Antes havia
+uma cópia denormalizada de cada lado, e elas divergiam do evento de origem — nos
+dados de mock, 12 dos 44 itens discordavam sobre o destinatário. Para listar
+"itens recebidos por um assistido" a consulta faz o join pelas duas tabelas.
 
 Regra de negócio do status (vem do legado):
 
@@ -118,6 +131,106 @@ item criado (doação registrada)  → AGUARDA_COLETA
 coleta registrada                → EM_ESTOQUE
 entrega registrada               → ENTREGUE
 ```
+
+## Integridade no banco (CHECK)
+
+Regras que hoje só existiriam na aplicação estão como `check()` em
+`src/worker/db/schema.ts`, então valem para **qualquer escrita**: API, D1 Studio,
+`npm run db-seed` e scripts futuros. Faz parte da issue
+[#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43).
+
+O que o Drizzle emite e o que não emite importa para não confiar no schema duas
+vezes:
+
+| No schema | No DDL | No tipo |
+|---|---|---|
+| `text("status", { enum: [...] })` | nada | `z.enum([...])` no zod |
+| `text("uf", { length: 2 })` | `text(2)` — afinidade, não constraint | `z.string()` |
+| `check("nome", ...)` | `CONSTRAINT ... CHECK (...)`, avaliado a cada escrita | não aparece no zod |
+
+### O que está garantido
+
+| Constraint | Tabela | Regra |
+|---|---|---|
+| `*_nome_nao_vazio` | `assistido`, `doador`, `categoria_item`, `nome_item` | `length(trim(nome)) > 0` |
+| `*_cep_formato` | `assistido`, `doador` | 8 dígitos, sem hífen (é o que o ViaCEP devolve) |
+| `*_uf_valida` | `assistido`, `doador` | uma das 27 UFs |
+| `assistido_tipo_imovel_valido` | `assistido` | `ALUGADO` \| `PROPRIO` |
+| `assistido_estado_civil_valido` | `assistido` | um dos 5 estados civis |
+| `assistido_renda_nao_negativa` | `assistido` | `renda >= 0` |
+| `assistido_valor_aluguel_nao_negativo` | `assistido` | `valor_aluguel >= 0` |
+| `assistido_valor_aluguel_compatipo_imovel` | `assistido` | aluguel > 0 se `ALUGADO`, vazio se `PROPRIO` |
+| `assistido_*_nao_negativo` | `assistido` | contadores de pessoas ≥ 0 |
+| `assistido_*_valido` | `assistido` | um `check()` por coluna booleana, `IN (0, 1)` |
+| `item_status_valido` | `item` | um dos 3 status |
+| `item_entregue_exige_entrega` | `item` | `ENTREGUE` ⇒ `entrega_id` preenchido |
+| `item_entrega_exige_coleta` | `item` | `entrega_id` preenchido ⇒ `coleta_id` preenchido |
+
+Um `check()` por coluna booleana, e não um combinado, porque o nome da constraint
+aparece na mensagem do D1 (`CHECK constraint failed: assistido_doentes_valido`) e
+é ele que permite transformar erro de banco em erro de campo na API.
+
+`NULL` passa em qualquer `CHECK` — a expressão dá `NULL`, não `FALSE`, e o SQLite
+só reprova em `FALSE` — então uma coluna opcional não precisa de `IS NOT NULL AND`
+para "deixar passar o vazio".
+
+### Índices e `ON DELETE`
+
+As tabelas de domínio não tinham índice nenhum além da PK, e o SQLite não cria
+índice automático para FK. Hoje existem `nome_item_categoriaId_idx`,
+`coleta_doadorId_idx`, `entrega_assistidoId_idx`, `item_status_idx`,
+`item_coletaId_idx` e `item_entregaId_idx` — as colunas que filtram as telas de
+lista. Quando a [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13)
+entrar, o índice tem que começar por `organization_id`.
+
+As 5 FKs de domínio declaram `on delete: "no action"` explicitamente: excluir um
+doador que tem coleta estoura, e a API responde `409`. Está escrito assim de
+propósito, para não ficar implícito.
+
+O catálogo também tem unicidade: `categoria_item_nome_uniq` e
+`nome_item_nome_uniq`, os dois sobre `lower(nome)`, para que "arroz 5kg" e
+"Arroz 5kg" contem como o mesmo nome. Um `UNIQUE` na coluna seria case-sensitive
+(a collation padrão do SQLite é BINARY) e é constraint de tabela — que o SQLite
+só consegue adicionar reconstruindo a tabela. Um índice sobre `lower(nome)` é um
+`CREATE UNIQUE INDEX` e não mexe nos dados. ⚠️ O seed usa
+`onConflictDoNothing()`, então um CSV com nome repetido vira linha pulada em
+silêncio: o banco recusa, o seed não avisa.
+
+### Triggers: não adicionados
+
+Decisão registrada, não omissão. Os triggers foram avaliados e descartados:
+
+- **Transição de status** (`AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`) já é
+  validada em `validateItem` (`src/worker/api/resources.ts`), que responde `400`
+  com o campo e a transição inválida. Um trigger seria uma segunda cópia
+  independente da mesma regra, e o D1 levantaria a violação como erro de
+  constraint genérico — resposta pior do que a de hoje, para o cliente.
+- **As duas invariantes** (`item_entregue_exige_entrega` e
+  `item_entrega_exige_coleta`) já são `check()`, e as duas tabelas do banco estão
+  com zero violação. Um trigger cobriria o mesmo chão com um erro pior.
+- Uma das duas invariantes com dados sujos deixou de existir como possibilidade:
+  o destinatário vinha de uma coluna denormalizada no `item` que podia divergir
+  da entrega (12 dos 44 itens divergiam). Com a coluna removida, o destinatário
+  só tem uma fonte.
+
+Se um dia o `db-seed` ou um script escrever direto no D1 precisar da transição de
+status, o lugar certo é um trigger — e ele entra junto com um mapeamento de
+erro, não sozinho.
+
+### Pendente
+
+- **Valores no zod.** `createInsertSchema` (issue
+  [#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42)) infere de graça
+  o que o schema já expressa — enum, boolean, required. O que precisa de
+  `refinement` é o que o `check()` expressa e o tipo não: `>= 0`, texto não
+  vazio, formato de CEP. Regra que precisa estar documentada na API tem que
+  existir nos dois lados.
+- **Erro de banco → erro de API.** Hoje `handleApiError`
+  (`src/worker/api/errors.ts`) trata constraint, FK e unique com o mesmo regex e
+  responde `409 CONFLICT`. CHECK é outra coisa: o cliente mandou valor inválido, e
+  isso é `400`. A mensagem do D1 traz o nome da constraint, então dá para mapear
+  constraint → campo e responder `400 INVALID_VALUE` com o nome do campo,
+  deixando `409` só para FK e unique.
 
 ## Diagrama ER
 
@@ -195,6 +308,11 @@ erDiagram
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { organization } from "./auth-schema"; // gerado pelo Better Auth
 
+const UFS = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
+  "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
+] as const;
+
 const endereco = {
   cep: text("cep"),
   logradouro: text("logradouro"),
@@ -202,7 +320,7 @@ const endereco = {
   complemento: text("complemento"),
   bairro: text("bairro"),
   cidade: text("cidade"),
-  uf: text("uf", { length: 2 }),
+  uf: text("uf", { enum: UFS }),
 };
 
 export const assistido = sqliteTable("assistido", {
@@ -246,12 +364,13 @@ export const item = sqliteTable("item", {
     .default("AGUARDA_COLETA"),
   coletaId: text("coleta_id"),
   entregaId: text("entrega_id"),
-  doadorId: text("doador_id"),
-  assistidoId: text("assistido_id"),
 });
 
 // doador, categoria_item, nome_item, coleta, entrega: mesmo padrão.
 ```
+
+O esboço acima omite os `check()` e os `index()` das tabelas, que só existem
+depois da issue #43 — o arquivo real é `src/worker/db/schema.ts`.
 
 ## Migrations
 
@@ -273,3 +392,6 @@ wrangler d1 migrations apply sistema-doacoes-db --remote  # produção
    Better Auth (`member.role`: owner, admin, staff, viewer).
 5. **Sem migração de dados reais** — os dados do legado são fictícios (mock);
    o seed novo pode ser gerado a partir dos JSONs de `mock_data/` do repo antigo.
+6. **`item` sem `doador_id`/`assistido_id`** — o legado guardava uma cópia
+   denormalizada do doador e do assistido no item. Quem doou e quem recebeu saem
+   da coleta e da entrega; a cópia divergia do evento de origem.

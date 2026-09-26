@@ -1,58 +1,460 @@
 type: collection.insomnia.rest/5.0
 schema_version: "5.1"
-name: API
+name: Sistema Doações 2 - API
 meta:
   id: wrk_37836c6a5b4d4e82b3a1ad7b01a10c4c
   created: 1789571323055
-  modified: 1789571323055
-  description: ""
+  modified: 1790110800000
+  description: CRUD base da issue 14 com testes automatizados after-response.
 collection:
-  - url: "{{ _.BASE_URL }}/api/"
-    name: assistidos
+  - name: Assistidos
     meta:
-      id: req_0d2e9e119d7f40cfb50cb901f4b0a943
-      created: 1789571362396
-      modified: 1789573538693
-      isPrivate: false
-      description: ""
-      sortKey: -1789571362396
-    method: GET
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
-  - url: "{{ _.BASE_URL }}/api/2"
-    name: assistidos/id
+      id: fld_assistidos
+      sortKey: -5000
+      description: Fluxo CRUD de assistidos.
+    children:
+      - url: "{{ _.BASE_URL }}/api/assistidos"
+        name: 01 - Listar assistidos
+        meta:
+          id: req_assistidos_list
+          sortKey: -5050
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+      - url: "{{ _.BASE_URL }}/api/assistidos"
+        name: 02 - Criar assistido
+        meta:
+          id: req_assistidos_create
+          sortKey: -5040
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Assistido Insomnia","uf":"SP","renda":1200.5}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('servidor gera o id', () => insomnia.expect(body.data.id).to.be.a('string'));
+            insomnia.environment.set('ASSISTIDO_CREATED_ID', body.data.id);
+      - url: "{{ _.BASE_URL }}/api/assistidos/{{ _.ASSISTIDO_CREATED_ID }}"
+        name: 03 - Consultar assistido criado
+        meta:
+          id: req_assistidos_get
+          sortKey: -5030
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id corresponde ao criado', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ASSISTIDO_CREATED_ID')));
+      - url: "{{ _.BASE_URL }}/api/assistidos/{{ _.ASSISTIDO_CREATED_ID }}"
+        name: 04 - Atualizar assistido
+        meta:
+          id: req_assistidos_update
+          sortKey: -5020
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Assistido Insomnia Atualizado"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('nome foi atualizado', () => insomnia.expect(body.data.nome).to.eql('Assistido Insomnia Atualizado'));
+      - url: "{{ _.BASE_URL }}/api/assistidos/{{ _.ASSISTIDO_CREATED_ID }}"
+        name: 05 - Excluir assistido
+        meta:
+          id: req_assistidos_delete
+          sortKey: -5010
+        method: DELETE
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+
+  - name: Doadores
     meta:
-      id: req_8864bf9a659e454aa4e8763a87adc31e
-      created: 1789573547278
-      modified: 1789573565298
-      isPrivate: false
-      description: ""
-      sortKey: -1789571362346
-    method: GET
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
+      id: fld_doadores
+      sortKey: -4000
+      description: Fluxo CRUD de doadores.
+    children:
+      - url: "{{ _.BASE_URL }}/api/doadores"
+        name: 01 - Listar doadores
+        meta:
+          id: req_doadores_list
+          sortKey: -4050
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+      - url: "{{ _.BASE_URL }}/api/doadores"
+        name: 02 - Criar doador
+        meta:
+          id: req_doadores_create
+          sortKey: -4040
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Doador Insomnia","cidade":"São Paulo","uf":"SP"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.environment.set('DOADOR_CREATED_ID', body.data.id);
+      - url: "{{ _.BASE_URL }}/api/doadores/{{ _.DOADOR_CREATED_ID }}"
+        name: 03 - Consultar doador criado
+        meta:
+          id: req_doadores_get
+          sortKey: -4030
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id corresponde ao criado', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('DOADOR_CREATED_ID')));
+      - url: "{{ _.BASE_URL }}/api/doadores/{{ _.DOADOR_CREATED_ID }}"
+        name: 04 - Atualizar doador
+        meta:
+          id: req_doadores_update
+          sortKey: -4020
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"telefone":"11999999999"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('telefone foi atualizado', () => insomnia.expect(body.data.telefone).to.eql('11999999999'));
+      - url: "{{ _.BASE_URL }}/api/doadores/{{ _.DOADOR_CREATED_ID }}"
+        name: 05 - Excluir doador
+        meta:
+          id: req_doadores_delete
+          sortKey: -4010
+        method: DELETE
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+
+  - name: Coletas
+    meta:
+      id: fld_coletas
+      sortKey: -3000
+      description: Fluxo CRUD de coletas.
+    children:
+      - url: "{{ _.BASE_URL }}/api/coletas"
+        name: 01 - Listar coletas
+        meta:
+          id: req_coletas_list
+          sortKey: -3050
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+      - url: "{{ _.BASE_URL }}/api/coletas"
+        name: 02 - Criar coleta
+        meta:
+          id: req_coletas_create
+          sortKey: -3040
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"doadorId":"{{ _.DOADOR_SEED_ID }}","dataHora":"2026-09-22T21:00:00-03:00"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.environment.set('COLETA_CREATED_ID', body.data.id);
+      - url: "{{ _.BASE_URL }}/api/coletas/{{ _.COLETA_CREATED_ID }}"
+        name: 03 - Consultar coleta criada
+        meta:
+          id: req_coletas_get
+          sortKey: -3030
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id corresponde ao criado', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('COLETA_CREATED_ID')));
+      - url: "{{ _.BASE_URL }}/api/coletas/{{ _.COLETA_CREATED_ID }}"
+        name: 04 - Atualizar coleta
+        meta:
+          id: req_coletas_update
+          sortKey: -3020
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"dataHora":"2026-09-23T10:00:00-03:00"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('mantém o doador', () => insomnia.expect(body.data.doadorId).to.eql(insomnia.environment.get('DOADOR_SEED_ID')));
+      - url: "{{ _.BASE_URL }}/api/coletas/{{ _.COLETA_CREATED_ID }}"
+        name: 05 - Excluir coleta
+        meta:
+          id: req_coletas_delete
+          sortKey: -3010
+        method: DELETE
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+
+  - name: Entregas
+    meta:
+      id: fld_entregas
+      sortKey: -2000
+      description: Fluxo CRUD de entregas.
+    children:
+      - url: "{{ _.BASE_URL }}/api/entregas"
+        name: 01 - Listar entregas
+        meta:
+          id: req_entregas_list
+          sortKey: -2050
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+      - url: "{{ _.BASE_URL }}/api/entregas"
+        name: 02 - Criar entrega
+        meta:
+          id: req_entregas_create
+          sortKey: -2040
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"assistidoId":"{{ _.ASSISTIDO_SEED_ID }}","dataHora":"2026-09-22T21:00:00-03:00"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.environment.set('ENTREGA_CREATED_ID', body.data.id);
+      - url: "{{ _.BASE_URL }}/api/entregas/{{ _.ENTREGA_CREATED_ID }}"
+        name: 03 - Consultar entrega criada
+        meta:
+          id: req_entregas_get
+          sortKey: -2030
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id corresponde ao criado', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ENTREGA_CREATED_ID')));
+      - url: "{{ _.BASE_URL }}/api/entregas/{{ _.ENTREGA_CREATED_ID }}"
+        name: 04 - Atualizar entrega
+        meta:
+          id: req_entregas_update
+          sortKey: -2020
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"dataHora":"2026-09-24T10:00:00-03:00"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('mantém o assistido', () => insomnia.expect(body.data.assistidoId).to.eql(insomnia.environment.get('ASSISTIDO_SEED_ID')));
+      - url: "{{ _.BASE_URL }}/api/entregas/{{ _.ENTREGA_CREATED_ID }}"
+        name: 05 - Excluir entrega
+        meta:
+          id: req_entregas_delete
+          sortKey: -2010
+        method: DELETE
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+
+  - name: Itens e estoque
+    meta:
+      id: fld_itens
+      sortKey: -1000
+      description: CRUD de itens e transições válidas de estoque.
+    children:
+      - url: "{{ _.BASE_URL }}/api/itens"
+        name: 01 - Listar itens
+        meta:
+          id: req_itens_list
+          sortKey: -1060
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+      - url: "{{ _.BASE_URL }}/api/itens"
+        name: 02 - Criar item aguardando coleta
+        meta:
+          id: req_itens_create
+          sortKey: -1050
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nomeId":"{{ _.NOME_ITEM_SEED_ID }}","coletaId":"{{ _.COLETA_SEED_ID }}","doadorId":"{{ _.DOADOR_SEED_ID }}"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('inicia aguardando coleta', () => insomnia.expect(body.data.status).to.eql('AGUARDA_COLETA'));
+            insomnia.environment.set('ITEM_CREATED_ID', body.data.id);
+      - url: "{{ _.BASE_URL }}/api/itens/{{ _.ITEM_CREATED_ID }}"
+        name: 03 - Consultar item criado
+        meta:
+          id: req_itens_get
+          sortKey: -1040
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id corresponde ao criado', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ITEM_CREATED_ID')));
+      - url: "{{ _.BASE_URL }}/api/itens/{{ _.ITEM_CREATED_ID }}"
+        name: 04 - Mover item para estoque
+        meta:
+          id: req_itens_stock
+          sortKey: -1030
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"EM_ESTOQUE"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('item está em estoque', () => insomnia.expect(body.data.status).to.eql('EM_ESTOQUE'));
+      - url: "{{ _.BASE_URL }}/api/itens/{{ _.ITEM_CREATED_ID }}"
+        name: 05 - Entregar item
+        meta:
+          id: req_itens_deliver
+          sortKey: -1020
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"ENTREGUE","entregaId":"{{ _.ENTREGA_SEED_ID }}","assistidoId":"{{ _.ASSISTIDO_SEED_ID }}"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('item foi entregue', () => insomnia.expect(body.data.status).to.eql('ENTREGUE'));
+      - url: "{{ _.BASE_URL }}/api/itens/{{ _.ITEM_CREATED_ID }}"
+        name: 06 - Excluir item
+        meta:
+          id: req_itens_delete
+          sortKey: -1010
+        method: DELETE
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+
+  - name: Validações e erros
+    meta:
+      id: fld_errors
+      sortKey: -500
+      description: Casos negativos que não alteram os dados válidos.
+    children:
+      - url: "{{ _.BASE_URL }}/api/assistidos/inexistente"
+        name: 01 - Recurso inexistente
+        meta:
+          id: req_error_not_found
+          sortKey: -530
+        method: GET
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 404', () => insomnia.expect(insomnia.response.code).to.eql(404));
+            insomnia.test('erro padronizado', () => insomnia.expect(body.error.code).to.eql('NOT_FOUND'));
+      - url: "{{ _.BASE_URL }}/api/assistidos"
+        name: 02 - Bloquear organizationId do cliente
+        meta:
+          id: req_error_organization
+          sortKey: -520
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Tentativa inválida","organizationId":"org-2"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('campo protegido pelo servidor', () => insomnia.expect(body.error.code).to.eql('READ_ONLY_FIELD'));
+      - url: "{{ _.BASE_URL }}/api/itens/{{ _.ITEM_ENTREGUE_SEED_ID }}"
+        name: 03 - Bloquear regressão de status
+        meta:
+          id: req_error_status
+          sortKey: -510
+        method: PATCH
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"EM_ESTOQUE"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('transição inválida', () => insomnia.expect(body.error.code).to.eql('INVALID_STATUS_TRANSITION'));
 cookieJar:
   name: Default Jar
   meta:
     id: jar_423be8efaced917af3aeb3d330e159eae12bd62c
     created: 1789571323068
-    modified: 1789571323068
+    modified: 1790110800000
 environments:
   name: Base Environment
   meta:
     id: env_423be8efaced917af3aeb3d330e159eae12bd62c
     created: 1789571323065
-    modified: 1789571323065
+    modified: 1790110800000
     isPrivate: false
+  data:
+    BASE_URL: http://localhost:5173
+    ASSISTIDO_SEED_ID: "1"
+    DOADOR_SEED_ID: "1"
+    COLETA_SEED_ID: "1"
+    ENTREGA_SEED_ID: "1"
+    NOME_ITEM_SEED_ID: "1"
+    ITEM_ENTREGUE_SEED_ID: "4"

@@ -14,6 +14,7 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 - [Arquitetura e decisões técnicas](./docs/arquitetura.md) — stack, fluxo de deploy e migração do sistema legado
 - [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
 - [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
+- [API Hono](./docs/api.md) — endpoints CRUD, respostas, regras temporárias e testes no Insomnia
 - [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
 - [Fluxos de tela do sistema legado](./docs/fluxo-telas/README.md) — transcrição visual do vídeo, fluxos confirmados e adaptações para o PI II
 
@@ -39,17 +40,20 @@ npm run local-db-init
 npm run dev
 ```
 
-Pode acessar o app local em: [http://localhost:8787](http://localhost:8787).
+Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
 
 ## Testando a API:
 
-A forma mais simples é fazendo um GET com o curl:
+As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](./docs/api.md)).
+Depois de fazer login, envie o cookie de sessão:
 ```bash
-curl localhost:5173/api/
+curl localhost:5173/api/v1/assistidos \
+  -H "Cookie: better-auth.session_token=<seu-token>"
 ```
-> deve retornar um JSON com uma lista de assistido, no momento atual.
+> deve retornar `{ "data": [ ... ] }` com a lista de assistidos.
 
-Os demais testes estão na pasta `./insomnia`, basta importar o Environment e a Collection no seu Insomnia (Vault Local).
+Sem sessão, a resposta é `401`. Os demais testes estão na pasta `./insomnia`, basta
+importar o Environment e a Collection no seu Insomnia (Vault Local).
 
 ## Contribuindo com o projeto (membros do grupo)
 

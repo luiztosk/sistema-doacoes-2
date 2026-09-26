@@ -1,45 +1,27 @@
 import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
-import { drizzle } from 'drizzle-orm/d1';
-import { eq } from 'drizzle-orm';
-import { D1Database } from '@cloudflare/workers-types';
-// import { createAuthHandler } from "./auth";
+import { handleApiError } from "./api/errors";
+import { registerResources } from "./api/resources";
 import { auth } from "./auth";
+import { requireSession, sessionMiddleware } from "./session-middleware";
 
-import { assistido } from './db/schema';
-import { sessionMiddleware } from "./session-middleware";
-
-const app = new Hono<{ Bindings: Env }>();
-
-export type Env = {
-  prod_sistema_doacoes_2: D1Database;
-};
-
-app.use("/api/assistidos/*", sessionMiddleware, async (c, next) => {
-    const session = c.get("session");
-    if (!session) {
-        throw new HTTPException(401);
-    }
-    await next();
-});
-
-app.get("/api/assistidos", async (c) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const assistidos = await db.select().from(assistido).all();
-    return c.json({ assistidos });
-});
-
-app.get('/api/assistidos/:id', async (c) => {
-    const id = c.req.param('id')
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const result = await db.select().from(assistido).where(eq(assistido.id, id))
-    return c.json({ assistidos: result });
-})
+const app = new Hono<{
+	Variables: { session: typeof auth.$Infer.Session | null };
+}>();
 
 app.all("/api/auth/*", async (c) => {
-    // const handler = createAuthHandler(c.env);
-    // return handler(c.req.raw);
-    return auth.handler(c.req.raw);
+	return auth.handler(c.req.raw);
 });
+
+// Domain routes live under /api/v1 so this guard can never overlap /api/auth/*.
+app.use("/api/v1/*", sessionMiddleware, requireSession);
+
+const api = new Hono<{ Bindings: Env }>();
+registerResources(api);
+app.route("/api/v1", api);
+
+app.onError(handleApiError);
+app.notFound((c) =>
+	c.json({ error: { code: "NOT_FOUND", message: "Rota não encontrada." } }, 404),
+);
 
 export default app;

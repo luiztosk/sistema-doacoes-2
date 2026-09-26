@@ -6,9 +6,13 @@ import viteLogo from "/vite.svg";
 import cloudflareLogo from "@/react-app/assets/Cloudflare_Logo.svg";
 import honoLogo from "@/react-app/assets/hono.svg";
 
+type AssistidoEnvelope = { data: Record<string, unknown>[] };
+
 function TestQuery() {
 	const [count, setCount] = useState(0);
-	const [tableData, setTableData] = useState<any>(null);
+	const [tableData, setTableData] = useState<Record<string, unknown>[] | null>(
+		null,
+	);
 	const [idValue, setIdValue] = useState("1");
 
 	return (
@@ -74,16 +78,16 @@ function TestQuery() {
 				</aside>
 			)}
 			<div className="card">
-				<button
-					onClick={() => {
-						fetch("/api/assistidos")
-							.then((res) => res.json() as Promise<any>)
-							.then((data) => setTableData(data.assistidos || data));
-					}}
-					aria-label="fetch table"
-				>
-					Fetch table from /api/
-				</button>
+					<button
+						onClick={() => {
+						fetch("/api/v1/assistidos")
+							.then((res) => res.json() as Promise<AssistidoEnvelope>)
+							.then((data) => setTableData(data.data));
+						}}
+						aria-label="fetch table"
+					>
+						Fetch table from /api/v1/assistidos
+					</button>
 				<div style={{ marginTop: 8 }}>
 					<select
 						value={idValue}
@@ -98,14 +102,17 @@ function TestQuery() {
 					</select>
 					<button
 						onClick={() => {
-							fetch(`/api/assistidos/${idValue}`)
-								.then((res) => res.json() as Promise<any>)
-								.then((data) => setTableData(data.assistidos || data));
+							fetch(`/api/v1/assistidos/${idValue}`)
+								.then(
+									(res) =>
+										res.json() as Promise<{ data: Record<string, unknown> }>,
+								)
+								.then((data) => setTableData([data.data]));
 						}}
 						aria-label="fetch by id"
 						style={{ marginLeft: 8 }}
 					>
-						Fetch /api/{idValue}
+						Fetch /api/v1/assistidos/{idValue}
 					</button>
 				</div>
 			</div>

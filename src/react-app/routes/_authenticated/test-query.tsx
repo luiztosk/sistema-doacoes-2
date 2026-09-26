@@ -1,19 +1,18 @@
-// src/App.tsx
-
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { createFileRoute } from "@tanstack/react-router";
+
+import reactLogo from "@/react-app/assets/react.svg";
 import viteLogo from "/vite.svg";
-import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
-import honoLogo from "./assets/hono.svg";
-import "./App.css";
+import cloudflareLogo from "@/react-app/assets/Cloudflare_Logo.svg";
+import honoLogo from "@/react-app/assets/hono.svg";
 
-type LegacyAssistidosResponse = {
-	assistidos: Record<string, unknown>[];
-};
+type AssistidoEnvelope = { data: Record<string, unknown>[] };
 
-function App() {
+function TestQuery() {
 	const [count, setCount] = useState(0);
-	const [tableData, setTableData] = useState<unknown>(null);
+	const [tableData, setTableData] = useState<Record<string, unknown>[] | null>(
+		null,
+	);
 	const [idValue, setIdValue] = useState("1");
 
 	return (
@@ -44,17 +43,17 @@ function App() {
 				>
 					count is {count}
 				</button>
-			<p>
-				sistema para cadastro de Assistidos e controle de doações em
-				instituições de caridade.
-			</p>
-			<p>
-				se tudo der certo este será um build oculto visível somente
-				no branch stage e pelo link id
-			</p>
-			<p>
-				Edit <code>src/App.tsx</code> and save to test HMR
-			</p>
+				<p>
+					sistema para cadastro de Assistidos e controle de doações em
+					instituições de caridade.
+				</p>
+				<p>
+					se tudo der certo este será um build oculto visível somente
+					no branch stage e pelo link id
+				</p>
+				<p>
+					Edit <code>src/react-app/routes/test-query.tsx</code> and save to test HMR
+				</p>
 			</div>
 			{tableData && (
 				<aside
@@ -79,16 +78,16 @@ function App() {
 				</aside>
 			)}
 			<div className="card">
-				<button
-					onClick={() => {
-						fetch("/api/")
-							.then((res) => res.json() as Promise<LegacyAssistidosResponse>)
-							.then((data) => setTableData(data.assistidos));
-					}}
-					aria-label="fetch table"
-				>
-					Fetch table from /api/
-				</button>
+					<button
+						onClick={() => {
+						fetch("/api/v1/assistidos")
+							.then((res) => res.json() as Promise<AssistidoEnvelope>)
+							.then((data) => setTableData(data.data));
+						}}
+						aria-label="fetch table"
+					>
+						Fetch table from /api/v1/assistidos
+					</button>
 				<div style={{ marginTop: 8 }}>
 					<select
 						value={idValue}
@@ -103,16 +102,17 @@ function App() {
 					</select>
 					<button
 						onClick={() => {
-							fetch(`/api/${idValue}`)
+							fetch(`/api/v1/assistidos/${idValue}`)
 								.then(
-									(res) => res.json() as Promise<LegacyAssistidosResponse>,
+									(res) =>
+										res.json() as Promise<{ data: Record<string, unknown> }>,
 								)
-								.then((data) => setTableData(data.assistidos));
+								.then((data) => setTableData([data.data]));
 						}}
 						aria-label="fetch by id"
 						style={{ marginLeft: 8 }}
 					>
-						Fetch /api/{idValue}
+						Fetch /api/v1/assistidos/{idValue}
 					</button>
 				</div>
 			</div>
@@ -121,4 +121,6 @@ function App() {
 	);
 }
 
-export default App;
+export const Route = createFileRoute('/_authenticated/test-query')({
+	component: TestQuery,
+});

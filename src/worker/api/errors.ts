@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 
 export type ApiErrorStatus = 400 | 404 | 409 | 415;
 
@@ -31,6 +32,12 @@ export function handleApiError(error: Error, c: Context) {
 			{ error: { code: error.code, message: error.message } },
 			error.status,
 		);
+	}
+
+	// The session guard throws Hono's own HTTPException, which already carries
+	// the right status; let it through untouched.
+	if (error instanceof HTTPException) {
+		return error.getResponse();
 	}
 
 	if (

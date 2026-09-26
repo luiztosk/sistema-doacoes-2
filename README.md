@@ -44,16 +44,16 @@ Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
 
 ## Testando a API:
 
-A forma mais simples é fazendo um GET com o curl:
+As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](./docs/api.md)).
+Depois de fazer login, envie o cookie de sessão:
 ```bash
-curl http://localhost:5173/api/assistidos
+curl localhost:5173/api/v1/assistidos \
+  -H "Cookie: better-auth.session_token=<seu-token>"
 ```
-> deve retornar um JSON com a lista de assistidos em `data`.
+> deve retornar `{ "data": [ ... ] }` com a lista de assistidos.
 
-Os fluxos CRUD e seus testes estão na pasta `./insomnia`. Importe a Collection
-no Insomnia e execute os requests na ordem pelo Collection Runner. A coleção já
-inclui o ambiente local e assertions `afterResponse`. Consulte
-[`docs/api.md`](./docs/api.md) para os endpoints e limitações atuais.
+Sem sessão, a resposta é `401`. Os demais testes estão na pasta `./insomnia`, basta
+importar o Environment e a Collection no seu Insomnia (Vault Local).
 
 ## Contribuindo com o projeto (membros do grupo)
 

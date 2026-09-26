@@ -1,15 +1,9 @@
+import { getTableColumns } from "drizzle-orm";
+import type { AnySQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Context } from "hono";
 import { ApiError } from "./errors";
 
 type JsonObject = Record<string, unknown>;
-type ValueParser = (value: unknown, field: string) => unknown;
-
-export type FieldRule = {
-	parse: ValueParser;
-	requiredOnCreate?: boolean;
-};
-
-export type FieldRules = Record<string, FieldRule>;
 
 function isJsonObject(value: unknown): value is JsonObject {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -43,26 +37,103 @@ export async function readJsonObject(c: Context): Promise<JsonObject> {
 	return body;
 }
 
-export function parsePayload(
+/** The parts of a drizzle column this module needs. */
+type ColumnMeta = {
+	columnType: string;
+	notNull: boolean;
+	primary: boolean;
+	hasDefault: boolean;
+	enumValues?: readonly string[];
+};
+
+function columnsOf(table: AnySQLiteTable): Record<string, ColumnMeta> {
+	return getTableColumns(table) as unknown as Record<string, ColumnMeta>;
+}
+
+/**
+ * Turns a JSON value into the JS value drizzle expects for that column, using the
+ * column's own metadata. This is deserialization, not validation: whether a value
+ * is *acceptable* (minimum length, ranges, letter case) is deliberately not
+ * checked here. That belongs to zod through drizzle-zod's `createInsertSchema`,
+ * and the durable half to `check()` constraints in the database.
+ */
+function deserialize(
+	column: ColumnMeta,
+	value: unknown,
+	field: string,
+): unknown {
+	const invalid = (expected: string) =>
+		new ApiError(
+			400,
+			"INVALID_VALUE",
+			`O campo '${field}' deve ser ${expected}.`,
+		);
+
+	switch (column.columnType) {
+		// Same conversion the seed script applies to `dataHora`.
+		case "SQLiteTimestamp":
+		case "SQLiteDate":
+		case "SQLiteDateTime": {
+			const date = new Date(value as string);
+			if (Number.isNaN(date.getTime())) {
+				throw invalid("uma data válida");
+			}
+			return date;
+		}
+
+		case "SQLiteBoolean": {
+			if (typeof value !== "boolean") {
+				throw invalid("booleano");
+			}
+			return value;
+		}
+
+		case "SQLiteInteger":
+		case "SQLiteReal": {
+			if (typeof value !== "number" || !Number.isFinite(value)) {
+				throw invalid("um número");
+			}
+			return value;
+		}
+
+		default: {
+			if (typeof value !== "string") {
+				throw invalid("um texto");
+			}
+			if (column.enumValues && !column.enumValues.includes(value)) {
+				throw invalid(`um destes valores: ${column.enumValues.join(", ")}`);
+			}
+			return value;
+		}
+	}
+}
+
+export function parseBody(
 	body: JsonObject,
-	rules: FieldRules,
+	table: AnySQLiteTable,
 	mode: "create" | "update",
 ): JsonObject {
-	const reservedFields = ["id", "organizationId"];
-	const receivedFields = Object.keys(body);
-	const readOnlyField = receivedFields.find((field) =>
-		reservedFields.includes(field),
-	);
-
-	if (readOnlyField) {
+	if ("id" in body) {
 		throw new ApiError(
 			400,
 			"READ_ONLY_FIELD",
-			`O campo '${readOnlyField}' é definido pelo servidor.`,
+			"O campo 'id' é definido pelo servidor.",
 		);
 	}
 
-	const unknownField = receivedFields.find((field) => !(field in rules));
+	if (mode === "update" && Object.keys(body).length === 0) {
+		throw new ApiError(
+			400,
+			"EMPTY_UPDATE",
+			"Informe ao menos um campo para atualizar.",
+		);
+	}
+
+	const columns = columnsOf(table);
+
+	const unknownField = Object.keys(body).find(
+		(field) => !(field in columns),
+	);
 	if (unknownField) {
 		throw new ApiError(
 			400,
@@ -71,142 +142,29 @@ export function parsePayload(
 		);
 	}
 
-	if (mode === "update" && receivedFields.length === 0) {
-		throw new ApiError(
-			400,
-			"EMPTY_UPDATE",
-			"Informe ao menos um campo para atualizar.",
+	// A column is expected on create when the database will not supply it: the
+	// Worker generates the primary key, and anything with a default is optional.
+	if (mode === "create") {
+		const missing = Object.entries(columns).find(
+			([field, column]) =>
+				!column.primary &&
+				!column.hasDefault &&
+				column.notNull &&
+				body[field] == null,
 		);
+		if (missing) {
+			throw new ApiError(
+				400,
+				"REQUIRED_FIELD",
+				`O campo '${missing[0]}' é obrigatório.`,
+			);
+		}
 	}
 
 	const parsed: JsonObject = {};
-	for (const [field, rule] of Object.entries(rules)) {
-		const value = body[field];
-		if (value === undefined) {
-			if (mode === "create" && rule.requiredOnCreate) {
-				throw new ApiError(
-					400,
-					"REQUIRED_FIELD",
-					`O campo '${field}' é obrigatório.`,
-				);
-			}
-			continue;
-		}
-
-		parsed[field] = rule.parse(value, field);
+	for (const [field, value] of Object.entries(body)) {
+		parsed[field] = value === null ? null : deserialize(columns[field], value, field);
 	}
 
 	return parsed;
 }
-
-export function required(parse: ValueParser): FieldRule {
-	return { parse, requiredOnCreate: true };
-}
-
-export function optional(parse: ValueParser): FieldRule {
-	return { parse };
-}
-
-export function nullable(parse: ValueParser): ValueParser {
-	return (value, field) => (value === null ? null : parse(value, field));
-}
-
-export const nonEmptyString: ValueParser = (value, field) => {
-	if (typeof value !== "string" || value.trim().length === 0) {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser um texto não vazio.`,
-		);
-	}
-	return value.trim();
-};
-
-export const stringValue: ValueParser = (value, field) => {
-	if (typeof value !== "string") {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser um texto.`,
-		);
-	}
-	return value;
-};
-
-export const booleanValue: ValueParser = (value, field) => {
-	if (typeof value !== "boolean") {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser booleano.`,
-		);
-	}
-	return value;
-};
-
-export const nonNegativeNumber: ValueParser = (value, field) => {
-	if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser um número maior ou igual a zero.`,
-		);
-	}
-	return value;
-};
-
-export const nonNegativeInteger: ValueParser = (value, field) => {
-	const parsed = nonNegativeNumber(value, field);
-	if (!Number.isInteger(parsed)) {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser um número inteiro.`,
-		);
-	}
-	return parsed;
-};
-
-export const isoDate: ValueParser = (value, field) => {
-	if (typeof value !== "string") {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser uma data ISO 8601.`,
-		);
-	}
-
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ser uma data ISO 8601 válida.`,
-		);
-	}
-	return date;
-};
-
-export function oneOf<const T extends readonly string[]>(values: T): ValueParser {
-	return (value, field) => {
-		if (typeof value !== "string" || !values.includes(value)) {
-			throw new ApiError(
-				400,
-				"INVALID_FIELD",
-				`O campo '${field}' deve ser um destes valores: ${values.join(", ")}.`,
-			);
-		}
-		return value as T[number];
-	};
-}
-
-export const brazilianState: ValueParser = (value, field) => {
-	if (typeof value !== "string" || !/^[A-Za-z]{2}$/.test(value)) {
-		throw new ApiError(
-			400,
-			"INVALID_FIELD",
-			`O campo '${field}' deve ter uma sigla de UF com duas letras.`,
-		);
-	}
-	return value.toUpperCase();
-};

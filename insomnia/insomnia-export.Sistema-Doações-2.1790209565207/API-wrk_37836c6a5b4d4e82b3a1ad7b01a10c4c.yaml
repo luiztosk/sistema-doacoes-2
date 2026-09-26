@@ -1,0 +1,1142 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: API
+meta:
+  id: wrk_37836c6a5b4d4e82b3a1ad7b01a10c4c
+  created: 1789571323055
+  modified: 1790210000000
+  description: CRUD dos recursos de dominio em /api/v1. Todos os requests enviam o cookie de sessao, exceto o caso de 401.
+collection:
+  - name: 'Assistidos'
+    meta:
+      id: fld_assistidos
+      sortKey: -9550
+      description: 'Fluxo CRUD de assistidos.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '01 - Listar assistidos'
+        meta:
+          id: req_assistidos_list
+          sortKey: -9990
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '02 - Criar assistido'
+        meta:
+          id: req_assistidos_create
+          sortKey: -9980
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Assistido de teste Insomnia","uf":"sp","renda":1200.5,"cestaBasica":true}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('nome salvo', () => insomnia.expect(body.data.nome).to.eql('Assistido de teste Insomnia'));
+            insomnia.test('uf guardada sem normalizar', () => insomnia.expect(body.data.uf).to.eql('sp'));
+            insomnia.test('renda numerica', () => insomnia.expect(body.data.renda).to.eql(1200.5));
+            insomnia.test('id gerado pelo servidor', () => insomnia.expect(body.data.id).to.be.a('string'));
+            insomnia.environment.set('ASSISTIDO_CREATED_ID', body.data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/{{ _.ASSISTIDO_CREATED_ID }}'
+        name: '03 - Consultar assistido criado'
+        meta:
+          id: req_assistidos_get
+          sortKey: -9970
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id confere', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ASSISTIDO_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/{{ _.ASSISTIDO_CREATED_ID }}'
+        name: '04 - Atualizar assistido'
+        meta:
+          id: req_assistidos_patch
+          sortKey: -9960
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"cidade":"Campinas"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('cidade atualizada', () => insomnia.expect(body.data.cidade).to.eql('Campinas'));
+            insomnia.test('nome preservado', () => insomnia.expect(body.data.nome).to.eql('Assistido de teste Insomnia'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Doadores'
+    meta:
+      id: fld_doadores
+      sortKey: -9540
+      description: 'Fluxo CRUD de doadores.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/doadores'
+        name: '01 - Listar doadores'
+        meta:
+          id: req_doadores_list
+          sortKey: -9950
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/doadores'
+        name: '02 - Criar doador'
+        meta:
+          id: req_doadores_create
+          sortKey: -9940
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Doador de teste Insomnia","email":"doador.insomnia@email.com"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('nome salvo', () => insomnia.expect(body.data.nome).to.eql('Doador de teste Insomnia'));
+            insomnia.environment.set('DOADOR_CREATED_ID', body.data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/doadores/{{ _.DOADOR_CREATED_ID }}'
+        name: '03 - Consultar doador criado'
+        meta:
+          id: req_doadores_get
+          sortKey: -9930
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id confere', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('DOADOR_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/doadores/{{ _.DOADOR_CREATED_ID }}'
+        name: '04 - Atualizar doador'
+        meta:
+          id: req_doadores_patch
+          sortKey: -9920
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"telefone":"(11) 4002-8922"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('telefone atualizado', () => insomnia.expect(body.data.telefone).to.eql('(11) 4002-8922'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Coletas'
+    meta:
+      id: fld_coletas
+      sortKey: -9530
+      description: 'Fluxo CRUD de coletas.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/coletas'
+        name: '01 - Listar coletas'
+        meta:
+          id: req_coletas_list
+          sortKey: -9910
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas'
+        name: '02 - Criar coleta vinculada a um doador'
+        meta:
+          id: req_coletas_create
+          sortKey: -9900
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"doadorId":"{{ _.DOADOR_CREATED_ID }}","dataHora":"2026-03-10T14:00:00.000Z"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('doador vinculado', () => insomnia.expect(body.data.doadorId).to.eql(insomnia.environment.get('DOADOR_CREATED_ID')));
+            insomnia.environment.set('COLETA_CREATED_ID', body.data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas/{{ _.COLETA_CREATED_ID }}'
+        name: '03 - Consultar coleta criada'
+        meta:
+          id: req_coletas_get
+          sortKey: -9890
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id confere', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('COLETA_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas/{{ _.COLETA_CREATED_ID }}'
+        name: '04 - Atualizar coleta'
+        meta:
+          id: req_coletas_patch
+          sortKey: -9880
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"dataHora":"2026-03-11T09:30:00.000Z"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('data atualizada', () => insomnia.expect(body.data.dataHora).to.not.be.null);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Entregas'
+    meta:
+      id: fld_entregas
+      sortKey: -9520
+      description: 'Fluxo CRUD de entregas.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/entregas'
+        name: '01 - Listar entregas'
+        meta:
+          id: req_entregas_list
+          sortKey: -9870
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/entregas'
+        name: '02 - Criar entrega vinculada a um assistido'
+        meta:
+          id: req_entregas_create
+          sortKey: -9860
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"assistidoId":"{{ _.ASSISTIDO_CREATED_ID }}","dataHora":"2026-03-12T16:00:00.000Z"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('assistido vinculado', () => insomnia.expect(body.data.assistidoId).to.eql(insomnia.environment.get('ASSISTIDO_CREATED_ID')));
+            insomnia.environment.set('ENTREGA_CREATED_ID', body.data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/entregas/{{ _.ENTREGA_CREATED_ID }}'
+        name: '03 - Consultar entrega criada'
+        meta:
+          id: req_entregas_get
+          sortKey: -9850
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id confere', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ENTREGA_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/entregas/{{ _.ENTREGA_CREATED_ID }}'
+        name: '04 - Atualizar entrega'
+        meta:
+          id: req_entregas_patch
+          sortKey: -9840
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"dataHora":"2026-03-13T10:00:00.000Z"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('data atualizada', () => insomnia.expect(body.data.dataHora).to.not.be.null);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Itens e estoque'
+    meta:
+      id: fld_itens
+      sortKey: -9510
+      description: 'Fluxo de status AGUARDA_COLETA -> EM_ESTOQUE -> ENTREGUE.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/itens'
+        name: '01 - Listar itens'
+        meta:
+          id: req_itens_list
+          sortKey: -9830
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('retorna uma lista', () => insomnia.expect(body.data).to.be.an('array'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens'
+        name: '02 - Criar item aguardando coleta'
+        meta:
+          id: req_itens_create
+          sortKey: -9820
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nomeId":"1","coletaId":"{{ _.COLETA_CREATED_ID }}"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('status inicial', () => insomnia.expect(body.data.status).to.eql('AGUARDA_COLETA'));
+            insomnia.environment.set('ITEM_CREATED_ID', body.data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_CREATED_ID }}'
+        name: '03 - Consultar item criado'
+        meta:
+          id: req_itens_get
+          sortKey: -9810
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('id confere', () => insomnia.expect(body.data.id).to.eql(insomnia.environment.get('ITEM_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_CREATED_ID }}'
+        name: '04 - Mover item para estoque'
+        meta:
+          id: req_itens_estoque
+          sortKey: -9800
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"EM_ESTOQUE"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('status movido', () => insomnia.expect(body.data.status).to.eql('EM_ESTOQUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_CREATED_ID }}'
+        name: '05 - Entregar item'
+        meta:
+          id: req_itens_entregar
+          sortKey: -9790
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"ENTREGUE","entregaId":"{{ _.ENTREGA_CREATED_ID }}","assistidoId":"{{ _.ASSISTIDO_CREATED_ID }}"}'
+        scripts:
+          afterResponse: |
+            const body = insomnia.response.json();
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('status entregue', () => insomnia.expect(body.data.status).to.eql('ENTREGUE'));
+            insomnia.test('entrega vinculada', () => insomnia.expect(body.data.entregaId).to.eql(insomnia.environment.get('ENTREGA_CREATED_ID')));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_CREATED_ID }}'
+        name: '06 - Recusar pular etapa do fluxo'
+        meta:
+          id: req_itens_pular_etapa
+          sortKey: -9780
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"AGUARDA_COLETA"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('transicao recusada', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_STATUS_TRANSITION'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_DEFAULT_ID }}'
+        name: '07 - Mover item de teste para estoque'
+        meta:
+          id: req_entrega_prep
+          sortKey: -9770
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"EM_ESTOQUE"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('status movido', () => insomnia.expect(insomnia.response.json().data.status).to.eql('EM_ESTOQUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_DEFAULT_ID }}'
+        name: '08 - Recusar entrega sem entregaId e assistidoId'
+        meta:
+          id: req_entrega_incompleta
+          sortKey: -9760
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"status":"ENTREGUE"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo DELIVERY_REQUIRED', () => insomnia.expect(insomnia.response.json().error.code).to.eql('DELIVERY_REQUIRED'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Validações e erros'
+    meta:
+      id: fld_erros
+      sortKey: -9500
+      description: 'Casos negativos de autenticação, validação e referência.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '01 - Sem sessão responde 401'
+        meta:
+          id: req_erro_sem_sessao
+          sortKey: -9750
+        method: GET
+        scripts:
+          afterResponse: |
+            insomnia.test('status 401', () => insomnia.expect(insomnia.response.code).to.eql(401));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/nao-existe'
+        name: '02 - Recusa id inexistente'
+        meta:
+          id: req_erro_inexistente
+          sortKey: -9740
+        method: GET
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 404', () => insomnia.expect(insomnia.response.code).to.eql(404));
+            insomnia.test('codigo NOT_FOUND', () => insomnia.expect(insomnia.response.json().error.code).to.eql('NOT_FOUND'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '03 - Recusa campo desconhecido'
+        meta:
+          id: req_erro_campo_desconhecido
+          sortKey: -9730
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","campoInexistente":1}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo UNKNOWN_FIELD', () => insomnia.expect(insomnia.response.json().error.code).to.eql('UNKNOWN_FIELD'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '04 - Recusa id enviado pelo cliente'
+        meta:
+          id: req_erro_id_cliente
+          sortKey: -9720
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"id":"tentativa","nome":"Teste"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo READ_ONLY_FIELD', () => insomnia.expect(insomnia.response.json().error.code).to.eql('READ_ONLY_FIELD'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '05 - Recusa campo obrigatorio ausente'
+        meta:
+          id: req_erro_obrigatorio
+          sortKey: -9710
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"cidade":"Campinas"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo REQUIRED_FIELD', () => insomnia.expect(insomnia.response.json().error.code).to.eql('REQUIRED_FIELD'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas'
+        name: '06 - Recusa referencia inexistente'
+        meta:
+          id: req_erro_referencia
+          sortKey: -9700
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"doadorId":"nao-existe"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_REFERENCE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_REFERENCE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens'
+        name: '07 - Recusa item com status invalido na criacao'
+        meta:
+          id: req_erro_status_criacao
+          sortKey: -9690
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nomeId":"1","status":"ENTREGUE"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_STATUS_TRANSITION', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_STATUS_TRANSITION'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/{{ _.ASSISTIDO_CREATED_ID }}'
+        name: '08 - Recusa atualizacao vazia'
+        meta:
+          id: req_erro_patch_vazio
+          sortKey: -9680
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo EMPTY_UPDATE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('EMPTY_UPDATE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens'
+        name: '09 - Recusa valor fora do enum'
+        meta:
+          id: req_erro_enum
+          sortKey: -9670
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nomeId":"1","status":"ARQUIVADO"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas'
+        name: '10 - Recusa data invalida'
+        meta:
+          id: req_erro_data
+          sortKey: -9660
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"doadorId":"{{ _.DOADOR_CREATED_ID }}","dataHora":"nao-e-uma-data"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '11 - Recusa tipo errado para coluna numerica'
+        meta:
+          id: req_erro_tipo
+          sortKey: -9650
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","renda":"abc"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '12 - Recusa booleano como texto'
+        meta:
+          id: req_erro_boolean
+          sortKey: -9640
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","cestaBasica":"sim"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '13 - Recusa nome obrigatorio nulo'
+        meta:
+          id: req_erro_nulo
+          sortKey: -9630
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":null}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo REQUIRED_FIELD', () => insomnia.expect(insomnia.response.json().error.code).to.eql('REQUIRED_FIELD'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens'
+        name: '14 - Aceita item sem status, usando o default do banco'
+        meta:
+          id: req_item_default
+          sortKey: -9620
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nomeId":"1"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('default do schema', () => insomnia.expect(insomnia.response.json().data.status).to.eql('AGUARDA_COLETA'));
+            insomnia.environment.set('ITEM_DEFAULT_ID', insomnia.response.json().data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 'Exclusão'
+    meta:
+      id: fld_exclusao
+      sortKey: -9490
+      description: 'Executar por último: apaga os registros criados pelos fluxos anteriores, na ordem inversa das dependências.'
+    children:
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_DEFAULT_ID }}'
+        name: '01 - Excluir item com default'
+        meta:
+          id: req_delete_item_default
+          sortKey: -9610
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/itens/{{ _.ITEM_CREATED_ID }}'
+        name: '02 - Excluir item'
+        meta:
+          id: req_delete_item
+          sortKey: -9600
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/entregas/{{ _.ENTREGA_CREATED_ID }}'
+        name: '03 - Excluir entrega'
+        meta:
+          id: req_delete_entrega
+          sortKey: -9590
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/coletas/{{ _.COLETA_CREATED_ID }}'
+        name: '04 - Excluir coleta'
+        meta:
+          id: req_delete_coleta
+          sortKey: -9580
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/doadores/{{ _.DOADOR_CREATED_ID }}'
+        name: '05 - Excluir doador'
+        meta:
+          id: req_delete_doador
+          sortKey: -9570
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/{{ _.ASSISTIDO_CREATED_ID }}'
+        name: '06 - Excluir assistido'
+        meta:
+          id: req_delete_assistido
+          sortKey: -9560
+        method: DELETE
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_423be8efaced917af3aeb3d330e159eae12bd62c
+    created: 1789571323068
+    modified: 1789571323068
+environments:
+  name: Base Environment
+  meta:
+    id: env_423be8efaced917af3aeb3d330e159eae12bd62c
+    created: 1789571323065
+    modified: 1789571323065
+    isPrivate: false
+  data:
+    BASE_URL: http://localhost:5173

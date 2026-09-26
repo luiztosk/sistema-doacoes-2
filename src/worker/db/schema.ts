@@ -1,12 +1,12 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
-import { organization } from "./auth-schema";
+// import { organization } from "./auth-schema";
 export * from "./auth-schema";
 
 export const assistido = sqliteTable("assistido", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   nome: text("nome").notNull(),
   telefone: text("telefone"),
   email: text("email"),
@@ -38,9 +38,9 @@ export const assistido = sqliteTable("assistido", {
 
 export const doador = sqliteTable("doador", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   nome: text("nome").notNull(),
   telefone: text("telefone"),
   email: text("email"),
@@ -55,17 +55,17 @@ export const doador = sqliteTable("doador", {
 
 export const categoriaItem = sqliteTable("categoria_item", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   nome: text("nome").notNull(),
 });
 
 export const nomeItem = sqliteTable("nome_item", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   categoriaId: text("categoria_id")
     .notNull()
     .references(() => categoriaItem.id),
@@ -74,27 +74,27 @@ export const nomeItem = sqliteTable("nome_item", {
 
 export const coleta = sqliteTable("coleta", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   doadorId: text("doador_id").references(() => doador.id),
   dataHora: integer("data_hora", { mode: "timestamp" }),
 });
 
 export const entrega = sqliteTable("entrega", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   assistidoId: text("assistido_id").references(() => assistido.id),
   dataHora: integer("data_hora", { mode: "timestamp" }),
 });
 
 export const item = sqliteTable("item", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
+  // organizationId: text("organization_id")
+  //   .notNull()
+  //   .references(() => organization.id),
   nomeId: text("nome_id").notNull().references(() => nomeItem.id),
   status: text("status", {
     enum: ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"],

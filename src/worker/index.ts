@@ -1,5 +1,3 @@
-import { and, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
 import { registerResources } from "./api/resources";

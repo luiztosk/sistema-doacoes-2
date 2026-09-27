@@ -48,13 +48,13 @@ collection:
           value: application/json
         body:
           mimeType: application/json
-          text: '{"nome":"Assistido de teste Insomnia","uf":"sp","renda":1200.5,"cestaBasica":true}'
+          text: '{"nome":"Assistido de teste Insomnia","uf":"SP","renda":1200.5,"cestaBasica":true}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
             insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
             insomnia.test('nome salvo', () => insomnia.expect(body.data.nome).to.eql('Assistido de teste Insomnia'));
-            insomnia.test('uf guardada sem normalizar', () => insomnia.expect(body.data.uf).to.eql('sp'));
+            insomnia.test('uf guardada no enum do schema', () => insomnia.expect(body.data.uf).to.eql('SP'));
             insomnia.test('renda numerica', () => insomnia.expect(body.data.renda).to.eql(1200.5));
             insomnia.test('id gerado pelo servidor', () => insomnia.expect(body.data.id).to.be.a('string'));
             insomnia.environment.set('ASSISTIDO_CREATED_ID', body.data.id);
@@ -991,6 +991,139 @@ collection:
             insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
             insomnia.test('default do schema', () => insomnia.expect(insomnia.response.json().data.status).to.eql('AGUARDA_COLETA'));
             insomnia.environment.set('ITEM_DEFAULT_ID', insomnia.response.json().data.id);
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '15 - Recusa UF fora do enum, mesmo em minuscula'
+        meta:
+          id: req_erro_uf
+          sortKey: -9610
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","uf":"sp"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+            insomnia.test('campo na mensagem', () => insomnia.expect(insomnia.response.json().error.message).to.eql("Field 'uf' must be one of: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO."));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '16 - Recusa nome so com espacos'
+        meta:
+          id: req_erro_nome_branco
+          sortKey: -9600
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"   "}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+            insomnia.test('campo na mensagem', () => insomnia.expect(insomnia.response.json().error.message).to.eql("Field 'nome' cannot be empty or only whitespace."));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '17 - Recusa renda negativa'
+        meta:
+          id: req_erro_renda
+          sortKey: -9590
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","renda":-500}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+            insomnia.test('campo na mensagem', () => insomnia.expect(insomnia.response.json().error.message).to.eql("Field 'renda' has an invalid value."));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos'
+        name: '18 - Recusa imovel alugado sem valor de aluguel'
+        meta:
+          id: req_erro_aluguel
+          sortKey: -9580
+        method: POST
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"nome":"Teste","tipoImovel":"ALUGADO"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 400', () => insomnia.expect(insomnia.response.code).to.eql(400));
+            insomnia.test('codigo INVALID_VALUE', () => insomnia.expect(insomnia.response.json().error.code).to.eql('INVALID_VALUE'));
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: '{{ _.BASE_URL }}/api/v1/assistidos/{{ _.ASSISTIDO_CREATED_ID }}'
+        name: '19 - Aceita CEP com traco e guarda os 8 digitos'
+        meta:
+          id: req_cep_traco
+          sortKey: -9570
+        method: PATCH
+        headers:
+        - name: Cookie
+          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+        - name: Content-Type
+          value: application/json
+        body:
+          mimeType: application/json
+          text: '{"cep":"01310-100"}'
+        scripts:
+          afterResponse: |
+            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(200));
+            insomnia.test('traco removido', () => insomnia.expect(insomnia.response.json().data.cep).to.eql('01310100'));
         settings:
           renderRequestBody: true
           encodeUrl: true

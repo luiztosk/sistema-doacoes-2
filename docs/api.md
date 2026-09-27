@@ -1,7 +1,7 @@
 # API de domínio
 
 Endpoints CRUD dos recursos `assistidos`, `doadores`, `coletas`, `entregas` e
-`itens`. Esta é a entrega da issue #14.
+`itens`. Esta é a entrega da issue #14, com a validação de payload da #42.
 
 ## Estado da autenticação
 
@@ -60,26 +60,42 @@ Erros usam o formato:
 {
   "error": {
     "code": "NOT_FOUND",
-    "message": "Assistido não encontrado."
+    "message": "Assistido not found."
   }
 }
 ```
 
 Códigos: `400` para dados inválidos, `401` sem sessão, `404` para recurso
 inexistente, `409` para conflito com registros relacionados e `415` quando o
-corpo não é enviado como `application/json`.
+corpo não é enviado como `application/json`. O `401` é a única resposta sem
+corpo: o `requireSession` lança um `HTTPException` cru, e o status basta.
+
+O **código** é o contrato: é nele que o cliente deve ramificar, e é ele que a
+coleção do Insomnia verifica. A `message` é uma frase em inglês, escrita para
+quem está olhando a resposta, e vem em duas formas — a genérica
+(`Field 'renda' has an invalid value.`) para valor inválido, e a específica
+quando a regra diz mais do que isso (`Field 'uf' must be one of: …`, e a frase do
+próprio `refinement` para as regras de domínio).
 
 ## Regras de domínio
 
 - `id` é gerado pelo servidor (UUID) e não pode ser enviado pelo cliente.
 - Campos desconhecidos são rejeitados com `400 UNKNOWN_FIELD`.
-- Colunas `NOT NULL` sem valor são rejeitadas com `400 REQUIRED_FIELD`, e valores
-  fora de um `enum` do schema com `400 INVALID_VALUE`.
-- O corpo é desserializado pelo tipo da coluna: números, booleanos e
-  `dataHora` (ISO 8601) chegam ao Drizzle já no formato esperado. Tipo errado
-  retorna `400 INVALID_VALUE`.
+- Colunas `NOT NULL` sem valor são rejeitadas com `400 REQUIRED_FIELD` — `null`
+  conta como ausente, e não como valor inválido.
+- Um `PATCH` sem nenhum campo é `400 EMPTY_UPDATE`.
+- O corpo é validado por um schema zod gerado da própria tabela com
+  `drizzle-orm/zod`, e convertido no mesmo passo: `renda` chega ao Drizzle como
+  número, `cestaBasica` como booleano e `dataHora` (ISO 8601) como `Date`.
+  Valor com tipo errado, fora de um `enum` ou fora de um piso sai como
+  `400 INVALID_VALUE`, com o nome do campo na mensagem.
+- `uf` é `z.enum` das 27 UFs, não é normalizado: `uf: "sp"` é
+  `400 INVALID_VALUE`. A sigla é a que o banco guarda.
+- `cep` aceita `01310-100` e guarda `01310100`: o traço do ViaCEP (#16) sai na
+  entrada. Oito dígitos, e nada além deles.
 - Referências a doador, assistido, coleta, entrega e nome de item precisam
-  existir no banco.
+  existir: é o `FOREIGN KEY` do D1 que recusa a escrita, e o erro vira
+  `400 INVALID_REFERENCE`.
 - Um item novo começa em `AGUARDA_COLETA`.
 - A única sequência permitida é `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`.
 - Um item marcado como `ENTREGUE` precisa de `entregaId`.
@@ -88,50 +104,57 @@ corpo não é enviado como `application/json`.
 - Exclusões bloqueadas por relacionamentos retornam `409` em vez de expor o erro
   interno do banco.
 
+### Onde cada regra mora
+
+Duas camadas, e o critério é o mesmo da [#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43):
+a forma do valor é do zod, e o que precisa da linha anterior é do handler.
+Existência de referência é do banco — o `FOREIGN KEY` do D1 recusa a escrita, e o
+erro capturado vira código aqui.
+
+| Regra | Onde |
+|---|---|
+| tipo, `NOT NULL`, `enum`, conversão | `src/worker/db/schema.ts` (`<tabela>InsertSchema` / `UpdateSchema` / `SelectSchema`, gerados por `drizzle-orm/zod`) |
+| `nome` não vazio, `cep` com 8 dígitos, `renda`/`valorAluguel`/contadores `>= 0`, `tipoImovel` × `valorAluguel` | `refinement` no mesmo arquivo, logo abaixo da tabela que ele julga |
+| `INVALID_STATUS_TRANSITION`, `DELIVERY_REQUIRED` | `validateItem` em `src/worker/api/v1.ts` (dependem da linha anterior, que nenhum schema de payload enxerga) |
+| `INVALID_REFERENCE` | `FOREIGN KEY` do D1, mapeado em `handleApiError` (`src/worker/api/errors.ts`) |
+| envelope `{ error: { code, message } }` a partir dos issues do zod | `errorFromIssue` em `src/worker/api/errors.ts` |
+
+### O `check()` foi removido, e isso é visível no contrato
+
+O schema **teve** 26 `check()` ([#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43))
+e não tem mais: a regra de valor existe em um lugar só, o zod. O motivo e o preço
+estão em [`modelos-db.md`](./modelos-db.md#os-check-foram-removidos). Para o
+cliente, a mudança é boa — nada de `409 CONFLICT` genérico por valor inválido,
+sempre `400 INVALID_VALUE` com o campo nomeado — com duas brechas, ambas
+conhecidas e registradas:
+
+- `PATCH {"tipoImovel":"ALUGADO"}` sem `valorAluguel` é aceito: o schema julga o
+  par só quando o próprio pedido traz os dois campos.
+- `PATCH {"entregaId":...}` em item sem `coletaId` é aceito: a invariante de que
+  toda entrega vem de uma coleta é da linha, e nada a julga.
+
 ## Valores recusados pelo banco
 
-O schema tem `check()` que valem para qualquer escrita
-([#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43)), então o D1
-recusa nome em branco, `renda` negativa, UF fora das 27, status desconhecido,
-booleanos que não sejam 0/1, `uf` com 3 letras, CEP fora de 8 dígitos e
-`ENTREGUE` sem `entregaId` — inclusive em escrita que não passa pela API (D1
-Studio, `npm run db-seed`, scripts). A lista completa está em
-[`modelos-db.md`](./modelos-db.md#integridade-no-banco-check).
+Duas coisas, e só duas:
 
-O catálogo tem unicidade case-insensitive (`categoria_item.nome` e
-`nome_item.nome`): duas categorias que só diferem em maiúsculas/minúsculas
-colidem. Isso sai como `409`, que é o status certo — duas linhas do mesmo
-registro, não um valor inválido.
+- **Referência que não existe.** `coleta.doador_id`, `entrega.assistido_id`,
+  `item.nome_id`/`coleta_id`/`entrega_id` são `FOREIGN KEY`, e o D1 recusa a
+  escrita. `handleApiError` traduz o erro: em `POST`/`PATCH` é
+  `400 INVALID_REFERENCE` (o cliente inventou o id), e em `DELETE` é
+  `409 CONFLICT` (o registro tem linhas dependentes). A mensagem é a mesma para as
+  cinco chaves, porque o texto do D1 não diz qual delas falhou.
+- **Nome repetido no catálogo.** `categoria_item_nome_uniq` e
+  `nome_item_nome_uniq` são `CREATE UNIQUE INDEX` sobre `lower(nome)`, então
+  "arroz 5kg" e "Arroz 5kg" colidem. Sai como `409 CONFLICT`, que é o status
+  certo — duas linhas do mesmo registro, não um valor inválido.
 
-Isso é o piso de integridade, não a validação da API: a camada de entrada ainda
-**desserializa** e não valida (seção abaixo). Um `POST` com `renda: -500` é
-aceito pela desserialização e só volta como erro do banco, e esse erro ainda sai
-como `409 CONFLICT` — `handleApiError` trata CHECK, FK e unique com o mesmo
-regex. Separar `400 INVALID_VALUE` (com o campo) de `409` depende do zod da
-[#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42).
-
-## ⚠️ Validação de valores pendente
-
-A camada de entrada hoje **desserializa**, não valida. Ou seja, a API aceita
-valores que deveriam ser recusados — e o banco é quem acaba recusando:
-
-| Aceito hoje | Deveria | Onde será resolvido |
-|---|---|---|
-| `nome: "   "` | texto não vazio | zod (`createInsertSchema` + `min(1)`) |
-| `renda: -500` | maior ou igual a zero | zod (`min(0)`) — o `CHECK` já cobre o banco |
-| `uf: "abc"` | sigla de UF | zod (`enum`) — o `CHECK` já cobre o banco |
-| `uf: "sp"` | normalizado para `SP` | zod (`transform`) |
-
-O motivo de não existir aqui: `drizzle-zod` já gera `z.string()`, `z.number()`,
-`z.enum()` e o required a partir do `notNull` do schema, e aceita `refinements`
-para o que o schema não expressa. Escrever essas regras à mão nesta camada seria
-duplicar o que a biblioteca entrega.
-
-Pendências abertas: [#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42)
-(zod), que é a que resolve a maior parte, e
-[#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43) (o `check()` já
-está no banco; falta o `400` com o nome do campo). Enquanto isso, não use dados
-reais — ver a seção LGPD de [`seguranca.md`](./seguranca.md).
+Fora das duas, o D1 não recusa nada: não há `check()`. A
+[tabela acima](#regras-de-domínio) é a lista do que a API recusa, e vale apenas
+para o que passa por ela — D1 Studio, `npm run db-seed` e scripts futuros
+escrevem sem nenhum desses filtros. A migration que remove os `check()` ainda não
+foi gerada, então os bancos já existentes **continuam recusando** esses valores
+com `409` genérico; ver
+[`modelos-db.md`](./modelos-db.md#os-check-foram-removidos).
 
 ## Limitação conhecida
 

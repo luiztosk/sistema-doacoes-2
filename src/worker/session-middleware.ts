@@ -19,7 +19,6 @@ export const sessionMiddleware = createMiddleware<SessionEnv>(async (c, next) =>
 	await next();
 });
 
-/** Rejects the request when sessionMiddleware could not resolve a session. */
 export const requireSession: MiddlewareHandler<SessionEnv> = async (c, next) => {
 	if (!c.get("session")) {
 		throw new HTTPException(401);

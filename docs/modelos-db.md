@@ -17,9 +17,9 @@ Fecha a issue #21 e serve de base para a implementação do schema (issue #11).
 - Booleanos: `integer(..., { mode: "boolean" })` no Drizzle.
 - Datas: `integer(..., { mode: "timestamp" })`.
 - Enums: `text` com `enum` do Drizzle, que **só tipa o TypeScript** e não emite
-  nada no DDL. Como o D1 não tem `ENUM` nativo, cada enum tem um `check()` no
-  banco com a mesma lista de valores — é o `check()` que faz o D1 recusar um
-  valor fora do domínio. Ver [Integridade no banco](#integridade-no-banco-check).
+  nada no DDL. A lista é a mesma que o zod recebe como `z.enum`, então o domínio
+  é recusado na entrada da API e o banco aceita qualquer texto. Ver
+  [Regras de valor](#regras-de-valor).
 - `uf` também é um enum (as 27 unidades federativas), não um `text` de 2 letras:
   `text("uf", { length: 2 })` vira `text(2)`, que no SQLite é **afinidade de
   tipo**, não constraint, e o D1 aceitaria `abc`.
@@ -132,47 +132,98 @@ coleta registrada                → EM_ESTOQUE
 entrega registrada               → ENTREGUE
 ```
 
-## Integridade no banco (CHECK)
+## Regras de valor
 
-Regras que hoje só existiriam na aplicação estão como `check()` em
-`src/worker/db/schema.ts`, então valem para **qualquer escrita**: API, D1 Studio,
-`npm run db-seed` e scripts futuros. Faz parte da issue
-[#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43).
+As regras moram em um lugar só: o zod de `src/worker/db/schema.ts`, cada
+`refinement` logo abaixo da tabela que ele julga. As regras viram `400` com o nome
+do campo, não `409` do banco.
+
+### Os `check()` foram removidos
+
+O schema **teve** `check()` — 26 deles, em `efca2a7` — e não tem mais. A decisão
+foi o contrário da intuição, e vale registrar o porquê:
+
+- **A regra duplicada tem dois jeitos de falhar.** No `check()` a violação volta
+  como `409 CONFLICT` genérico, com o nome da constraint dentro do texto do D1
+  (`CHECK constraint failed: assistido_nome_nao_vazio`); no zod a mesma regra
+  volta como `400 INVALID_VALUE` com o campo nomeado. Duas Copies da regra, dois
+  formatos de erro, e o cliente termina tratando os dois.
+- **O zod já cobria tudo que a API consegue julgar.** Nome em branco, `>= 0`,
+  formato de CEP, as listas de `enum` e a regra entre `tipoImovel` e
+  `valorAluguel` estão todas no `refinement`, com a mensagem escrita para o
+  usuário final.
+- **O que o zod não alcança, o banco continua fazendo.** A `FOREIGN KEY` e o
+  índice único do catálogo são constraints de verdade — não há como reescrevê-las
+  em TypeScript — e continuam no DDL. Referência e unicidade não foram
+  removidas: só deixaram de ter uma segunda cópia em `check()`.
+
+O preço, aceito: **escrita que não passa pela API não é filtrada.** D1 Studio,
+`npm run db-seed` e scripts futuros podem gravar `renda: -500` ou nome em branco
+sem que nada recuse. E o `PATCH` tem duas brechas, que o `check()` cobria e o zod
+não cobriu — ver [Onde não há garantia](#onde-não-há-garantia).
+
+Uma consequência prática: `drizzle/migrations/20260926213838_lucky_karma`
+ainda cria as constraints, porque uma migration já aplicada é imutável. O banco
+local e o remoto já têm os `check()`, e um banco novo criado do zero também os
+terá, até alguém rodar `npm run gen-drizzle` e `wrangler d1 migrations apply`
+para a migration que os remove. O Drizzle não percebe isso sozinho: ele só vê a
+diferença quando alguém manda gerar.
 
 O que o Drizzle emite e o que não emite importa para não confiar no schema duas
 vezes:
 
-| No schema | No DDL | No tipo |
+| No schema | No DDL | No zod |
 |---|---|---|
-| `text("status", { enum: [...] })` | nada | `z.enum([...])` no zod |
+| `text("status", { enum: [...] })` | nada | `z.enum([...])` |
 | `text("uf", { length: 2 })` | `text(2)` — afinidade, não constraint | `z.string()` |
-| `check("nome", ...)` | `CONSTRAINT ... CHECK (...)`, avaliado a cada escrita | não aparece no zod |
+| `integer("aposentado", { mode: "boolean" })` | `integer` | `z.boolean()` |
+| `text("doador_id").references(doador.id)` | `FOREIGN KEY` | nada — e é o banco quem julga |
 
-### O que está garantido
+### O que é garantido
 
-| Constraint | Tabela | Regra |
+| Regra | Tabela | Onde |
 |---|---|---|
-| `*_nome_nao_vazio` | `assistido`, `doador`, `categoria_item`, `nome_item` | `length(trim(nome)) > 0` |
-| `*_cep_formato` | `assistido`, `doador` | 8 dígitos, sem hífen (é o que o ViaCEP devolve) |
-| `*_uf_valida` | `assistido`, `doador` | uma das 27 UFs |
-| `assistido_tipo_imovel_valido` | `assistido` | `ALUGADO` \| `PROPRIO` |
-| `assistido_estado_civil_valido` | `assistido` | um dos 5 estados civis |
-| `assistido_renda_nao_negativa` | `assistido` | `renda >= 0` |
-| `assistido_valor_aluguel_nao_negativo` | `assistido` | `valor_aluguel >= 0` |
-| `assistido_valor_aluguel_compatipo_imovel` | `assistido` | aluguel > 0 se `ALUGADO`, vazio se `PROPRIO` |
-| `assistido_*_nao_negativo` | `assistido` | contadores de pessoas ≥ 0 |
-| `assistido_*_valido` | `assistido` | um `check()` por coluna booleana, `IN (0, 1)` |
-| `item_status_valido` | `item` | um dos 3 status |
-| `item_entregue_exige_entrega` | `item` | `ENTREGUE` ⇒ `entrega_id` preenchido |
-| `item_entrega_exige_coleta` | `item` | `entrega_id` preenchido ⇒ `coleta_id` preenchido |
+| `nome` não vazio (`length(trim(nome)) > 0`) | `assistido`, `doador`, `categoria_item`, `nome_item` | `nomeNaoVazio` |
+| `cep` com 8 dígitos, sem hífen (é o que o ViaCEP devolve) | `assistido`, `doador` | `cepDeEntrada`, `cepGuardado` |
+| uma das 27 UFs | `assistido`, `doador` | `enum` da coluna |
+| `ALUGADO` \| `PROPRIO` | `assistido` | `enum` da coluna |
+| um dos 5 estados civis | `assistido` | `enum` da coluna |
+| `renda >= 0` | `assistido` | `naoNegativo` |
+| `valorAluguel >= 0` | `assistido` | `naoNegativo` |
+| aluguel > 0 se `ALUGADO`, vazio se `PROPRIO` | `assistido` | `compatAluguelImovel` |
+| contadores de pessoas ≥ 0 | `assistido` | `naoNegativo` |
+| um dos 3 status | `item` | `enum` da coluna |
+| referência existe (doador, assistido, coleta, entrega, nome de item) | todas | `FOREIGN KEY` do D1, mapeado em `handleApiError` |
+| `ENTREGUE` ⇒ `entregaId` preenchido | `item` | `validateItem` (`DELIVERY_REQUIRED`) |
+| `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE` | `item` | `validateItem` (`INVALID_STATUS_TRANSITION`) |
 
-Um `check()` por coluna booleana, e não um combinado, porque o nome da constraint
-aparece na mensagem do D1 (`CHECK constraint failed: assistido_doentes_valido`) e
-é ele que permite transformar erro de banco em erro de campo na API.
+Referência é o único caso em que o banco é o juiz, e é de graça: o D1 já
+recusa a escrita pendurada, então a API não consulta nada antes de inserir. O
+erro sobe como `D1QueryError`/`DrizzleQueryError` com o texto
+`FOREIGN KEY constraint failed` na cadeia, e `handleApiError` o traduz —
+`400 INVALID_REFERENCE` em `POST`/`PATCH`, `409 CONFLICT` em `DELETE`. O texto
+do D1 não diz qual das cinco chaves falhou, então a mensagem é genérica: uma
+consulta antes da escrita traria o nome do campo, ao custo de uma leitura por
+payload.
 
-`NULL` passa em qualquer `CHECK` — a expressão dá `NULL`, não `FALSE`, e o SQLite
-só reprova em `FALSE` — então uma coluna opcional não precisa de `IS NOT NULL AND`
-para "deixar passar o vazio".
+### Onde não há garantia
+
+Duas regras tinham `check()` e foram removidos com ele. O `PATCH` não consegue
+julgar nenhuma das duas, porque o campo que decide é justamente o que o cliente
+não mandou:
+
+- `tipoImovel` × `valorAluguel`: `POST {"tipoImovel":"ALUGADO"}` sem
+  `valorAluguel` é recusado, e `PATCH {"tipoImovel":"ALUGADO"}` sem
+  `valorAluguel` é aceito. O `UpdateSchema` só julga o par quando o próprio
+  pedido traz os dois campos.
+- `entregaId` ⇒ `coletaId`: um item pode ficar apontando para uma entrega sem
+  coleta, o que desfaz a fonte única de quem doou (ver
+  [`item`](#item)). A `FOREIGN KEY` garante que a coleta existe, não que ela
+  esteja lá.
+
+Fechar qualquer uma das duas é uma linha em `validateAssistido`/`validateItem`:
+o `validate` do `registerResource` já recebe a linha existente, que é o que
+falta.
 
 ### Índices e `ON DELETE`
 
@@ -184,8 +235,10 @@ lista. Quando a [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13)
 entrar, o índice tem que começar por `organization_id`.
 
 As 5 FKs de domínio declaram `on delete: "no action"` explicitamente: excluir um
-doador que tem coleta estoura, e a API responde `409`. Está escrito assim de
-propósito, para não ficar implícito.
+doador que tem coleta estoura, e a API responde `409`. A mesma constraint é o que
+recusa um `doador_id` que não existe, então é a única regra que o banco julga —
+ver [Regras de valor](#regras-de-valor). Está escrito assim de propósito, para
+não ficar implícito.
 
 O catálogo também tem unicidade: `categoria_item_nome_uniq` e
 `nome_item_nome_uniq`, os dois sobre `lower(nome)`, para que "arroz 5kg" e
@@ -201,36 +254,43 @@ silêncio: o banco recusa, o seed não avisa.
 Decisão registrada, não omissão. Os triggers foram avaliados e descartados:
 
 - **Transição de status** (`AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`) já é
-  validada em `validateItem` (`src/worker/api/resources.ts`), que responde `400`
+  validada em `validateItem` (`src/worker/api/v1.ts`), que responde `400`
   com o campo e a transição inválida. Um trigger seria uma segunda cópia
   independente da mesma regra, e o D1 levantaria a violação como erro de
   constraint genérico — resposta pior do que a de hoje, para o cliente.
-- **As duas invariantes** (`item_entregue_exige_entrega` e
-  `item_entrega_exige_coleta`) já são `check()`, e as duas tabelas do banco estão
-  com zero violação. Um trigger cobriria o mesmo chão com um erro pior.
-- Uma das duas invariantes com dados sujos deixou de existir como possibilidade:
+- **Regras de valor** (`nome` em branco, `renda` negativa, `cep` fora de 8
+  dígitos) dariam ao cliente exatamente a resposta que o trigger liftaria:
+  `409` genérico, sem o campo. É a mesma razão que tirou o `check()` do schema —
+  ver [Os `check()` foram removidos](#os-check-foram-removidos).
+- **Uma das invariantes com dados sujos deixou de existir como possibilidade:**
   o destinatário vinha de uma coluna denormalizada no `item` que podia divergir
   da entrega (12 dos 44 itens divergiam). Com a coluna removida, o destinatário
   só tem uma fonte.
 
-Se um dia o `db-seed` ou um script escrever direto no D1 precisar da transição de
-status, o lugar certo é um trigger — e ele entra junto com um mapeamento de
-erro, não sozinho.
+Se um dia o `db-seed` ou um script escrever direto no D1 precisar de uma regra
+que o zod não alcança, o lugar certo é um trigger — e ele entra junto com um
+mapeamento de erro, não sozinho.
 
 ### Pendente
 
-- **Valores no zod.** `createInsertSchema` (issue
-  [#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42)) infere de graça
-  o que o schema já expressa — enum, boolean, required. O que precisa de
-  `refinement` é o que o `check()` expressa e o tipo não: `>= 0`, texto não
-  vazio, formato de CEP. Regra que precisa estar documentada na API tem que
-  existir nos dois lados.
-- **Erro de banco → erro de API.** Hoje `handleApiError`
-  (`src/worker/api/errors.ts`) trata constraint, FK e unique com o mesmo regex e
-  responde `409 CONFLICT`. CHECK é outra coisa: o cliente mandou valor inválido, e
-  isso é `400`. A mensagem do D1 traz o nome da constraint, então dá para mapear
-  constraint → campo e responder `400 INVALID_VALUE` com o nome do campo,
-  deixando `409` só para FK e unique.
+- **Recriar as invariantes no `PATCH`.** As duas brechas que o `check()`
+  cobria, ver [Onde não há garantia](#onde-não-há-garantia).
+- **Nome do campo na `INVALID_REFERENCE`.** O texto do D1 não diz qual das cinco
+  chaves falhou, então a mensagem é genérica. Nomear exigiria voltar a consultar
+  antes de escrever — que é o que o `FOREIGN KEY` eliminou de graça.
+- **A migration que remove os `check()`.** `npm run gen-drizzle` ainda não foi
+  rodado depois da remoção, então o banco continua com eles. Ver [Os `check()`
+  foram removidos](#os-check-foram-removidos).
+
+### Feito: valores no zod
+
+`createInsertSchema` da
+[#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42) infere de graça o
+que a tabela já expressa — enum, boolean, required. O `refinement` cobre o que o
+tipo não diz: `>= 0`, texto não vazio, formato de CEP, e a regra entre
+`tipoImovel` e `valorAluguel`. Está em `src/worker/db/schema.ts`, cada
+`refinement` logo abaixo da tabela que ele julga, ao lado dos três schemas que o
+consumem — sem `check()` no banco e sem schema factory.
 
 ## Diagrama ER
 
@@ -369,8 +429,8 @@ export const item = sqliteTable("item", {
 // doador, categoria_item, nome_item, coleta, entrega: mesmo padrão.
 ```
 
-O esboço acima omite os `check()` e os `index()` das tabelas, que só existem
-depois da issue #43 — o arquivo real é `src/worker/db/schema.ts`.
+O esboço acima omite os `index()` das tabelas e os schemas de zod que julgam
+cada uma — o arquivo real é `src/worker/db/schema.ts`.
 
 ## Migrations
 

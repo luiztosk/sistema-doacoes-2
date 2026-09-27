@@ -144,6 +144,25 @@ const casos: Caso[] = [
 		mensagem: "Field 'aposentado' has an invalid value.",
 	},
 	{
+		nome: "valorAluguel negativo",
+		method: "POST",
+		path: "/api/v1/assistidos",
+		body: { nome: "Ana", valorAluguel: -1 },
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem: "Field 'valorAluguel' has an invalid value.",
+	},
+	{
+		nome: "uf que não é sigla",
+		method: "POST",
+		path: "/api/v1/assistidos",
+		body: { nome: "Ana", uf: "abc" },
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem:
+			"Field 'uf' must be one of: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO.",
+	},
+	{
 		nome: "uf fora da lista",
 		method: "POST",
 		path: "/api/v1/assistidos",

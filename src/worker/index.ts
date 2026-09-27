@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
-import { registerResources } from "./api/resources";
+import { registerResources } from "./api/v1";
 import { auth } from "./auth";
 import { requireSession, sessionMiddleware } from "./session-middleware";
 
@@ -12,7 +12,6 @@ app.all("/api/auth/*", async (c) => {
 	return auth.handler(c.req.raw);
 });
 
-// Domain routes live under /api/v1 so this guard can never overlap /api/auth/*.
 app.use("/api/v1/*", sessionMiddleware, requireSession);
 
 const api = new Hono<{ Bindings: Env }>();

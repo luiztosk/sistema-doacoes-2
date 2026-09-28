@@ -1,58 +1,75 @@
-import fs from 'fs';
-import path from 'path';
-import { InfoField, parse } from 'csv-parse/sync';
-import { drizzle } from 'drizzle-orm/d1';
-import { getPlatformProxy } from 'wrangler';
-import { D1Database } from '@cloudflare/workers-types';
-import { assistido, doador, categoriaItem, nomeItem, coleta, entrega, item } from './schema';
-// import { organization } from './schema'
-import { getTableName, InferInsertModel } from 'drizzle-orm';
-import { AnySQLiteTable } from 'drizzle-orm/sqlite-core';
+import fs from "node:fs";
+import path from "node:path";
+import type { D1Database } from "@cloudflare/workers-types";
+import { parse } from "csv-parse/sync";
+import { getTableName, type InferInsertModel } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import type { AnySQLiteTable } from "drizzle-orm/sqlite-core";
+import { getPlatformProxy } from "wrangler";
+import {
+	assistido,
+	categoriaItem,
+	coleta,
+	doador,
+	entrega,
+	item,
+	nomeItem,
+	organization,
+} from "./schema";
+import { castCsvValue } from "./seed-csv";
 
 const tables = [
-        // organization,
-        assistido,
-        doador,
-        categoriaItem,
-        nomeItem,
-        coleta,
-        entrega,
-        item,
-]
-const BASE_DIR = 'mock_data'
-
-function csv_as_DateNull(value: string, context: InfoField) {
-    if (value === '' && !context.quoting) 
-        return null
-    if (context.column === 'dataHora') 
-        return new Date(value)
-    return value
-}
+	organization,
+	assistido,
+	doador,
+	categoriaItem,
+	nomeItem,
+	coleta,
+	entrega,
+	item,
+];
+const BASE_DIR = "mock_data";
 
 async function readCSV<T extends AnySQLiteTable>(table: T): Promise<InferInsertModel<T>[]> {
-    const filePath = path.join(BASE_DIR, getTableName(table) + '.csv')
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const records = parse(fileContent, {
-        columns: true,
-        skip_empty_lines: true,
-        cast: csv_as_DateNull,
-    }) as InferInsertModel<T>[];
-    return records
+	const filePath = path.join(BASE_DIR, `${getTableName(table)}.csv`);
+	const fileContent = fs.readFileSync(filePath, "utf-8");
+	return parse(fileContent, {
+		columns: true,
+		skip_empty_lines: true,
+		cast: castCsvValue,
+	}) as InferInsertModel<T>[];
 }
 
 async function seed() {
-    const { env, dispose } = await getPlatformProxy();
-    const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
-    console.log('Seeding database...');
+	const persistPath = process.env.WRANGLER_PLATFORM_PERSIST_PATH;
+	const { env, dispose } = await getPlatformProxy({
+		persist: persistPath ? { path: persistPath } : true,
+	});
+	const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
 
-    for (const table of tables) {
-        for (const row of await readCSV(table)) {
-            await db.insert(table).values(row).onConflictDoNothing();
-        } 
-    }
+	try {
+		console.log("Seeding database...");
 
-    console.log('Seeding complete!');
-    await dispose()
+		for (const table of tables) {
+			for (const row of await readCSV(table)) {
+				const inserted = await db
+					.insert(table)
+					.values(row)
+					.onConflictDoNothing()
+					.returning();
+
+				if (inserted.length === 0) {
+					console.warn(
+						`Skipped conflicting ${getTableName(table)} row: ${JSON.stringify(row)}`,
+					);
+				}
+			}
+		}
+
+		console.log("Seeding complete!");
+	} finally {
+		await dispose();
+	}
 }
 
-await seed().catch(console.error);
+await seed();

@@ -2,14 +2,9 @@ import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { createMiddleware } from "hono/factory";
 import { auth } from "./auth";
+import type { AppEnv } from "./env";
 
-type SessionEnv = {
-	Variables: {
-		session: typeof auth.$Infer.Session | null;
-	};
-};
-
-export const sessionMiddleware = createMiddleware<SessionEnv>(async (c, next) => {
+export const sessionMiddleware = createMiddleware<AppEnv>(async (c, next) => {
 	const session = await auth.api.getSession({
 		headers: c.req.raw.headers,
 	});
@@ -19,7 +14,7 @@ export const sessionMiddleware = createMiddleware<SessionEnv>(async (c, next) =>
 	await next();
 });
 
-export const requireSession: MiddlewareHandler<SessionEnv> = async (c, next) => {
+export const requireSession: MiddlewareHandler<AppEnv> = async (c, next) => {
 	if (!c.get("session")) {
 		throw new HTTPException(401);
 	}

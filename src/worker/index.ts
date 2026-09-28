@@ -2,19 +2,24 @@ import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
 import { registerResources } from "./api/v1";
 import { auth } from "./auth";
+import type { AppEnv } from "./env";
+import { requireOrganization } from "./organization-middleware";
 import { requireSession, sessionMiddleware } from "./session-middleware";
 
-const app = new Hono<{
-	Variables: { session: typeof auth.$Infer.Session | null };
-}>();
+const app = new Hono<AppEnv>();
 
 app.all("/api/auth/*", async (c) => {
 	return auth.handler(c.req.raw);
 });
 
-app.use("/api/v1/*", sessionMiddleware, requireSession);
+app.use(
+	"/api/v1/*",
+	sessionMiddleware,
+	requireSession,
+	requireOrganization,
+);
 
-const api = new Hono<{ Bindings: Env }>();
+const api = new Hono<AppEnv>();
 registerResources(api);
 app.route("/api/v1", api);
 

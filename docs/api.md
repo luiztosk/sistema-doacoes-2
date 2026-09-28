@@ -9,34 +9,37 @@ Todas as rotas de domínio exigem uma sessão válida do Better Auth e ficam sob
 prefixo `/api/v1`. O prefixo existe para que a proteção de `/api/v1/*` nunca
 alcance `/api/auth/*`, que precisa continuar público para login e cadastro.
 
-O middleware fica em `src/worker/session-middleware.ts`
-(`sessionMiddleware` + `requireSession`) e é aplicado uma única vez, em
-`src/worker/index.ts`.
+Os middlewares ficam em `src/worker/session-middleware.ts` e
+`src/worker/organization-middleware.ts`. Eles são aplicados uma única vez, em
+`src/worker/index.ts`, antes das rotas de domínio.
 
-## ⚠️ Não está pronto para produção
+## Isolamento por organização
 
-O checklist de [`seguranca.md`](./seguranca.md) define o que uma rota precisa
-cumprir antes de ser considerada pronta. Hoje:
+O checklist de [`seguranca.md`](./seguranca.md) é aplicado a todas as rotas:
 
 | Requisito do checklist | Estado |
 |---|---|
 | Exige autenticação | ✅ Cumprido |
-| Valida que o usuário pertence à organização ativa | ❌ [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) |
-| Filtra os dados por `organization_id` | ❌ [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) |
-| Acesso por ID confere a organização do registro | ❌ [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) |
-| Permissão do papel verificada no backend | ❌ [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) |
-| Teste automatizado de acesso indevido (401/403 e cross-tenant) | ❌ [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) |
+| Valida que o usuário pertence à organização ativa | ✅ Cumprido |
+| Filtra os dados por `organization_id` | ✅ Cumprido |
+| Acesso por ID confere a organização do registro | ✅ Cumprido |
+| Permissão do papel verificada no backend | ✅ Cumprido |
+| Teste automatizado de acesso indevido (401/403 e cross-tenant) | ✅ Cumprido |
 
-O motivo é objetivo: as tabelas de domínio **não possuem a coluna
-`organization_id`** (`src/worker/db/schema.ts`). Ela foi removida junto com a
-integração do Better Auth e precisa voltar junto com o middleware multi-tenant
-da issue #13. Até lá, estas rotas servem apenas o cenário de desenvolvimento com
-uma única instituição, e **não devem ser expostas com dados reais** — os dados
-de assistidos são sensíveis (ver `seguranca.md`, seção LGPD).
+A organização vem exclusivamente de `session.activeOrganizationId`, é
+confirmada na tabela `member` e é injetada pelo servidor nas escritas. O campo
+`organizationId` não faz parte dos payloads aceitos. Leituras, alterações,
+exclusões e validações de referências sempre usam o par `id + organization_id`;
+por isso um ID de outra instituição é tratado como inexistente, sem revelar que
+o registro existe.
 
-Não reintroduza um valor fixo de organização para "simular" o filtro: isso
-contraria `seguranca.md` na regra 1, "nunca confiar em parâmetro do cliente para
-identificar a instituição".
+Papéis `owner`, `admin`, `staff` e `member` podem escrever. `viewer` pode apenas
+ler. Sessão sem organização ativa ou sem membership recebe `403`.
+
+A migration não transforma automaticamente todos os usuários cadastrados em
+membros de `org-1`: como o cadastro ainda está aberto no ambiente de testes,
+isso daria acesso indevido aos dados da instituição. A integração de autenticação
+deve criar/aceitar o membership e selecionar a organização ativa explicitamente.
 
 ## Endpoints
 
@@ -65,7 +68,8 @@ Erros usam o formato:
 }
 ```
 
-Códigos: `400` para dados inválidos, `401` sem sessão, `404` para recurso
+Códigos: `400` para dados inválidos, `401` sem sessão, `403` sem organização
+ativa, sem membership ou sem permissão de escrita, `404` para recurso
 inexistente, `409` para conflito com registros relacionados e `415` quando o
 corpo não é enviado como `application/json`. O `401` é a única resposta sem
 corpo: o `requireSession` lança um `HTTPException` cru, e o status basta.
@@ -94,8 +98,9 @@ próprio `refinement` para as regras de domínio).
 - `cep` aceita `01310-100` e guarda `01310100`: o traço do ViaCEP (#16) sai na
   entrada. Oito dígitos, e nada além deles.
 - Referências a doador, assistido, coleta, entrega e nome de item precisam
-  existir: é o `FOREIGN KEY` do D1 que recusa a escrita, e o erro vira
-  `400 INVALID_REFERENCE`.
+  existir **na organização ativa**. A API verifica isso antes da escrita e
+  responde `400 INVALID_REFERENCE`; a `FOREIGN KEY` continua como segunda
+  proteção no D1.
 - Um item novo começa em `AGUARDA_COLETA`.
 - A única sequência permitida é `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`.
 - Um item marcado como `ENTREGUE` precisa de `entregaId`.
@@ -107,16 +112,15 @@ próprio `refinement` para as regras de domínio).
 ### Onde cada regra mora
 
 Duas camadas, e o critério é o mesmo da [#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43):
-a forma do valor é do zod, e o que precisa da linha anterior é do handler.
-Existência de referência é do banco — o `FOREIGN KEY` do D1 recusa a escrita, e o
-erro capturado vira código aqui.
+a forma do valor é do zod, e o que precisa da linha anterior, de outra tabela ou
+da organização ativa é do handler. A `FOREIGN KEY` permanece como proteção final.
 
 | Regra | Onde |
 |---|---|
 | tipo, `NOT NULL`, `enum`, conversão | `src/worker/db/schema.ts` (`<tabela>InsertSchema` / `UpdateSchema` / `SelectSchema`, gerados por `drizzle-orm/zod`) |
 | `nome` não vazio, `cep` com 8 dígitos, `renda`/`valorAluguel`/contadores `>= 0`, `tipoImovel` × `valorAluguel` | `refinement` no mesmo arquivo, logo abaixo da tabela que ele julga |
-| `INVALID_STATUS_TRANSITION`, `DELIVERY_REQUIRED` | `validateItem` em `src/worker/api/v1.ts` (dependem da linha anterior, que nenhum schema de payload enxerga) |
-| `INVALID_REFERENCE` | `FOREIGN KEY` do D1, mapeado em `handleApiError` (`src/worker/api/errors.ts`) |
+| regras que dependem do estado atual do registro | `validateAssistido` e `validateItem` em `src/worker/api/v1.ts` |
+| `INVALID_REFERENCE` e isolamento das referências | `requireTenantReference` em `src/worker/api/v1.ts`; a FK do D1 permanece como proteção final |
 | envelope `{ error: { code, message } }` a partir dos issues do zod | `errorFromIssue` em `src/worker/api/errors.ts` |
 
 ### O `check()` foi removido, e isso é visível no contrato
@@ -125,24 +129,19 @@ O schema **teve** 26 `check()` ([#43](https://github.com/luiztosk/sistema-doacoe
 e não tem mais: a regra de valor existe em um lugar só, o zod. O motivo e o preço
 estão em [`modelos-db.md`](./modelos-db.md#os-check-foram-removidos). Para o
 cliente, a mudança é boa — nada de `409 CONFLICT` genérico por valor inválido,
-sempre `400 INVALID_VALUE` com o campo nomeado — com duas brechas, ambas
-conhecidas e registradas:
-
-- `PATCH {"tipoImovel":"ALUGADO"}` sem `valorAluguel` é aceito: o schema julga o
-  par só quando o próprio pedido traz os dois campos.
-- `PATCH {"entregaId":...}` em item sem `coletaId` é aceito: a invariante de que
-  toda entrega vem de uma coleta é da linha, e nada a julga.
+sempre `400 INVALID_VALUE` com o campo nomeado. Nos `PATCH`, o handler combina o
+payload com o registro existente antes de conferir `tipoImovel` ×
+`valorAluguel` e `entregaId` × `coletaId`.
 
 ## Valores recusados pelo banco
 
 Duas coisas, e só duas:
 
-- **Referência que não existe.** `coleta.doador_id`, `entrega.assistido_id`,
-  `item.nome_id`/`coleta_id`/`entrega_id` são `FOREIGN KEY`, e o D1 recusa a
-  escrita. `handleApiError` traduz o erro: em `POST`/`PATCH` é
-  `400 INVALID_REFERENCE` (o cliente inventou o id), e em `DELETE` é
-  `409 CONFLICT` (o registro tem linhas dependentes). A mensagem é a mesma para as
-  cinco chaves, porque o texto do D1 não diz qual delas falhou.
+- **Referência que não existe.** A API recusa antes da escrita uma referência
+  ausente ou pertencente a outra organização. A `FOREIGN KEY` ainda protege
+  escritas diretas e condições de corrida; `handleApiError` traduz uma violação
+  residual em `400 INVALID_REFERENCE` no `POST`/`PATCH` e em `409 CONFLICT` no
+  `DELETE`.
 - **Nome repetido no catálogo.** `categoria_item_nome_uniq` e
   `nome_item_nome_uniq` são `CREATE UNIQUE INDEX` sobre `lower(nome)`, então
   "arroz 5kg" e "Arroz 5kg" colidem. Sai como `409 CONFLICT`, que é o status
@@ -151,10 +150,8 @@ Duas coisas, e só duas:
 Fora das duas, o D1 não recusa nada: não há `check()`. A
 [tabela acima](#regras-de-domínio) é a lista do que a API recusa, e vale apenas
 para o que passa por ela — D1 Studio, `npm run db-seed` e scripts futuros
-escrevem sem nenhum desses filtros. A migration que remove os `check()` ainda não
-foi gerada, então os bancos já existentes **continuam recusando** esses valores
-com `409` genérico; ver
-[`modelos-db.md`](./modelos-db.md#os-check-foram-removidos).
+escrevem sem nenhum desses filtros. A migration multi-tenant reconstrói as
+tabelas no formato atual e remove os `check()` legados.
 
 ## Limitação conhecida
 
@@ -170,9 +167,15 @@ atualizar e excluir de cada recurso, além dos casos negativos. Cada request
 envia o cookie `better-auth.session_token` e tem assertions no `afterResponse`.
 
 1. Inicialize e popule o D1 local: `npm run local-db-init`.
-2. Rode `npm run dev`.
-3. Importe o Environment e a Collection do YAML em `insomnia/`.
-4. Execute a coleção na ordem apresentada pelo Collection Runner.
+2. Crie uma conta local, vincule-a a uma organização e deixe essa organização
+   ativa na sessão. O Better Auth guarda a escolha em
+   `session.active_organization_id`.
+3. Rode `npm run dev`.
+4. Importe os dois YAMLs da pasta mais recente em `insomnia/`.
+5. No Environment, preencha `SESSION_COOKIE` com o cabeçalho completo, por
+   exemplo `better-auth.session_token=<token-local>`. Nunca salve o token real
+   no YAML ou no Git.
+6. Execute a coleção na ordem apresentada pelo Collection Runner.
 
-A coleção usa `{{ _.BASE_URL }}` e salva os IDs criados em variáveis como
+A coleção usa `{{ _.BASE_URL }}` e `{{ _.SESSION_COOKIE }}`, e salva os IDs criados em variáveis como
 `{{ _.ASSISTIDO_CREATED_ID }}`, então os requests dependem da execução anterior.

@@ -5,7 +5,7 @@ meta:
   id: wrk_37836c6a5b4d4e82b3a1ad7b01a10c4c
   created: 1789571323055
   modified: 1790210000000
-  description: CRUD dos recursos de dominio em /api/v1. Todos os requests enviam o cookie de sessao, exceto o caso de 401.
+  description: CRUD dos recursos de dominio em /api/v1. Preencha SESSION_COOKIE no ambiente local; nenhuma credencial real e versionada.
 collection:
   - name: 'Assistidos'
     meta:
@@ -21,7 +21,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -43,7 +43,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -52,7 +52,7 @@ collection:
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
-            insomnia.test('status 200', () => insomnia.expect(insomnia.response.code).to.eql(201));
+            insomnia.test('status 201', () => insomnia.expect(insomnia.response.code).to.eql(201));
             insomnia.test('nome salvo', () => insomnia.expect(body.data.nome).to.eql('Assistido de teste Insomnia'));
             insomnia.test('uf guardada no enum do schema', () => insomnia.expect(body.data.uf).to.eql('SP'));
             insomnia.test('renda numerica', () => insomnia.expect(body.data.renda).to.eql(1200.5));
@@ -74,7 +74,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -96,7 +96,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -130,7 +130,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -152,7 +152,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -180,7 +180,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -202,7 +202,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -235,7 +235,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -257,7 +257,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -285,7 +285,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -307,7 +307,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -340,7 +340,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -362,7 +362,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -390,7 +390,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -412,7 +412,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -445,7 +445,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -467,7 +467,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -495,7 +495,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             const body = insomnia.response.json();
@@ -517,7 +517,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -544,7 +544,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -572,7 +572,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -598,7 +598,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -624,7 +624,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -673,7 +673,7 @@ collection:
         method: GET
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 404', () => insomnia.expect(insomnia.response.code).to.eql(404));
@@ -694,7 +694,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -720,7 +720,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -746,7 +746,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -772,7 +772,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -798,7 +798,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -824,7 +824,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -850,7 +850,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -876,7 +876,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -902,7 +902,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -928,7 +928,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -954,7 +954,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -980,7 +980,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1007,7 +1007,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1034,7 +1034,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1061,7 +1061,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1088,7 +1088,7 @@ collection:
         method: POST
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1114,7 +1114,7 @@ collection:
         method: PATCH
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         - name: Content-Type
           value: application/json
         body:
@@ -1146,7 +1146,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
@@ -1166,7 +1166,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
@@ -1186,7 +1186,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
@@ -1206,7 +1206,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
@@ -1226,7 +1226,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));
@@ -1246,7 +1246,7 @@ collection:
         method: DELETE
         headers:
         - name: Cookie
-          value: 'better-auth.session_token=ytQjhLSiy8fAlTbYsR8hyLwbx3CgFoQ6.jbqm3TiPuID15V7oVJeEDQbCrGGpdHDAlnbZ9twS534%3D'
+          value: '{{ _.SESSION_COOKIE }}'
         scripts:
           afterResponse: |
             insomnia.test('status 204', () => insomnia.expect(insomnia.response.code).to.eql(204));

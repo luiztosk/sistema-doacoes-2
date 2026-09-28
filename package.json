@@ -81,7 +81,7 @@
 		"deploy": "wrangler deploy",
 		"dev": "vite dev",
 		"lint": "eslint .",
-		"test": "tsx tests/api.ts",
+		"test": "tsx tests/api.ts && tsx tests/seed.ts",
 		"gen-auth": "npx auth@latest generate --config=./src/worker/auth.ts --output=./src/worker/db/auth-schema.ts",
 		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "npx tsx src/worker/db/seed.ts",

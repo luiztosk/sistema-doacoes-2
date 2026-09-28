@@ -1,3 +1,7 @@
+> ⚠️ **Arquivado em 28/09/2026.** Registro histórico de ajuste do plano de ação.
+> Todas as linhas estão fulfilladas ou datadas, exceto **Q6 (19/10/2026)**.
+> Não é um plano ativo. Contexto: [`README.md`](./README.md).
+
 Boa tarde pessoal, @rodrigosantos segue alterações nas quinzenas do plano de ação, e onde eu falei Vitest para fazer os testes pode trocar por Insomnia, é um app que permite testar API e acredito que faz bastante sentido aqui, inclusive quem quiser aprender a usar, acho bem legal pra entender como funciona API e não é complicado.
 
 ## trocas no Plano-de-Ação.docx

@@ -1,3 +1,10 @@
+> ⚠️ **Arquivado em 28/09/2026.** Duas premissas deste plano mudaram depois:
+> o `better-auth-ui` foi adotado e removido (`1d51dd9`), e o shadcn foi
+> instalado sobre **Base UI**, não Radix (`components.json` usa `base-maia` e o
+> `radix` nunca entrou no `package.json`). A seção de riscos que justifica a
+> acessibilidade via Radix está errada nesse ponto.
+> O que foi realmente adotado está em [`../arquitetura.md`](../arquitetura.md).
+
 # Plano — Stack UI: better-auth-ui + shadcn/ui + TanStack Query + TanStack Table
 
 Estado: rascunho revisado. Baseado nas documentações consultadas:

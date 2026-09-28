@@ -66,16 +66,48 @@ Erros usam o formato:
 ```
 
 Códigos: `400` para dados inválidos, `401` sem sessão, `404` para recurso
-inexistente, `409` para conflito com registros relacionados e `415` quando o
-corpo não é enviado como `application/json`. O `401` é a única resposta sem
-corpo: o `requireSession` lança um `HTTPException` cru, e o status basta.
+inexistente, `409` para conflito com registros relacionados, `415` quando o
+corpo não é enviado como `application/json` e `500` para erro inesperado. O `401`
+é a única resposta sem corpo: o `requireSession` lança um `HTTPException` cru, e
+o status basta.
+
+Lista fechada dos códigos que o cliente pode receber:
+
+| Código | Status | Quando |
+|---|---|---|
+| `REQUIRED_FIELD` | 400 | Coluna `NOT NULL` ausente ou `null` |
+| `UNKNOWN_FIELD` | 400 | Campo que não existe na tabela |
+| `READ_ONLY_FIELD` | 400 | Tentou enviar `id` no corpo |
+| `EMPTY_UPDATE` | 400 | `PATCH` sem nenhum campo |
+| `INVALID_VALUE` | 400 | Valor fora do domínio (enum, formato, `>= 0`, regra de domínio) |
+| `INVALID_REFERENCE` | 400 | FK apontando para registro inexistente |
+| `INVALID_STATUS_TRANSITION` | 400 | Salto de status não permitido no `item` |
+| `DELIVERY_REQUIRED` | 400 | `item` indo para `ENTREGUE` sem `entregaId` |
+| `INVALID_JSON` | 400 | Corpo não é JSON parseável |
+| `INVALID_BODY` | 400 | Corpo é JSON, mas não é um objeto |
+| `NOT_FOUND` | 404 | Registro ou rota inexistente |
+| `CONFLICT` | 409 | Unique violado, ou `DELETE` com registro relacionado |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | `content-type` diferente de `application/json` |
+| `INTERNAL_ERROR` | 500 | Qualquer outra falha, inclusive `CHECK constraint failed` |
+
+`POST` responde `201` com um header `Location` apontando para o recurso criado.
+
+Uma requisição devolve **no máximo um** erro: o validador para no primeiro
+problema encontrado, então um corpo com três campos inválidos não vem com três
+erros.
 
 O **código** é o contrato: é nele que o cliente deve ramificar, e é ele que a
 coleção do Insomnia verifica. A `message` é uma frase em inglês, escrita para
-quem está olhando a resposta, e vem em duas formas — a genérica
-(`Field 'renda' has an invalid value.`) para valor inválido, e a específica
+quem está olhando a resposta, e vem em três formas — a genérica
+(`Field 'renda' has an invalid value.`) para valor inválido, a específica
 quando a regra diz mais do que isso (`Field 'uf' must be one of: …`, e a frase do
-próprio `refinement` para as regras de domínio).
+próprio `refinement` para as regras de domínio), e a que **não traz o nome do
+campo**, usada pelas regras que envolvem dois campos ao mesmo tempo, como
+`compatAluguelImovel`.
+
+> **Exceção ao idioma:** o handler de rota não encontrada devolve
+> `"Rota não encontrada."`, em português (`src/worker/index.ts`). Vale corrigir
+> para manter a regra acima — está anotado em [`../AGENTS.md`](../AGENTS.md).
 
 ## Regras de domínio
 

@@ -1,3 +1,10 @@
+> ⚠️ **Arquivado em 28/09/2026.** Este plano foi executado em boa parte, mas por
+> outro desenho: o route tree é **gerado** por `@tanstack/router-plugin`
+> (contradiz o item marcado `[x]` na Fase 2) e `src/lib`/`src/components` foram
+> movidos para dentro de `src/react-app`. As fases 3 e 4 seguem em pé.
+> Contexto e o que ainda vale: [`README.md`](./README.md).
+> Estado atual: [`../arquitetura.md`](../arquitetura.md), [`../api.md`](../api.md).
+
 # Plano de integração — TanStack Router e Better Auth UI
 
 **Estado:** plano de execução para transformar o frontend atual em uma SPA integrada.
@@ -12,20 +19,20 @@ Este plano separa a integração em fases pequenas. Cada fase deve ser concluíd
 
 O frontend agora usa TanStack Router como entrada principal:
 
-- [`src/react-app/main.tsx`](../src/react-app/main.tsx) monta `RouterProvider`.
-- [`src/react-app/router.tsx`](../src/react-app/router.tsx) contém o route tree manual.
-- [`src/react-app/routes/__root.tsx`](../src/react-app/routes/__root.tsx) fornece o layout e a navegação principal.
-- [`src/react-app/routes/index.tsx`](../src/react-app/routes/index.tsx) é a rota `/`.
-- [`src/react-app/routes/about.tsx`](../src/react-app/routes/about.tsx) é a rota `/about`.
-- [`src/react-app/routes/test-query.tsx`](../src/react-app/routes/test-query.tsx) isola o sample do Vite em `/test-query` para testes futuros.
-- [`src/components/auth/auth-provider.tsx`](../src/components/auth/auth-provider.tsx) é o wrapper real do Better Auth UI; `src/components/providers.tsx` não existe.
-- [`src/lib/auth-client.ts`](../src/lib/auth-client.ts) é o cliente frontend compartilhado.
+- [`src/react-app/main.tsx`](../../src/react-app/main.tsx) monta `RouterProvider`.
+- [`src/react-app/router.tsx`](../../src/react-app/router.tsx) contém o route tree manual.
+- [`src/react-app/routes/__root.tsx`](../../src/react-app/routes/__root.tsx) fornece o layout e a navegação principal.
+- [`src/react-app/routes/index.tsx`](../../src/react-app/routes/index.tsx) é a rota `/`.
+- [`src/react-app/routes/about.tsx`](../../src/react-app/routes/about.tsx) é a rota `/about`.
+- [`src/react-app/routes/test-query.tsx`](../../src/react-app/routes/test-query.tsx) isola o sample do Vite em `/test-query` para testes futuros.
+- [`src/components/auth/auth-provider.tsx`](../../src/components/auth/auth-provider.tsx) é o wrapper real do Better Auth UI; `src/components/providers.tsx` não existe.
+- [`src/lib/auth-client.ts`](../../src/lib/auth-client.ts) é o cliente frontend compartilhado.
 - `src/lib` e `src/components` permanecem fora de `src/react-app`. Os módulos atuais usados pelo frontend são client-only, mas movê-los é uma decisão de organização, não um requisito do bundler; `src/worker` deve continuar fora da árvore frontend.
-- O backend Better Auth está configurado em [`src/worker/auth.ts`](../src/worker/auth.ts) com `basePath: "/api/auth"` e somente o plugin `organization()`.
-- [`tsconfig.json`](../tsconfig.json) contém `ignoreDeprecations: "6.0"`; o TypeScript instalado aceita a configuração, mas a remoção pode ser feita como limpeza.
-- [`tsconfig.app.json`](../tsconfig.app.json) inclui `src/react-app`, `src/lib` e `src/components`.
+- O backend Better Auth está configurado em [`src/worker/auth.ts`](../../src/worker/auth.ts) com `basePath: "/api/auth"` e somente o plugin `organization()`.
+- [`tsconfig.json`](../../tsconfig.json) contém `ignoreDeprecations: "6.0"`; o TypeScript instalado aceita a configuração, mas a remoção pode ser feita como limpeza.
+- [`tsconfig.app.json`](../../tsconfig.app.json) inclui `src/react-app`, `src/lib` e `src/components`.
 
-A documentação [`plano-ui-stack.md`](./plano-ui-stack.md) é a referência da stack, mas ainda descreve parte do estado anterior. [`adaptacoes-nova-stack.md`](./fluxo-telas/adaptacoes-nova-stack.md) também está desatualizada e deve ser revisada após a implementação.
+A documentação [`plano-ui-stack.md`](./plano-ui-stack.md) é a referência da stack, mas ainda descreve parte do estado anterior. [`adaptacoes-nova-stack.md`](../fluxo-telas/adaptacoes-nova-stack.md) também está desatualizada e deve ser revisada após a implementação.
 
 ---
 
@@ -146,13 +153,13 @@ src/react-app/
     test-query.tsx
 ```
 
-O arquivo [`src/react-app/router.tsx`](../src/react-app/router.tsx) é a única fonte de verdade do route tree. O projeto não usa rotas geradas por `@tanstack/router-plugin`; portanto, não há arquivos em `src/routes/` nem um `src/router.tsx` separado.
+O arquivo [`src/react-app/router.tsx`](../../src/react-app/router.tsx) é a única fonte de verdade do route tree. O projeto não usa rotas geradas por `@tanstack/router-plugin`; portanto, não há arquivos em `src/routes/` nem um `src/router.tsx` separado.
 
 As rotas públicas atuais são:
 
-- `/` — [`src/react-app/routes/index.tsx`](../src/react-app/routes/index.tsx);
-- `/about` — [`src/react-app/routes/about.tsx`](../src/react-app/routes/about.tsx);
-- `/test-query` — [`src/react-app/routes/test-query.tsx`](../src/react-app/routes/test-query.tsx), mantido como área de testes futura para autenticação e queries.
+- `/` — [`src/react-app/routes/index.tsx`](../../src/react-app/routes/index.tsx);
+- `/about` — [`src/react-app/routes/about.tsx`](../../src/react-app/routes/about.tsx);
+- `/test-query` — [`src/react-app/routes/test-query.tsx`](../../src/react-app/routes/test-query.tsx), mantido como área de testes futura para autenticação e queries.
 
 Critério de conclusão: a aplicação abre em `/`, navega entre pelo menos duas rotas sem recarregar a página e o sample do Vite não é mais a entrada principal.
 
@@ -230,7 +237,7 @@ Critério de conclusão: cada recurso habilitado na UI tem implementação compa
 Objetivo: integrar autenticação ao sistema de doações sem expor dados entre organizações.
 
 - [ ] Criar layout autenticado da aplicação.
-- [ ] Criar rotas para assistidos, doadores, coletas, entregas e estoque, conforme [`adaptacoes-nova-stack.md`](./fluxo-telas/adaptacoes-nova-stack.md).
+- [ ] Criar rotas para assistidos, doadores, coletas, entregas e estoque, conforme [`adaptacoes-nova-stack.md`](../fluxo-telas/adaptacoes-nova-stack.md).
 - [ ] Criar guard/`beforeLoad` que verifica sessão antes de renderizar rotas protegidas.
 - [ ] Obter organização ativa da sessão, nunca de parâmetro enviado pelo cliente.
 - [ ] Aplicar autorização no backend para `401`, `403` e acesso cruzado.

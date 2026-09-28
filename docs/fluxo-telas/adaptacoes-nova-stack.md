@@ -7,19 +7,26 @@ Drizzle vigente.
 
 ## Estado atual do PI II
 
-Em 18/09/2026, no commit `5b3d005` da `main`:
+Atualizado em 28/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/2026):
 
 - o schema Drizzle/D1 já contém assistido, doador, categoria/nome de item,
   coleta, entrega e item;
-- as tabelas de domínio possuem `organization_id`;
-- o Better Auth e o plugin Organization estão configurados no backend;
-- a API expõe somente consultas provisórias de assistidos (`GET /api/` e
-  `GET /api/:id`), ainda sem autenticação, autorização ou filtro por
-  organização;
-- o frontend continua sendo a tela de exemplo do Vite, sem roteamento e sem os
-  fluxos do legado;
-- TanStack Router/Table, shadcn/ui e better-auth-ui constam apenas no plano de
-  UI e ainda não são dependências do projeto.
+- **as tabelas de domínio não possuem `organization_id`** — a coluna foi removida
+  junto com a integração do Better Auth e volta com a
+  [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Ver
+  [`../modelos-db.md`](../modelos-db.md);
+- o Better Auth e o plugin Organization estão configurados no backend, e login e
+  cadastro funcionam;
+- a API expõe CRUD completo dos 5 recursos sob `/api/v1`, **com sessão
+  obrigatória** e validação de payload por zod, mas **sem** autorização nem
+  filtro por organização. Ver [`../api.md`](../api.md);
+- o frontend usa **TanStack Router** com rotas `/auth/login`, `/auth/signup` e
+  `/auth/logout`; a única tela de dados é a de exemplo do Vite em
+  `/test-query`. Ainda **não** existem telas dos fluxos do legado;
+- TanStack Router, TanStack Query e shadcn/ui **são** dependências. O
+  `better-auth-ui` chegou a ser instalado e foi removido (`1d51dd9`); o shadcn
+  foi montado sobre **Base UI**. O `@tanstack/react-table` está instalado mas
+  sem uso.
 
 ## Matriz de migração
 

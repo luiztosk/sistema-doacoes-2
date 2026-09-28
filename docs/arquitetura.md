@@ -1,6 +1,6 @@
 # Arquitetura do Sistema
 
-Registro das decisões técnicas do PI II. Última atualização: 26/08/2026.
+Registro das decisões técnicas do PI II. Última atualização: 28/09/2026.
 
 ## Stack definida
 
@@ -12,7 +12,7 @@ Registro das decisões técnicas do PI II. Última atualização: 26/08/2026.
 | Banco de dados | Cloudflare D1 (SQLite no edge) | Nativo do Workers, gerenciado via Drizzle ORM |
 | ORM | Drizzle ORM + drizzle-kit | Type-safe, gera migrations SQL |
 | Autenticação | Better Auth (plugin Organization) | Substitui o Flask-Security; cuida de sessão, CSRF e convites |
-| Testes | Vitest (automatizados) + Insomnia (exploração manual da API) | Testes automatizados são requisito do tema do PI II |
+| Testes | `tsx tests/api.ts` (automatizados) + Insomnia (exploração manual da API) | Testes automatizados são requisito do tema do PI II |
 | Controle de versão | Git + GitHub | Branch `main` protegida; trabalho via feature branches + PR |
 
 > Next.js foi considerado e descartado em favor do Hono, que é mais leve e mais
@@ -22,16 +22,58 @@ Registro das decisões técnicas do PI II. Última atualização: 26/08/2026.
 
 - O Cloudflare Workers está integrado ao GitHub: **todo commit na `main` dispara
   build e deploy automáticos** (por isso a `main` é protegida — só recebe PR).
-- Para testar uma versão sem afetar produção: usar a branch `stage` ou pedir um
-  build de um commit específico.
+- Todo push para uma branch que não seja a `main` também dispara um build e gera
+  uma **preview URL**, postada como comentário no Pull Request. É esse link que
+  permite testar antes do merge.
 - Protótipo no ar: <https://sd2.tosk.dev>
+
+### Atenção: a preview usa os recursos de produção
+
+A preview roda com as mesmas *bindings* da produção, ou seja, no mesmo banco
+`prod-sistema-doacoes-2`. **Testar manualmente pela preview URL escreve no banco
+de produção.** Hoje esse banco só tem dado de seed, e `npm run db-seed` recria
+tudo, então o risco é baixo — mas não é um ambiente isolado. Se algum dia
+precisarmos de um banco separado para testes, o caminho é migrar para Worker
+Previews (isolamento por branch) ou criar um `env` de staging no `wrangler.jsonc`.
+
+### O que roda a cada build
+
+O Cloudflare executa o script `build` do `package.json`, que hoje é:
+
+```
+npm run lint && npm test && tsc -b && vite build
+```
+
+O `&&` faz o build parar no primeiro erro: um problema de lint ou um teste
+quebrado **impedem o deploy**. Esse build também reporta um status check no
+GitHub, e a `main` exige que ele passe — ou seja, um merge com lint quebrado ou
+teste vermelho não entra.
+
+Como esse gate é automático, ele também bloqueia o merge por motivos que não são
+código: cota de build esgotada, token de API inválido ou timeout de 20 min. Se
+a `main` ficar travada sem erro de código, checar o histórico de builds no
+dashboard antes de suspeitar do repositório.
 
 ## Fluxo de contribuição
 
-1. Criar uma feature branch a partir da `main` (ou usar `stage`)
+1. Criar uma feature branch a partir da `main`
+   - `main` é a **única** branch de longa vida. `dev` e `stage` existiram e foram
+     abandonadas (set/2026 e ago/2026) — não criar de novo.
 2. Commits pequenos e descritivos
-3. Abrir Pull Request para a `main`
-4. Após revisão e merge, o deploy acontece sozinho
+3. Abrir o Pull Request cedo, pode ser como *draft*, só para pegar a preview URL
+4. Fazer os testes manuais naquela preview URL, em lote
+5. Mergear quando o check passar; o deploy acontece sozinho
+
+### Duas camadas de teste
+
+| Camada | Comando | Quando |
+|---|---|---|
+| Automatizada | `npm run lint`, `npm test` | A cada push, via build do Cloudflare |
+| Manual | Insomnia, fluxos de tela | Em lote, sobre a preview URL do PR |
+
+Automatizada roda sempre porque custa segundos. Manual é em lote porque custa
+minutos — mas nunca reste a testes automatizados, que são justamente o que
+mantém um lote longo confiável.
 
 ## Migração do sistema legado (PI I)
 

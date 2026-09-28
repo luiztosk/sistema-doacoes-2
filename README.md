@@ -58,12 +58,22 @@ importar o Environment e a Collection no seu Insomnia (Vault Local).
 ## Contribuindo com o projeto (membros do grupo)
 
 1. Me avise pelo Whatsapp pra eu adicionar sua conta como contributor
-2. Crie um feature branch específico
-3. Faça o push do feature branch (vou dar mais detalhes aqui, preciso lembrar como fizemos no semestre passado)
-4. Faça o Pull Request aqui pelo github, pra eu poder fazer o merge
-   - podemos subir uma versão de teste separada primeiro, de um commit específico, me avise
-   - se estiver tudo certo então faço o merge no main e passa a ser a versão oficial
-    > configurei o Cloudflare Worker pra assim que altero o main, ele já builda e faz o deploy
+2. Crie uma feature branch a partir da `main` (a `main` é a única branch de longa
+   vida — `dev` e `stage` foram abandonadas, não criar de novo)
+3. Faça commits pequenos e descritivos e dê push
+4. Abra o Pull Request assim que puder, pode ser como *draft*: o Cloudflare
+   responde com um build e uma **preview URL** em comentário no PR
+5. Teste manualmente naquela preview URL, em lote
+6. Quando estiver ok, eu faço o merge na `main` e o deploy acontece sozinho
+   > o Cloudflare Worker está configurado para buildar e fazer deploy a cada
+   > commit na `main`. A `main` exige que o check do build passe, então um
+   > merge com lint quebrado ou teste vermelho não entra.
+
+Detalhes do fluxo de deploy e de testes: [`docs/arquitetura.md`](./docs/arquitetura.md).
+
+> A preview URL usa as mesmas bindings da produção, então testar por ela escreve
+> no banco `prod-sistema-doacoes-2`. Ele só tem dado de seed e `npm run db-seed`
+> recria tudo.
 
 
 ## Planejamento do "tema" do projeto, ou seja, quais ferramentas e frameworks serão usados
@@ -81,7 +91,8 @@ podemos usar tbm o Vitest, que é uma ferramenta de testes.
 - nuvem: Cloudflare Workers
 - banco de dados: Cloudflare D1
 - controle versão: git + GitHub
-- testes: Insomnia (API)
+- testes automatizados: `npm test` (`tsx tests/api.ts`)
+- testes manuais da API: Insomnia
 
 ## Materiais para estudo / referência bibliográfica
 

@@ -13,15 +13,12 @@
   "iconLibrary": "hugeicons",
   "rtl": false,
   "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
+    "components": "@/react-app/components",
+    "utils": "@/react-app/lib/utils",
+    "ui": "@/react-app/components/ui",
+    "lib": "@/react-app/lib",
+    "hooks": "@/react-app/hooks"
   },
   "menuColor": "default",
-  "menuAccent": "subtle",
-  "registries": {
-    "@better-auth-ui": "https://better-auth-ui.com/r/{style}/{name}.json"
-  }
+  "menuAccent": "subtle"
 }

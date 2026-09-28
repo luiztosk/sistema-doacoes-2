@@ -59,6 +59,33 @@ Os scripts que já embrulham isso:
 | `npm run local-db-init` | Gera auth schema + migration, aplica no banco local, roda `wrangler types` e semeia |
 | `npm run remote-db-init` | Mesma coisa, mas com `--remote` — **aplica em produção** |
 
+## Recriar o banco do zero
+
+Foi a decisão tomada para os 26 `check()` que ficaram no banco sem estar no
+`schema.ts`: em vez de escrever a migration que os derruba, geramos as
+migrations de um schema novo e semeamos em cima. Vale para o local e para o
+remoto.
+
+O `local-db-init` aplica as migrations que já existem, então recomeçar exige
+descartar o estado local antes:
+
+```bash
+rm -rf .wrangler/state          # apaga o banco local (recriado no passo seguinte)
+npm run local-db-init           # migrations + tipos + seed, tudo local
+```
+
+No remoto é o mesmo raciocínio, com o cuidado de sempre: criar o banco zerado e
+aplicar. **Rode `--remote` só quando for de verdade** — o `db-seed` em si
+escreve sempre no local, porque usa `getPlatformProxy()`.
+
+Ordem ao mexer no schema:
+
+1. edite `src/worker/db/schema.ts`
+2. `npm run gen-drizzle` e confira o `migration.sql` que saiu
+3. commit do `schema.ts` **e** da pasta da migration
+4. `rm -rf .wrangler/state && npm run local-db-init` para validar do zero
+5. só depois aplique no remoto
+
 ## Dados de desenvolvimento
 
 Não existe `seeds/baseline.sql`. O seed é um script que lê CSVs de `mock_data/`:

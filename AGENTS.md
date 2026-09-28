@@ -126,19 +126,32 @@ referência do estado atual.
 
 ## Dívidas conhecidas
 
-Não corrigidas de propósito, para não misturar com trabalho de docs:
-
-- A migration que derruba os 26 `check()` continua pendente.
+- **O banco local e o remoto vão ser recriados do zero.** Decisão de quem
+  maintaina: em vez de escrever a migration que derruba os 26 `check()`, gerar as
+  migrations de um schema novo e semear em cima. Até lá, enquanto os `check()`
+  existirem no banco, uma escrita rejeitada por eles volta como `500` — item 2
+  acima.
 - `handleApiError` não trata `CHECK constraint failed` (vira `500`).
-- Dependências instaladas e sem uso: `@tanstack/react-table`,
-  `@tanstack/react-pacer`, `@tanstack/react-store`, `react-aria-components`,
-  `input-otp`, `bowser`, `react-email`, `@phosphor-icons/react`, `lucide-react`.
-  O `lucide-react` e o `@phosphor-icons/react` convivem; o resto é do template.
 - `next-themes` é importado por `components/ui/sonner.tsx`, mas o `<Toaster>`
-  nunca é montado.
-- `components.json` ainda registra o registry do `@better-auth-ui`, que foi
-  removido.
+  nunca é montado. Se nada usar toast, remova os dois.
+- `src/react-app/lib/utils.ts` só faz `export { cn } from "cn"` e não é importado
+  por ninguém — os componentes importam `cn` do pacote direto.
 - `tsconfig.json` mantém `ignoreDeprecations: "6.0"`.
-- Lint tem 5 warnings permanentes (3 de `react-refresh` em `components/ui/*`, 2 de
-  `eslint-disable` não usado em `worker-configuration.d.ts`, que é gerado).
 - Sem CI no GitHub Actions: quem roda lint e teste é o Cloudflare Builds.
+
+## Lint: por que existem duas exceções no `eslint.config.js`
+
+`npm run lint` fecha em **zero warning**. As duas exceções estão no config, e não
+em comentário dentro do arquivo, porque ambos os arquivos são sobrescritos por
+ferramenta:
+
+- `react-refresh/only-export-components` desligada em
+  `src/react-app/components/ui/**`. Os componentes do shadcn exportam o
+  componente e o `cva` de variantes no mesmo arquivo, que é a convenção da lib.
+  Se alguém desabilitar por arquivo, `npx shadcn add` apaga o comentário na
+  próxima vez. Fora de `components/ui/` a regra continua valendo.
+- `reportUnusedDisableDirectives` desligada em `worker-configuration.d.ts`, que é
+  gerado por `npm run cf-typegen` e já vem com `// eslint-disable-line` que o lint
+  julga desnecessário.
+
+Se aparecer warning novo, **não** desligue a regra: ajuste o código.

@@ -1,12 +1,15 @@
 # Modelos do Banco de Dados (D1 + Drizzle ORM)
 
 > ⚠️ **O schema e o banco divergem em um ponto.** Existem **26 `check()` no banco**
-> que **não estão mais** no `schema.ts` (removidos em `efca2a7`), e a migration
-> que os derruba **ainda não foi gerada**. As duas migrations existentes são
-> `20260926213838_lucky_karma` (baseline) e `20260926230000_sleepy_green_goblin`
-> (dois `CREATE UNIQUE INDEX`). Enquanto os `check()` ficarem no banco, uma escrita
-> rejeitada por eles volta como `500 INTERNAL_ERROR` em vez de um erro de
-> validação — ver [Os `check()` foram removidos](#os-checks-foram-removidos).
+> que **não estão mais** no `schema.ts` (removidos em `efca2a7`). As duas
+> migrations existentes são `20260926213838_lucky_karma` (baseline, com os 26
+> `check()`) e `20260926230000_sleepy_green_goblin` (dois `CREATE UNIQUE INDEX`).
+> **Decisão:** em vez de escrever a migration que os derruba, o banco local e o
+> remoto serão recriados do zero — `npm run local-db-init` a partir de um estado
+> vazio, gerando as migrations de um schema novo e semeando em cima. Enquanto os
+> `check()` existirem no banco, uma escrita rejeitada por eles volta como
+> `500 INTERNAL_ERROR` em vez de um erro de validação — ver
+> [Os `check()` foram removidos](#os-checks-foram-removidos).
 
 Este documento descreve o modelo de dados do sistema novo, traduzido do projeto
 legado do PI I (Flask + SQLAlchemy + SQLite) e adaptado para a stack atual:

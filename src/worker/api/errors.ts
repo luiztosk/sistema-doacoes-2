@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { z } from "zod";
 
-export type ApiErrorStatus = 400 | 404 | 409 | 415;
+export type ApiErrorStatus = 400 | 403 | 404 | 409 | 415;
 
 type JsonObject = Record<string, unknown>;
 

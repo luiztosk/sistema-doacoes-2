@@ -13,6 +13,7 @@ import {
 	createUpdateSchema,
 } from "drizzle-orm/zod";
 import { z } from "zod";
+import { organization } from "./auth-schema";
 export * from "./auth-schema";
 
 export const UFS = [
@@ -90,34 +91,41 @@ function compatAluguelImovel(valores: {
 const INCOMPAT_ALUGUEL =
   "'valorAluguel' only exists on an 'ALUGADO' property, and an 'ALUGADO' property requires a 'valorAluguel' greater than zero.";
 
-export const assistido = sqliteTable("assistido", {
-  id: text("id").primaryKey(),
-  nome: text("nome").notNull(),
-  telefone: text("telefone"),
-  email: text("email"),
-  cep: text("cep"),
-  logradouro: text("logradouro"),
-  numero: text("numero"),
-  complemento: text("complemento"),
-  bairro: text("bairro"),
-  cidade: text("cidade"),
-  uf: text("uf", { enum: UFS }),
-  tipoImovel: text("tipo_imovel", { enum: TIPOS_IMOVEL }),
-  valorAluguel: integer("valor_aluguel"),
-  estadoCivil: text("estado_civil", { enum: ESTADOS_CIVIS }),
-  numeroAdultos: integer("numero_adultos"),
-  criancasPequenas: integer("criancas_pequenas"),
-  adolescentes: integer("adolescentes"),
-  doentes: integer("doentes", { mode: "boolean" }),
-  bolsaFamilia: integer("bolsa_familia", { mode: "boolean" }),
-  aposentado: integer("aposentado", { mode: "boolean" }),
-  pensao: integer("pensao", { mode: "boolean" }),
-  cestaBasica: integer("cesta_basica", { mode: "boolean" }),
-  atividadeRemunerada: integer("atividade_remunerada", { mode: "boolean" }),
-  renda: real("renda"),
-  criancaEscola: integer("crianca_escola", { mode: "boolean" }),
-  observacoes: text("observacoes"),
-});
+export const assistido = sqliteTable(
+	"assistido",
+	{
+		id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
+		nome: text("nome").notNull(),
+		telefone: text("telefone"),
+		email: text("email"),
+		cep: text("cep"),
+		logradouro: text("logradouro"),
+		numero: text("numero"),
+		complemento: text("complemento"),
+		bairro: text("bairro"),
+		cidade: text("cidade"),
+		uf: text("uf", { enum: UFS }),
+		tipoImovel: text("tipo_imovel", { enum: TIPOS_IMOVEL }),
+		valorAluguel: integer("valor_aluguel"),
+		estadoCivil: text("estado_civil", { enum: ESTADOS_CIVIS }),
+		numeroAdultos: integer("numero_adultos"),
+		criancasPequenas: integer("criancas_pequenas"),
+		adolescentes: integer("adolescentes"),
+		doentes: integer("doentes", { mode: "boolean" }),
+		bolsaFamilia: integer("bolsa_familia", { mode: "boolean" }),
+		aposentado: integer("aposentado", { mode: "boolean" }),
+		pensao: integer("pensao", { mode: "boolean" }),
+		cestaBasica: integer("cesta_basica", { mode: "boolean" }),
+		atividadeRemunerada: integer("atividade_remunerada", { mode: "boolean" }),
+		renda: real("renda"),
+		criancaEscola: integer("crianca_escola", { mode: "boolean" }),
+		observacoes: text("observacoes"),
+	},
+	(t) => [index("assistido_organizationId_idx").on(t.organizationId)],
+);
 
 const assistidoRefinements = {
   nome: nomeNaoVazio,
@@ -130,12 +138,12 @@ const assistidoRefinements = {
 };
 
 export const assistidoInsertSchema = createInsertSchema(assistido, assistidoRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict()
   .refine(compatAluguelImovel, { error: INCOMPAT_ALUGUEL });
 
 export const assistidoUpdateSchema = createUpdateSchema(assistido, assistidoRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict()
   .refine(
     (valores) =>
@@ -150,19 +158,26 @@ export const assistidoSelectSchema = createSelectSchema(assistido, {
   cep: cepGuardado,
 });
 
-export const doador = sqliteTable("doador", {
-  id: text("id").primaryKey(),
-  nome: text("nome").notNull(),
-  telefone: text("telefone"),
-  email: text("email"),
-  cep: text("cep"),
-  logradouro: text("logradouro"),
-  numero: text("numero"),
-  complemento: text("complemento"),
-  bairro: text("bairro"),
-  cidade: text("cidade"),
-  uf: text("uf", { enum: UFS }),
-});
+export const doador = sqliteTable(
+	"doador",
+	{
+		id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
+		nome: text("nome").notNull(),
+		telefone: text("telefone"),
+		email: text("email"),
+		cep: text("cep"),
+		logradouro: text("logradouro"),
+		numero: text("numero"),
+		complemento: text("complemento"),
+		bairro: text("bairro"),
+		cidade: text("cidade"),
+		uf: text("uf", { enum: UFS }),
+	},
+	(t) => [index("doador_organizationId_idx").on(t.organizationId)],
+);
 
 const doadorRefinements = {
   nome: nomeNaoVazio,
@@ -170,11 +185,11 @@ const doadorRefinements = {
 };
 
 export const doadorInsertSchema = createInsertSchema(doador, doadorRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const doadorUpdateSchema = createUpdateSchema(doador, doadorRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const doadorSelectSchema = createSelectSchema(doador, {
@@ -186,9 +201,17 @@ export const categoriaItem = sqliteTable(
   "categoria_item",
   {
     id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
     nome: text("nome").notNull(),
   },
-  (t) => [uniqueIndex("categoria_item_nome_uniq").on(sql`lower(${t.nome})`)],
+	(t) => [
+		uniqueIndex("categoria_item_nome_uniq").on(
+			t.organizationId,
+			sql`lower(${t.nome})`,
+		),
+	],
 );
 
 const categoriaItemRefinements = { nome: nomeNaoVazio };
@@ -197,14 +220,14 @@ export const categoriaItemInsertSchema = createInsertSchema(
   categoriaItem,
   categoriaItemRefinements,
 )
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const categoriaItemUpdateSchema = createUpdateSchema(
   categoriaItem,
   categoriaItemRefinements,
 )
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const categoriaItemSelectSchema = createSelectSchema(
@@ -216,25 +239,34 @@ export const nomeItem = sqliteTable(
   "nome_item",
   {
     id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
     categoriaId: text("categoria_id")
       .notNull()
       .references(() => categoriaItem.id, { onDelete: "no action" }),
     nome: text("nome").notNull(),
   },
   (t) => [
-    uniqueIndex("nome_item_nome_uniq").on(sql`lower(${t.nome})`),
-    index("nome_item_categoriaId_idx").on(t.categoriaId),
+		uniqueIndex("nome_item_nome_uniq").on(
+			t.organizationId,
+			sql`lower(${t.nome})`,
+		),
+		index("nome_item_organizationCategoria_idx").on(
+			t.organizationId,
+			t.categoriaId,
+		),
   ],
 );
 
 const nomeItemRefinements = { nome: nomeNaoVazio };
 
 export const nomeItemInsertSchema = createInsertSchema(nomeItem, nomeItemRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const nomeItemUpdateSchema = createUpdateSchema(nomeItem, nomeItemRefinements)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const nomeItemSelectSchema = createSelectSchema(nomeItem, nomeItemRefinements);
@@ -243,24 +275,32 @@ export const coleta = sqliteTable(
   "coleta",
   {
     id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
     doadorId: text("doador_id")
       .notNull()
       .references(() => doador.id, { onDelete: "no action" }),
     dataHora: integer("data_hora", { mode: "timestamp" }),
   },
-  (t) => [index("coleta_doadorId_idx").on(t.doadorId)],
+	(t) => [
+		index("coleta_organizationDoador_idx").on(
+			t.organizationId,
+			t.doadorId,
+		),
+	],
 );
 
 export const coletaInsertSchema = createInsertSchema(coleta, {
   dataHora: dataHoraDeEntrada,
 })
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const coletaUpdateSchema = createUpdateSchema(coleta, {
   dataHora: dataHoraDeEntrada,
 })
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const coletaSelectSchema = createSelectSchema(coleta);
@@ -269,24 +309,32 @@ export const entrega = sqliteTable(
   "entrega",
   {
     id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
     assistidoId: text("assistido_id")
       .notNull()
       .references(() => assistido.id, { onDelete: "no action" }),
     dataHora: integer("data_hora", { mode: "timestamp" }),
   },
-  (t) => [index("entrega_assistidoId_idx").on(t.assistidoId)],
+	(t) => [
+		index("entrega_organizationAssistido_idx").on(
+			t.organizationId,
+			t.assistidoId,
+		),
+	],
 );
 
 export const entregaInsertSchema = createInsertSchema(entrega, {
   dataHora: dataHoraDeEntrada,
 })
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const entregaUpdateSchema = createUpdateSchema(entrega, {
   dataHora: dataHoraDeEntrada,
 })
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const entregaSelectSchema = createSelectSchema(entrega);
@@ -295,6 +343,9 @@ export const item = sqliteTable(
   "item",
   {
     id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "no action" }),
     nomeId: text("nome_id")
       .notNull()
       .references(() => nomeItem.id, { onDelete: "no action" }),
@@ -309,18 +360,18 @@ export const item = sqliteTable(
     }),
   },
   (t) => [
-    index("item_status_idx").on(t.status),
-    index("item_coletaId_idx").on(t.coletaId),
-    index("item_entregaId_idx").on(t.entregaId),
+		index("item_organizationStatus_idx").on(t.organizationId, t.status),
+		index("item_organizationColeta_idx").on(t.organizationId, t.coletaId),
+		index("item_organizationEntrega_idx").on(t.organizationId, t.entregaId),
   ],
 );
 
 export const itemInsertSchema = createInsertSchema(item)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const itemUpdateSchema = createUpdateSchema(item)
-  .omit({ id: true })
+	.omit({ id: true, organizationId: true })
   .strict();
 
 export const itemSelectSchema = createSelectSchema(item);

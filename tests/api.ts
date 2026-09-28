@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { handleApiError } from "../src/worker/api/errors";
 import { registerResources } from "../src/worker/api/v1";
+import type { AppEnv } from "../src/worker/env";
+import { requireOrganization } from "../src/worker/organization-middleware";
 
 /**
  * The API driven end to end without a D1: every route runs for real, and the
@@ -14,6 +16,7 @@ class DbError extends Error {
 }
 
 type Row = Record<string, unknown>;
+type Query = { sql: string; bindings: unknown[] };
 
 /**
  * The columns a query asked for, in order, so a fixture can be written as an
@@ -29,7 +32,9 @@ function selectedColumns(sql: string): string[] {
 		.map((column) => column.trim().replace(/^"|"$/g, ""));
 }
 
-function stubEnv(opts: { dbError?: string; rows?: Row[] } = {}) {
+function stubEnv(
+	opts: { dbError?: string; queries?: Query[]; rows?: Row[] } = {},
+) {
 	const rows = opts.rows ?? [];
 	const fail = () => {
 		throw new DbError(opts.dbError ?? "unexpected query");
@@ -41,15 +46,23 @@ function stubEnv(opts: { dbError?: string; rows?: Row[] } = {}) {
 				// Drizzle reads every result through `raw()`, which is positional:
 				// the values of a row, in the order the query asked for them.
 				const columns = selectedColumns(sql);
+				let bindings: unknown[] = [];
+				const recordQuery = () =>
+					opts.queries?.push({ sql, bindings: [...bindings] });
 				const stmt = {
-					bind: () => stmt,
+					bind: (...values: unknown[]) => {
+						bindings = values;
+						return stmt;
+					},
 					raw: async () => {
+						recordQuery();
 						if (opts.dbError) fail();
 						return rows.map((row) =>
 							columns.map((column) => row[column] ?? null),
 						);
 					},
 					run: async () => {
+						recordQuery();
 						if (opts.dbError) fail();
 						return { success: true };
 					},
@@ -61,17 +74,35 @@ function stubEnv(opts: { dbError?: string; rows?: Row[] } = {}) {
 	};
 }
 
-const app = new Hono<{ Bindings: Env }>();
-const api = new Hono<{ Bindings: Env }>();
+const app = new Hono<AppEnv>();
+const api = new Hono<AppEnv>();
 registerResources(api);
+app.use("/api/v1/*", async (c, next) => {
+	c.set("organization", {
+		id: "org-a",
+		memberId: "member-a",
+		role: c.req.header("x-test-role") ?? "member",
+	});
+	await next();
+});
 app.route("/api/v1", api);
 app.get("/sem-sessao", () => {
 	throw new HTTPException(401);
 });
 app.onError(handleApiError);
 
-const ASSISTIDO: Row = { id: "1", nome: "Ana", renda: 0 };
-const ITEM: Row = { id: "1", nome_id: "n1", status: "AGUARDA_COLETA" };
+const ASSISTIDO: Row = {
+	id: "1",
+	organization_id: "org-a",
+	nome: "Ana",
+	renda: 0,
+};
+const ITEM: Row = {
+	id: "1",
+	organization_id: "org-a",
+	nome_id: "n1",
+	status: "AGUARDA_COLETA",
+};
 const ITEM_EM_ESTOQUE: Row = { ...ITEM, status: "EM_ESTOQUE" };
 
 type Caso = {
@@ -82,13 +113,90 @@ type Caso = {
 	contentType?: string;
 	rows?: Row[];
 	dbError?: string;
+	role?: string;
 	status: number;
 	code?: string;
 	mensagem?: string;
 	semCorpo?: boolean;
+	verificarConsultas?: (queries: Query[]) => string | undefined;
 };
 
 const casos: Caso[] = [
+	{
+		nome: "lista filtrada pela organização ativa",
+		method: "GET",
+		path: "/api/v1/assistidos",
+		rows: [ASSISTIDO],
+		status: 200,
+		verificarConsultas: (queries) => {
+			const query = queries[0];
+			if (!query?.sql.includes('"organization_id"')) {
+				return "query sem filtro de organization_id";
+			}
+			if (!query.bindings.includes("org-a")) {
+				return "organization ativa não foi enviada ao banco";
+			}
+		},
+	},
+	{
+		nome: "organizationId é somente do servidor",
+		method: "POST",
+		path: "/api/v1/assistidos",
+		body: { nome: "Ana", organizationId: "org-b" },
+		status: 400,
+		code: "UNKNOWN_FIELD",
+		mensagem: "Field 'organizationId' is not accepted in this resource.",
+	},
+	{
+		nome: "criação injeta a organização ativa",
+		method: "POST",
+		path: "/api/v1/assistidos",
+		body: { nome: "Ana" },
+		rows: [ASSISTIDO],
+		status: 201,
+		verificarConsultas: (queries) => {
+			const insert = queries.find((query) =>
+				query.sql.toLowerCase().startsWith('insert into "assistido"'),
+			);
+			if (!insert?.sql.includes('"organization_id"')) {
+				return "insert sem organization_id";
+			}
+			if (!insert.bindings.includes("org-a")) {
+				return "insert sem a organização ativa";
+			}
+		},
+	},
+	{
+		nome: "ID de outro tenant é tratado como inexistente",
+		method: "GET",
+		path: "/api/v1/assistidos/id-do-outro-tenant",
+		rows: [],
+		status: 404,
+		code: "NOT_FOUND",
+		mensagem: "Assistido not found.",
+		verificarConsultas: (queries) => {
+			const query = queries[0];
+			if (!query?.sql.includes('"organization_id"')) {
+				return "busca por ID sem filtro de organization_id";
+			}
+			if (
+				!query.bindings.includes("org-a") ||
+				!query.bindings.includes("id-do-outro-tenant")
+			) {
+				return "busca por ID sem tenant e id nos bindings";
+			}
+		},
+	},
+	{
+		nome: "viewer não pode alterar registros",
+		method: "POST",
+		path: "/api/v1/assistidos",
+		body: { nome: "Ana" },
+		role: "viewer",
+		status: 403,
+		code: "FORBIDDEN",
+		mensagem: "Your role cannot change records in this organization.",
+	},
 	{
 		nome: "body sem o campo obrigatório",
 		method: "POST",
@@ -284,15 +392,23 @@ const casos: Caso[] = [
 		mensagem: "Send the body as application/json.",
 	},
 	{
-		nome: "referência que não existe no POST",
+		nome: "referência de outro tenant é recusada no POST",
 		method: "POST",
 		path: "/api/v1/coletas",
 		body: { doadorId: "nao-existe" },
-		dbError:
-			"FOREIGN KEY constraint failed: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_FOREIGNKEY)",
 		status: 400,
 		code: "INVALID_REFERENCE",
-		mensagem: "One of the references sent does not exist.",
+		mensagem:
+			"One of the references sent does not exist in the active organization.",
+		verificarConsultas: (queries) => {
+			const query = queries[0];
+			if (!query?.sql.includes('"organization_id"')) {
+				return "validação da referência sem organization_id";
+			}
+			if (!query.bindings.includes("org-a")) {
+				return "validação da referência sem a organização ativa";
+			}
+		},
 	},
 	{
 		nome: "referência bloqueada no DELETE",
@@ -345,14 +461,22 @@ async function run() {
 
 	for (const caso of casos) {
 		esperado = caso.status === 500;
+		const queries: Query[] = [];
 		const res = await app.request(
 			caso.path,
 			{
 				method: caso.method,
-				headers: { "content-type": caso.contentType ?? "application/json" },
+				headers: {
+					"content-type": caso.contentType ?? "application/json",
+					...(caso.role ? { "x-test-role": caso.role } : {}),
+				},
 				body: caso.body === undefined ? undefined : JSON.stringify(caso.body),
 			},
-			stubEnv({ dbError: caso.dbError, rows: caso.rows }) as never,
+			stubEnv({
+				dbError: caso.dbError,
+				queries,
+				rows: caso.rows,
+			}) as never,
 		);
 
 		esperado = false;
@@ -390,6 +514,85 @@ async function run() {
 			}
 		}
 
+		const problemaConsulta = caso.verificarConsultas?.(queries);
+		if (problemaConsulta) problemas.push(problemaConsulta);
+
+		if (problemas.length === 0) {
+			console.log(`ok   ${caso.nome}`);
+			continue;
+		}
+
+		falhas += 1;
+		console.log(`FALHA ${caso.nome}`);
+		for (const problema of problemas) console.log(`       ${problema}`);
+	}
+
+	type OrganizationCase = {
+		nome: string;
+		activeOrganizationId: string | null;
+		rows?: Row[];
+		status: number;
+		code?: string;
+	};
+
+	const organizationCases: OrganizationCase[] = [
+		{
+			nome: "organização ativa é obrigatória",
+			activeOrganizationId: null,
+			status: 403,
+			code: "ORGANIZATION_REQUIRED",
+		},
+		{
+			nome: "usuário precisa pertencer à organização ativa",
+			activeOrganizationId: "org-a",
+			rows: [],
+			status: 403,
+			code: "ORGANIZATION_FORBIDDEN",
+		},
+		{
+			nome: "membership válida carrega o tenant",
+			activeOrganizationId: "org-a",
+			rows: [{ id: "member-a", role: "admin" }],
+			status: 200,
+		},
+	];
+
+	for (const caso of organizationCases) {
+		const organizationApp = new Hono<AppEnv>();
+		organizationApp.use("*", async (c, next) => {
+			c.set(
+				"session",
+				{
+					session: { activeOrganizationId: caso.activeOrganizationId },
+					user: { id: "user-a" },
+				} as never,
+			);
+			await next();
+		});
+		organizationApp.use("*", requireOrganization);
+		organizationApp.get("/", (c) => c.json(c.get("organization")));
+		organizationApp.onError(handleApiError);
+
+		const res = await organizationApp.request(
+			"/",
+			{},
+			stubEnv({ rows: caso.rows }) as never,
+		);
+		const texto = await res.text();
+		const problemas: string[] = [];
+
+		if (res.status !== caso.status) {
+			problemas.push(`status ${res.status} !== ${caso.status}`);
+		}
+
+		if (caso.code) {
+			const recebido = (JSON.parse(texto) as { error?: { code?: string } })
+				.error?.code;
+			if (recebido !== caso.code) {
+				problemas.push(`code ${recebido} !== ${caso.code}`);
+			}
+		}
+
 		if (problemas.length === 0) {
 			console.log(`ok   ${caso.nome}`);
 			continue;
@@ -401,7 +604,8 @@ async function run() {
 	}
 
 	console.error = logOriginal;
-	console.log(`\n${casos.length - falhas}/${casos.length} passaram`);
+	const total = casos.length + organizationCases.length;
+	console.log(`\n${total - falhas}/${total} passaram`);
 	process.exit(falhas === 0 ? 0 : 1);
 }
 

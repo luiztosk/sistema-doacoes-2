@@ -89,6 +89,7 @@ type Caso = {
 };
 
 const casos: Caso[] = [
+	{ nome: "FALHA PROPOSITAL do gate de CI", method: "GET", path: "/api/v1/assistidos", status: 999 },
 	{
 		nome: "body sem o campo obrigatório",
 		method: "POST",

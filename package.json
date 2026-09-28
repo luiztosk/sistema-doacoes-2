@@ -75,9 +75,9 @@
 	},
 	"private": true,
 	"scripts": {
-		"build": "tsc -b && vite build",
+		"build": "npm run lint && npm test && tsc -b && vite build",
 		"cf-typegen": "wrangler types",
-		"check": "tsc && vite build && wrangler deploy --dry-run",
+		"check": "npm run build && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
 		"dev": "vite dev",
 		"lint": "eslint .",

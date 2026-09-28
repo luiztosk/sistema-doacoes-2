@@ -1,132 +1,120 @@
-Here is the complete documentation formatted in Markdown. You can copy the code block below and save it as `drizzle-d1-team-workflow.md`.
+# Migrations do Drizzle no D1
 
-```markdown
-# Reconciling Drizzle ORM and Cloudflare D1 for Team Development
+Como gerar e aplicar migrations neste projeto. O banco é **Cloudflare D1** e o
+schema fica em `src/worker/db/schema.ts`.
 
-This document outlines the workflow for managing a Cloudflare D1 database using Drizzle ORM in a team environment where only one person (the Admin) has access to the remote production database, while the rest of the team works exclusively with local databases.
+> Este arquivo substitui um template em inglês com nomes de placeholder
+> (`YOUR_DB_NAME`, `seeds/baseline.sql`, tabelas `users`/`roles` que não existem
+> aqui). Os comandos abaixo são os que rodam de verdade.
 
-> **Reference:** We use the [`drizzle-adapter` from `better-auth`](https://better-auth.com/docs/adapters/drizzle) for authentication tables (`auth-schema`). The adapter manages its own schema references, so the seed/migration workflow below applies to the application tables (`assistido`, `doador`, etc.).
+## Configuração
 
-## 1. Configuration
-
-To ensure Wrangler can automatically find and apply migrations, configure Drizzle to output to the `migrations` folder. 
-
-Update your `drizzle.config.ts`:
+`drizzle.config.ts` já está no jeito, e é o que faz o Wrangler achar as migrations
+sozinho:
 
 ```typescript
-import { defineConfig } from 'drizzle-kit';
-
 export default defineConfig({
   schema: './src/worker/db/schema.ts',
-  // IMPORTANT: Output to 'migrations' so Wrangler can find them automatically
-  out: './drizzle/migrations', 
-  dialect: 'sqlite', // D1 is SQLite under the hood
-  
-  // Note: Omit dbCredentials for local D1. 
-  // We use the Wrangler CLI to apply migrations, not drizzle-kit push/migrate.
+  out: './drizzle/migrations',
+  dialect: 'sqlite', // D1 é SQLite
 });
 ```
 
-## 2. The Workflow
+O `out` precisa apontar para `drizzle/migrations` porque é lá que o
+`wrangler.jsonc` procura, via `migrations_pattern:
+"drizzle/migrations/*/migration.sql"`. **Não** declaramos `dbCredentials`: quem
+aplica a migration é o Wrangler, não o `drizzle-kit`.
 
-### 👨‍💻 Admin Workflow (Remote Access)
-When you make a change to the database schema:
+## Gerar uma migration
 
-1. **Update your schema** in `src/worker/db/schema.ts`.
-2. **Generate the migration**:
-   ```bash
-   npx drizzle-kit generate
-   ```
-   *(This creates a `.sql` file inside the `\./drizzle/migrations/` folder).*
-3. **Commit to Git**: Commit both the updated `schema.ts` and the new SQL file in `\./drizzle/migrations/`.
-4. **Apply to Remote D1**:
-   ```bash
-   npx wrangler d1 execute YOUR_DB_NAME --remote --file=\./drizzle/migrations/0000_xxxxx.sql
-   ```
-
-### 👥 Team Workflow (Local Only)
-When colleagues pull your changes from Git, they need to update their local D1 database.
-
-1. **Pull the latest code** (which includes the new `migrations/*.sql` files).
-2. **Apply migrations to their local D1**:
-   ```bash
-   # This applies all unapplied migrations in the \./drizzle/migrations folder to their local DB
-   npx wrangler d1 migrations apply YOUR_DB_NAME --local
-   ```
-
-## 3. Reconciling the Data
-
-Since colleagues cannot pull data from the remote D1, they will have empty tables. Use one of the following methods to provide baseline data.
-
-### Approach A: Drizzle Seed Script (Recommended)
-Create a `src/worker/db/seed.ts` file that uses Drizzle to insert baseline development data (e.g., default roles, test users).
-
-```typescript
-// src/worker/db/seed.ts
-import { drizzle } from 'drizzle-orm/d1';
-import { users, roles } from './schema';
-import { getPlatformProxy } from 'wrangler';
-
-async function seed() {
-  // Get local D1 binding
-  const { env } = await getPlatformProxy(); 
-  const db = drizzle(env.DB);
-
-  console.log("Seeding local database...");
-  
-  await db.insert(roles).values([
-    { id: 1, name: 'admin' },
-    { id: 2, name: 'user' }
-  ]);
-
-  await db.insert(users).values([
-    { id: 1, name: 'Test User', roleId: 2 }
-  ]);
-
-  console.log("Seeding complete!");
-}
-
-seed().catch(console.error);
+```bash
+npm run gen-drizzle     # npx drizzle-kit generate
 ```
 
-### Approach B: Sanitized SQL Dump (For large datasets)
-If you need the team to have a lot of data:
-1. **Admin** exports the remote DB: `npx wrangler d1 export YOUR_DB_NAME --remote --output=dump.sql`
-2. **Admin** opens `dump.sql`, deletes/obfuscates sensitive data, and saves it to `seeds/baseline.sql`.
-3. **Admin** commits `seeds/baseline.sql` to Git.
-4. **Team** imports it locally: `npx wrangler d1 execute YOUR_DB_NAME --local --file=./seeds/baseline.sql`
+O drizzle-kit cria uma pasta nova em `drizzle/migrations/`, com `migration.sql` e
+`snapshot.json`. Faça commit dos dois arquivos junto com o `schema.ts`.
 
-## 4. Package.json Scripts
+> A pasta `20260926213838_lucky_karma` é a baseline e já está aplicada — não
+> edite migration que já foi aplicada em algum ambiente. Migrations são
+> imutáveis; para desfazer algo, escreva uma migration nova.
 
-Add these helper scripts to your root `package.json` to make the workflow foolproof for the team:
+## Aplicar
 
-```json
-"scripts": {
-  "dev": "wrangler dev",
-  
-  "--- Admin Commands ---": "",
-  "db:generate": "drizzle-kit generate",
-  "db:push:remote": "wrangler d1 execute YOUR_DB_NAME --remote --file",
-  
-  "--- Team Commands ---": "",
-  "db:migrate:local": "wrangler d1 migrations apply YOUR_DB_NAME --local",
-  "db:seed": "npx tsx src/worker/db/seed.ts",
-  
-  "--- The 'I just pulled from Git' command ---": "",
-  "db:update:local": "npm run db:migrate:local && npm run db:seed"
-}
+```bash
+# desenvolvimento (banco local, em .wrangler/state/)
+wrangler d1 migrations apply prod-sistema-doacoes-2 --local
+
+# produção
+wrangler d1 migrations apply prod-sistema-doacoes-2 --remote
 ```
 
-## 5. Golden Rules for the Team
+Sempre via `migrations apply`, e **nunca** `d1 execute --file`: o `execute` roda o
+SQL mas não registra a migration na tabela `d1_migrations`, então o Wrangler tenta
+aplicá-la de novo depois.
 
-1. **Never use `drizzle-kit push`**. It bypasses the migration files and will break the sync between local and remote. Always use `generate`.
-2. **Never share `wrangler.toml` secrets** or remote D1 UUIDs with the team. They only need the database *name* defined in `wrangler.toml`.
-3. **Always run `npm run db:update:local`** after pulling from Git to ensure their local SQLite file matches the remote schema and has the necessary seed data.
-4. **Ignore the Wrangler state folder**. Ensure `.wrangler/` is in your `.gitignore` so local database files are never accidentally committed.
+Os scripts que já embrulham isso:
 
-```gitignore
-# .gitignore
-.wrangler/
-node_modules/
+| Script | O que faz |
+|---|---|
+| `npm run local-db-init` | Gera auth schema + migration, aplica no banco local, roda `wrangler types` e semeia |
+| `npm run remote-db-init` | Mesma coisa, mas com `--remote` — **aplica em produção** |
+
+## Recriar o banco do zero
+
+Foi a decisão tomada para os 26 `check()` que ficaram no banco sem estar no
+`schema.ts`: em vez de escrever a migration que os derruba, geramos as
+migrations de um schema novo e semeamos em cima. Vale para o local e para o
+remoto.
+
+O `local-db-init` aplica as migrations que já existem, então recomeçar exige
+descartar o estado local antes:
+
+```bash
+rm -rf .wrangler/state          # apaga o banco local (recriado no passo seguinte)
+npm run local-db-init           # migrations + tipos + seed, tudo local
 ```
+
+No remoto é o mesmo raciocínio, com o cuidado de sempre: criar o banco zerado e
+aplicar. **Rode `--remote` só quando for de verdade** — o `db-seed` em si
+escreve sempre no local, porque usa `getPlatformProxy()`.
+
+Ordem ao mexer no schema:
+
+1. edite `src/worker/db/schema.ts`
+2. `npm run gen-drizzle` e confira o `migration.sql` que saiu
+3. commit do `schema.ts` **e** da pasta da migration
+4. `rm -rf .wrangler/state && npm run local-db-init` para validar do zero
+5. só depois aplique no remoto
+
+## Dados de desenvolvimento
+
+Não existe `seeds/baseline.sql`. O seed é um script que lê CSVs de `mock_data/`:
+
+```bash
+npm run db-seed          # npx tsx src/worker/db/seed.ts
 ```
+
+Ele usa `getPlatformProxy()`, então escreve **sempre no banco local**, mesmo sem
+`--remote`. Os CSVs são lidos por nome de coluna (`columns: true`), então o
+cabeçalho precisa bater com as colunas da tabela — é por isso que a coluna
+`organizationId` foi removida dos CSVs quando saiu do schema.
+
+Depois de `git pull`, o caminho é:
+
+```bash
+npm run local-db-init    # migration + tipos + seed, tudo local
+```
+
+## Regras da casa
+
+1. **Nunca use `drizzle-kit push`.** Ele ignora os arquivos de migration e quebra
+   a paridade entre local e remoto. Sempre `generate`.
+2. **`auth-schema.ts` é gerado.** Não edite à mão: rode `npm run gen-auth`, que
+   chama o gerador do Better Auth e escreve o arquivo. É ele que produz as tabelas
+   `user`, `session`, `account`, `organization`, `member`, `invitation` e
+   `verification`.
+3. **Migrations aplicadas não se editam.** Se algo está errado, escreva outra.
+4. **Nunca commite `.wrangler/`.** Já está no `.gitignore`; ele guarda o banco
+   local.
+5. **Não rode nada com `--remote` sem querer.** `remote-db-init` e
+   `migrations apply --remote` escrevem em produção.

@@ -1,6 +1,6 @@
 # Backlog técnico — PI II
 
-Estado real do repositório em 26/08/2026 e o que falta para cumprir os requisitos
+Estado real do repositório em 28/09/2026 e o que falta para cumprir os requisitos
 do tema do PI II (framework web, banco de dados, JavaScript, nuvem, consumo de API,
 acessibilidade, controle de versão e testes).
 
@@ -9,32 +9,42 @@ acessibilidade, controle de versão e testes).
 | Requisito do PI II | Status | Onde/como |
 |---|---|---|
 | Framework web | ✅ | Hono (backend) + React (frontend) |
-| Banco de dados | ⏳ | D1 + Drizzle — **não provisionado ainda** |
-| JavaScript/TypeScript | ✅ | Todo o código novo é TS |
+| Banco de dados | ✅ | D1 provisionado + Drizzle, 7 tabelas e 2 migrations. Falta a migration que remove os 26 `check()` — ver [`modelos-db.md`](./modelos-db.md) |
+| JavaScript/TypeScript | ✅ | Todo o código novo é TS, com `strict` e `noUnusedLocals` |
 | Hospedagem em nuvem | ✅ | Cloudflare Workers, deploy automático na `main` |
-| Consumo de API externa | ❌ | **Não planejado ainda** — sugestão: ViaCEP (ver abaixo) |
-| Acessibilidade | ❌ | **Não planejada ainda** (ver abaixo) |
-| Controle de versão | ✅ | Git + GitHub + PRs |
+| Consumo de API externa | ⏳ | **ViaCEP ainda não implementado** — plano abaixo (ver "ViaCEP") |
+| Acessibilidade | ⏳ | **Parcial** — `aria-label` e `<label htmlFor>` em login/cadastro e navegação; falta um teste automatizado com axe (ver "Acessibilidade") |
+| Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
 | Testes | ✅ | `npm test` (`tsx tests/api.ts`, 26 casos da API) + Insomnia (manual) |
 
 ## Ordem de prioridade sugerida
 
-1. **Fundação do banco** — provisionar D1 (`wrangler d1 create`), adicionar binding
-   no `wrangler.json`, instalar `drizzle-orm`/`drizzle-kit` e criar o schema
-   traduzido do modelo legado (`assistido`, `doador`, `instituicao`, `coleta`,
-   `entrega`, `item`, `categoria_item`, `nome_item`)
-2. **Autenticação** — Better Auth com plugin Organization (instituições) e fluxo de
-   convite por link (admin convida, usuário aceita e entra na organização)
-3. **Multi-tenancy** — middleware que valida a organização do usuário logado e
-   filtra TODAS as queries por `organization_id` (ver `docs/seguranca.md`)
-4. **Endpoints da API** — CRUD de assistidos, doadores, coletas, entregas e itens,
-   todos autenticados e filtrados por organização
-5. **Telas React** — rotas protegidas com React Router: login, cadastros, coletas,
-   entregas, estoque
-6. **Testes** — Vitest para fluxos críticos (auth, isolamento entre organizações,
-   endpoints); Insomnia para exploração manual da API
-7. **API externa (ViaCEP)** — ver abaixo
-8. **Acessibilidade** — ver abaixo
+Itens marcados ✅ já estão feitos; os demais são o que falta.
+
+1. ✅ **Fundação do banco** — D1 provisionado, binding em `wrangler.jsonc`,
+   `drizzle-orm`/`drizzle-kit` instalados e o schema traduzido do legado criado
+   (`assistido`, `doador`, `categoria_item`, `nome_item`, `coleta`, `entrega`,
+   `item`). **Não** foi criada a tabela `instituicao`: instituição é a
+   `organization` do Better Auth.
+2. ⏳ **Autenticação** — Better Auth com plugin Organization está pronto e o
+   login/cadastro funcionam. Falta o **fluxo de convite por link** (admin convida,
+   usuário aceita e entra na organização). Ver [`seguranca.md`](./seguranca.md).
+3. ❌ **Multi-tenancy** — **é o buraco mais importante.** Falta a coluna
+   `organization_id` nas tabelas de domínio e o middleware que valida a
+   organização e filtra todas as queries. Rastreado pela
+   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não
+   existir, a API não deve receber dados reais.
+4. ⏳ **Endpoints da API** — os 25 endpoints de CRUD existem e exigem sessão
+   ([`api.md`](./api.md)), mas **não** filtram por organização (depende do item 3).
+5. ⏳ **Telas React** — rotas protegidas existem via **TanStack Router**
+   (`/auth/login`, `/auth/signup`, `/auth/logout`), não React Router. Falta
+   qualquer tela de domínio: cadastros, coletas, entregas, estoque.
+6. ⏳ **Testes** — os 26 casos de endpoint existem (`tsx tests/api.ts`, sem
+   Vitest). **Faltam** os fluxos críticos: autenticação e isolamento entre
+   organizações (403 e cross-tenant), que são justamente o que a [#13] precisa.
+7. ⏳ **API externa (ViaCEP)** — ver abaixo. As colunas de endereço separadas já
+   existem, então a parte de dados está pronta.
+8. ⏳ **Acessibilidade** — ver abaixo.
 
 ## API externa: ViaCEP (proposta)
 
@@ -58,7 +68,8 @@ Requisito do tema. Medidas concretas a demonstrar:
 - Contraste adequado de cores
 - Mensagens de erro/sucesso perceptíveis por leitores de tela (`aria-live`)
 - Teste manual com teclado e com NVDA ou VoiceOver
-- Teste automatizado com axe (pode rodar via Vitest/Playwright)
+- Teste automatizado com axe (precisa de uma toolchain de browser que ainda não
+  temos — o projeto não usa Playwright nem Vitest)
 
 ## Fora do escopo do MVP (discutir com o grupo)
 

@@ -25,4 +25,21 @@ export default tseslint.config(
 			],
 		},
 	},
+	{
+		// Componentes do shadcn: exportam o componente e o `cva` de variantes no
+		// mesmo arquivo, que e a convencao da lib. A regra existe para nao
+		// quebrar o HMR, e aqui o custo de quebrar e maior que o beneficio. A
+		// excecao fica no config e nao em comentario no arquivo, porque
+		// `npx shadcn add` sobrescreve o arquivo e levaria o comentario junto.
+		files: ["src/react-app/components/ui/**/*.{ts,tsx}"],
+		rules: { "react-refresh/only-export-components": "off" },
+	},
+	{
+		// `worker-configuration.d.ts` e gerado por `npm run cf-typegen`, e o
+		// proprio gerador emite `// eslint-disable-line` que o lint nao
+		// considera necessario. Editar o arquivo nao adianta: a proxima
+		// geracao traz de volta.
+		files: ["worker-configuration.d.ts"],
+		linterOptions: { reportUnusedDisableDirectives: "off" },
+	},
 );

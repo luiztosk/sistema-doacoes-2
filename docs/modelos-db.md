@@ -1,5 +1,16 @@
 # Modelos do Banco de Dados (D1 + Drizzle ORM)
 
+> ⚠️ **O schema e o banco divergem em um ponto.** Existem **26 `check()` no banco**
+> que **não estão mais** no `schema.ts` (removidos em `efca2a7`). As duas
+> migrations existentes são `20260926213838_lucky_karma` (baseline, com os 26
+> `check()`) e `20260926230000_sleepy_green_goblin` (dois `CREATE UNIQUE INDEX`).
+> **Decisão:** em vez de escrever a migration que os derruba, o banco local e o
+> remoto serão recriados do zero — `npm run local-db-init` a partir de um estado
+> vazio, gerando as migrations de um schema novo e semeando em cima. Enquanto os
+> `check()` existirem no banco, uma escrita rejeitada por eles volta como
+> `500 INTERNAL_ERROR` em vez de um erro de validação — ver
+> [Os `check()` foram removidos](#os-checks-foram-removidos).
+
 Este documento descreve o modelo de dados do sistema novo, traduzido do projeto
 legado do PI I (Flask + SQLAlchemy + SQLite) e adaptado para a stack atual:
 **Cloudflare D1 + Drizzle ORM + Better Auth**.
@@ -12,8 +23,11 @@ Fecha a issue #21 e serve de base para a implementação do schema (issue #11).
 - IDs das tabelas de domínio: `text` (UUID), para ficar consistente com as
   tabelas do Better Auth (`user`, `organization`, `member`, `invitation`), que
   usam IDs em texto.
-- **Toda tabela de domínio tem `organization_id`** (multi-tenancy — ver
-  `docs/seguranca.md`). Nenhuma query pode ser feita sem esse filtro.
+- **Nenhuma tabela de domínio tem `organization_id`.** A coluna existiu e foi
+  removida junto com a integração do Better Auth; volta com a
+  [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Até lá nenhuma
+  query filtra por instituição, e a API **não deve ser exposta com dados reais**
+  — ver [`api.md`](./api.md) e [`seguranca.md`](./seguranca.md).
 - Booleanos: `integer(..., { mode: "boolean" })` no Drizzle.
 - Datas: `integer(..., { mode: "timestamp" })`.
 - Enums: `text` com `enum` do Drizzle, que **só tipa o TypeScript** e não emite
@@ -26,10 +40,11 @@ Fecha a issue #21 e serve de base para a implementação do schema (issue #11).
 
 ## Tabelas de autenticação (Better Auth — não criar manualmente)
 
-`user`, `session`, `account`, `organization`, `member` e `invitation` são geradas
-pelo Better Auth + plugin Organization. Cada **instituição é uma `organization`**.
-O schema completo delas está no guia de migração de auth; no Drizzle a gente só
-referencia `organization.id` como FK.
+`user`, `session`, `account`, `organization`, `member`, `invitation` e
+`verification` são geradas pelo Better Auth + plugin Organization. Cada
+**instituição é uma `organization`**. Hoje nenhuma tabela de domínio referencia
+`organization.id` — a coluna que faria essa ligação foi removida
+([#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13)).
 
 ## Tabelas de domínio
 
@@ -41,7 +56,6 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 | Coluna | Tipo | Obs |
 |---|---|---|
 | `id` | text PK | UUID |
-| `organization_id` | text FK → organization.id | **obrigatório** |
 | `nome` | text | |
 | `telefone` | text | |
 | `email` | text | opcional |
@@ -76,7 +90,6 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 | Coluna | Tipo | Obs |
 |---|---|---|
 | `id` | text PK | |
-| `organization_id` | text FK | **obrigatório** |
 | `nome` | text | |
 | `telefone` | text | |
 | `email` | text | opcional |
@@ -88,8 +101,8 @@ Catálogo de itens (ex.: categoria "Alimento", nome "Arroz 5kg").
 
 | Tabela | Colunas |
 |---|---|
-| `categoria_item` | `id` text PK, `organization_id` FK, `nome` text |
-| `nome_item` | `id` text PK, `organization_id` FK, `categoria_id` FK → categoria_item.id, `nome` text |
+| `categoria_item` | `id` text PK, `nome` text |
+| `nome_item` | `id` text PK, `categoria_id` FK → categoria_item.id, `nome` text |
 
 ### `coleta` e `entrega`
 
@@ -98,8 +111,8 @@ Eventos de doação. `coleta` = doação recebida de um doador;
 
 | Tabela | Colunas |
 |---|---|
-| `coleta` | `id` text PK, `organization_id` FK, `doador_id` FK → doador.id (**obrigatório**), `data_hora` timestamp |
-| `entrega` | `id` text PK, `organization_id` FK, `assistido_id` FK → assistido.id (**obrigatório**), `data_hora` timestamp |
+| `coleta` | `id` text PK, `doador_id` FK → doador.id (**obrigatório**), `data_hora` timestamp |
+| `entrega` | `id` text PK, `assistido_id` FK → assistido.id (**obrigatório**), `data_hora` timestamp |
 
 Sem doador ou sem assistido o evento não existe: uma coleta órfã não diz de quem
 foi a doação, e uma entrega órfã não diz para quem foi.
@@ -112,9 +125,8 @@ numa coleta e termina numa entrega.
 | Coluna | Tipo | Obs |
 |---|---|---|
 | `id` | text PK | |
-| `organization_id` | text FK | **obrigatório** |
-| `nome_id` | text FK → nome_item.id | |
-| `status` | text | `AGUARDA_COLETA` → `EM_ESTOQUE` → `ENTREGUE` |
+| `nome_id` | text FK → nome_item.id | **obrigatório** |
+| `status` | text | `AGUARDA_COLETA` → `EM_ESTOQUE` → `ENTREGUE`, `NOT NULL`, default `AGUARDA_COLETA` |
 | `coleta_id` | text FK → coleta.id | preenchido na coleta |
 | `entrega_id` | text FK → entrega.id | preenchido na entrega |
 
@@ -143,11 +155,12 @@ do campo, não `409` do banco.
 O schema **teve** `check()` — 26 deles, em `efca2a7` — e não tem mais. A decisão
 foi o contrário da intuição, e vale registrar o porquê:
 
-- **A regra duplicada tem dois jeitos de falhar.** No `check()` a violação volta
-  como `409 CONFLICT` genérico, com o nome da constraint dentro do texto do D1
-  (`CHECK constraint failed: assistido_nome_nao_vazio`); no zod a mesma regra
-  volta como `400 INVALID_VALUE` com o campo nomeado. Duas Copies da regra, dois
-  formatos de erro, e o cliente termina tratando os dois.
+- **A regra duplicada tem dois jeitos de falhar.** No `check()` a violação sobe
+  como `500 INTERNAL_ERROR` — `handleApiError` só traduz `FOREIGN KEY` e
+  `UNIQUE constraint`, então um `CHECK constraint failed` cai no `catch` genérico
+  e o cliente recebe um erro interno, sem mensagem útil. No zod a mesma regra
+  volta como `400 INVALID_VALUE` com o campo nomeado. Duas cópias da regra, dois
+  formatos de erro, e o pior dos dois chegando ao cliente.
 - **O zod já cobria tudo que a API consegue julgar.** Nome em branco, `>= 0`,
   formato de CEP, as listas de `enum` e a regra entre `tipoImovel` e
   `valorAluguel` estão todas no `refinement`, com a mensagem escrita para o
@@ -175,7 +188,7 @@ vezes:
 | No schema | No DDL | No zod |
 |---|---|---|
 | `text("status", { enum: [...] })` | nada | `z.enum([...])` |
-| `text("uf", { length: 2 })` | `text(2)` — afinidade, não constraint | `z.string()` |
+| `text("uf", { enum: UFS })` | nada — só tipa o TS | `z.enum(UFS)` |
 | `integer("aposentado", { mode: "boolean" })` | `integer` | `z.boolean()` |
 | `text("doador_id").references(doador.id)` | `FOREIGN KEY` | nada — e é o banco quem julga |
 
@@ -202,7 +215,7 @@ recusa a escrita pendurada, então a API não consulta nada antes de inserir. O
 erro sobe como `D1QueryError`/`DrizzleQueryError` com o texto
 `FOREIGN KEY constraint failed` na cadeia, e `handleApiError` o traduz —
 `400 INVALID_REFERENCE` em `POST`/`PATCH`, `409 CONFLICT` em `DELETE`. O texto
-do D1 não diz qual das cinco chaves falhou, então a mensagem é genérica: uma
+do D1 não diz qual das seis chaves falhou, então a mensagem é genérica: uma
 consulta antes da escrita traria o nome do campo, ao custo de uma leitura por
 payload.
 
@@ -234,11 +247,16 @@ As tabelas de domínio não tinham índice nenhum além da PK, e o SQLite não c
 lista. Quando a [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13)
 entrar, o índice tem que começar por `organization_id`.
 
-As 5 FKs de domínio declaram `on delete: "no action"` explicitamente: excluir um
+As 6 FKs de domínio declaram `on delete: "no action"` explicitamente: excluir um
 doador que tem coleta estoura, e a API responde `409`. A mesma constraint é o que
 recusa um `doador_id` que não existe, então é a única regra que o banco julga —
 ver [Regras de valor](#regras-de-valor). Está escrito assim de propósito, para
 não ficar implícito.
+
+> A migration já aplicada (`20260926213838_lucky_karma`) **não emite** cláusula
+> `ON DELETE` para as FKs de domínio — só para as do Better Auth, que usam
+> `CASCADE`. Como migration é imutável, "não implícito" vale para o TypeScript e
+> para o `snapshot.json`, mas no banco o comportamento é o default do SQLite.
 
 O catálogo também tem unicidade: `categoria_item_nome_uniq` e
 `nome_item_nome_uniq`, os dois sobre `lower(nome)`, para que "arroz 5kg" e
@@ -296,11 +314,6 @@ consumem — sem `check()` no banco e sem schema factory.
 
 ```mermaid
 erDiagram
-  organization ||--o{ assistido : organization_id
-  organization ||--o{ doador : organization_id
-  organization ||--o{ coleta : organization_id
-  organization ||--o{ entrega : organization_id
-  organization ||--o{ item : organization_id
   categoria_item ||--o{ nome_item : categoria_id
   nome_item ||--o{ item : nome_id
   doador ||--o{ coleta : doador_id
@@ -310,7 +323,6 @@ erDiagram
 
   assistido {
     text id PK
-    text organization_id FK
     text nome
     text telefone
     text cep
@@ -327,7 +339,6 @@ erDiagram
 
   doador {
     text id PK
-    text organization_id FK
     text nome
     text telefone
     text cep
@@ -340,7 +351,6 @@ erDiagram
 
   item {
     text id PK
-    text organization_id FK
     text nome_id FK
     text status
     text coleta_id FK
@@ -349,24 +359,21 @@ erDiagram
 
   coleta {
     text id PK
-    text organization_id FK
     text doador_id FK
     int data_hora
   }
 
   entrega {
     text id PK
-    text organization_id FK
     text assistido_id FK
     int data_hora
   }
 ```
 
-## Esboço do schema Drizzle (`src/db/schema.ts`)
+## Esboço do schema Drizzle (`src/worker/db/schema.ts`)
 
 ```typescript
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
-import { organization } from "./auth-schema"; // gerado pelo Better Auth
 
 const UFS = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
@@ -385,9 +392,6 @@ const endereco = {
 
 export const assistido = sqliteTable("assistido", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
   nome: text("nome").notNull(),
   telefone: text("telefone"),
   email: text("email"),
@@ -413,9 +417,6 @@ export const assistido = sqliteTable("assistido", {
 
 export const item = sqliteTable("item", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id),
   nomeId: text("nome_id").notNull(),
   status: text("status", {
     enum: ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"],
@@ -435,21 +436,27 @@ cada uma — o arquivo real é `src/worker/db/schema.ts`.
 ## Migrations
 
 ```bash
-npx drizzle-kit generate
-wrangler d1 migrations apply sistema-doacoes-db --local   # desenvolvimento
-wrangler d1 migrations apply sistema-doacoes-db --remote  # produção
+npx drizzle-kit generate                                        # gera a migration
+wrangler d1 migrations apply prod-sistema-doacoes-2 --local    # desenvolvimento
+wrangler d1 migrations apply prod-sistema-doacoes-2 --remote   # produção
 ```
+
+Detalhes em [`drizzle-migrations.md`](./drizzle-migrations.md).
 
 ## Diferenças em relação ao legado (PI I)
 
 1. **Endereço separado** em 7 colunas (antes era um campo único `endereco`) —
    necessário para a integração com o ViaCEP (issue #16).
-2. **`organization_id` em tudo** — o legado tinha `instituicao` como tabela
-   comum; agora instituição = `organization` do Better Auth, com isolamento
-   obrigatório por tenant.
+2. **Instituição = `organization` do Better Auth, mas sem isolamento ainda** —
+   o legado tinha `instituicao` como tabela comum. A coluna `organization_id`
+   existia em todas as tabelas de domínio e foi removida junto com a integração
+   do Better Auth; volta com a
+   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). **Enquanto ela
+   não voltar, não há isolamento por tenant.**
 3. **IDs em texto** em vez de inteiros — padrão do Better Auth.
-4. **Sem tabelas `user`/`role` próprias** — autenticação e papéis ficam com o
-   Better Auth (`member.role`: owner, admin, staff, viewer).
+4. **Sem tabelas `user`/`role` próprias** — autenticação fica com o Better Auth.
+   O papel vive em `member.role`, que é um `text` sem constraint com default
+   `'member'`; os valores usuais do Better Auth são `owner`, `admin` e `member`.
 5. **Sem migração de dados reais** — os dados do legado são fictícios (mock);
    o seed novo pode ser gerado a partir dos JSONs de `mock_data/` do repo antigo.
 6. **`item` sem `doador_id`/`assistido_id`** — o legado guardava uma cópia

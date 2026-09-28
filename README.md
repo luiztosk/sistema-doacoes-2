@@ -11,12 +11,17 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 
 ## Documentação
 
-- [Arquitetura e decisões técnicas](./docs/arquitetura.md) — stack, fluxo de deploy e migração do sistema legado
-- [Backlog técnico do PI II](./docs/backlog-pi2.md) — o que falta implementar, por prioridade, incluindo ViaCEP e acessibilidade
-- [Segurança e multi-tenancy](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
-- [API Hono](./docs/api.md) — endpoints CRUD, respostas, regras temporárias e testes no Insomnia
-- [Ajustes propostos ao plano de ação](./docs/plano-quizena-lh.md)
-- [Fluxos de tela do sistema legado](./docs/fluxo-telas/README.md) — transcrição visual do vídeo, fluxos confirmados e adaptações para o PI II
+Comece por [`docs/README.md`](./docs/README.md) — é o índice com o estado de cada
+documento (ativo, política, referência, histórico).
+
+- [`docs/arquitetura.md`](./docs/arquitetura.md) — stack, fluxo de deploy, o que roda a cada build, fluxo de contribuição
+- [`docs/api.md`](./docs/api.md) — os 25 endpoints, o contrato de erro e o que ainda não está pronto para produção
+- [`docs/modelos-db.md`](./docs/modelos-db.md) — as 7 tabelas, constraints, índices e a tradução do modelo legado
+- [`docs/drizzle-migrations.md`](./docs/drizzle-migrations.md) — como gerar e aplicar migrations
+- [`docs/backlog-pi2.md`](./docs/backlog-pi2.md) — o que falta implementar, por prioridade
+- [`docs/seguranca.md`](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
+- [`docs/fluxo-telas/`](./docs/fluxo-telas/README.md) — transcrição visual do vídeo, fluxos confirmados e adaptações para o PI II
+- [`docs/archive/`](./docs/archive/README.md) — planos concluídos ou superados
 
 ## Para rodar o projeto no seu computador:
 

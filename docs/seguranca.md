@@ -1,5 +1,14 @@
 # Segurança e multi-tenancy
 
+> ⚠️ **Este documento é uma especificação de requisito, não uma descrição do
+> sistema atual.** Das seis regras abaixo, **só a autenticação e a de segredos
+> estão implementadas**. Não existe isolamento entre instituições: as tabelas de
+> domínio perderam a coluna `organization_id`, e nenhuma query filtra por
+> organização. O estado real está em
+> [`api.md` §Não está pronto para produção](./api.md#%EF%B8%8F-n%C3%A3o-est%C3%A1-pronto-para-produ%C3%A7%C3%A3o)
+> e o trabalho restante é a
+> [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13).
+
 Resumo das decisões de segurança para o sistema novo. Como o sistema armazena dados
 socioeconômicos de famílias assistidas (dados sensíveis, LGPD), o isolamento entre
 instituições é requisito de segurança, não detalhe técnico.
@@ -7,9 +16,10 @@ instituições é requisito de segurança, não detalhe técnico.
 ## Modelo escolhido: instância única multi-tenant
 
 Uma única aplicação (um Worker, um banco D1) atende todas as instituições. Cada
-instituição é uma **Organization** do Better Auth, e todo dado operacional carrega
-`organization_id`. A alternativa (uma instância por instituição) foi descartada por
-multiplicar a complexidade operacional (N bancos, N deploys, N segredos).
+instituição é uma **Organization** do Better Auth, e todo dado operacional deveria
+carregar `organization_id` — **essa coluna ainda não existe** (ver aviso acima). A
+alternativa (uma instância por instituição) foi descartada por multiplicar a
+complexidade operacional (N bancos, N deploys, N segredos).
 
 ## Regras obrigatórias
 

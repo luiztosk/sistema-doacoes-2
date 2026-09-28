@@ -15,7 +15,7 @@ acessibilidade, controle de versão e testes).
 | Consumo de API externa | ❌ | **Não planejado ainda** — sugestão: ViaCEP (ver abaixo) |
 | Acessibilidade | ❌ | **Não planejada ainda** (ver abaixo) |
 | Controle de versão | ✅ | Git + GitHub + PRs |
-| Testes | ❌ | Vitest (automatizados) + Insomnia (manual) — nenhum escrito ainda |
+| Testes | ✅ | `npm test` (`tsx tests/api.ts`, 26 casos da API) + Insomnia (manual) |
 
 ## Ordem de prioridade sugerida
 

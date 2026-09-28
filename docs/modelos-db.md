@@ -157,17 +157,14 @@ foi o contrário da intuição, e vale registrar o porquê:
   em TypeScript — e continuam no DDL. Referência e unicidade não foram
   removidas: só deixaram de ter uma segunda cópia em `check()`.
 
-O preço, aceito: **escrita que não passa pela API não é filtrada.** D1 Studio,
-`npm run db-seed` e scripts futuros podem gravar `renda: -500` ou nome em branco
-sem que nada recuse. E o `PATCH` tem duas brechas, que o `check()` cobria e o zod
-não cobriu — ver [Onde não há garantia](#onde-não-há-garantia).
+O preço, aceito: **escrita que não passa pela API não é filtrada.** D1 Studio e
+scripts futuros podem gravar `renda: -500` ou nome em branco sem que nada
+recuse. O seed é tratado como código confiável e foi validado em banco temporário.
 
-Uma consequência prática: `drizzle/migrations/20260926213838_lucky_karma`
-ainda cria as constraints, porque uma migration já aplicada é imutável. O banco
-local e o remoto já têm os `check()`, e um banco novo criado do zero também os
-terá, até alguém rodar `npm run gen-drizzle` e `wrangler d1 migrations apply`
-para a migration que os remove. O Drizzle não percebe isso sozinho: ele só vê a
-diferença quando alguém manda gerar.
+A migration `20260928175253_overjoyed_lizard` reconstrói as tabelas no formato
+atual, remove os `check()` legados, adiciona `organization_id` e migra os dados
+anteriores para `org-1`. Ela foi validada tanto sobre um banco legado preenchido
+quanto sobre um banco vazio.
 
 O que o Drizzle emite e o que não emite importa para não confiar no schema duas
 vezes:
@@ -193,46 +190,24 @@ vezes:
 | aluguel > 0 se `ALUGADO`, vazio se `PROPRIO` | `assistido` | `compatAluguelImovel` |
 | contadores de pessoas ≥ 0 | `assistido` | `naoNegativo` |
 | um dos 3 status | `item` | `enum` da coluna |
-| referência existe (doador, assistido, coleta, entrega, nome de item) | todas | `FOREIGN KEY` do D1, mapeado em `handleApiError` |
+| referência existe e pertence ao tenant ativo | todas | `requireTenantReference`; `FOREIGN KEY` como proteção final |
 | `ENTREGUE` ⇒ `entregaId` preenchido | `item` | `validateItem` (`DELIVERY_REQUIRED`) |
+| `entregaId` ⇒ `coletaId` preenchido | `item` | `validateItem` (`COLLECTION_REQUIRED`) |
 | `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE` | `item` | `validateItem` (`INVALID_STATUS_TRANSITION`) |
 
-Referência é o único caso em que o banco é o juiz, e é de graça: o D1 já
-recusa a escrita pendurada, então a API não consulta nada antes de inserir. O
-erro sobe como `D1QueryError`/`DrizzleQueryError` com o texto
-`FOREIGN KEY constraint failed` na cadeia, e `handleApiError` o traduz —
-`400 INVALID_REFERENCE` em `POST`/`PATCH`, `409 CONFLICT` em `DELETE`. O texto
-do D1 não diz qual das cinco chaves falhou, então a mensagem é genérica: uma
-consulta antes da escrita traria o nome do campo, ao custo de uma leitura por
-payload.
-
-### Onde não há garantia
-
-Duas regras tinham `check()` e foram removidos com ele. O `PATCH` não consegue
-julgar nenhuma das duas, porque o campo que decide é justamente o que o cliente
-não mandou:
-
-- `tipoImovel` × `valorAluguel`: `POST {"tipoImovel":"ALUGADO"}` sem
-  `valorAluguel` é recusado, e `PATCH {"tipoImovel":"ALUGADO"}` sem
-  `valorAluguel` é aceito. O `UpdateSchema` só julga o par quando o próprio
-  pedido traz os dois campos.
-- `entregaId` ⇒ `coletaId`: um item pode ficar apontando para uma entrega sem
-  coleta, o que desfaz a fonte única de quem doou (ver
-  [`item`](#item)). A `FOREIGN KEY` garante que a coleta existe, não que ela
-  esteja lá.
-
-Fechar qualquer uma das duas é uma linha em `validateAssistido`/`validateItem`:
-o `validate` do `registerResource` já recebe a linha existente, que é o que
-falta.
+Antes de inserir ou alterar, a API consulta as referências usando também
+`organization_id`. Isso evita tanto referências inexistentes quanto ligações
+entre instituições. Nos `PATCH`, `validateAssistido` e `validateItem` combinam
+o payload parcial com a linha atual, fechando as duas invariantes que dependem
+de campos não enviados no pedido.
 
 ### Índices e `ON DELETE`
 
 As tabelas de domínio não tinham índice nenhum além da PK, e o SQLite não cria
-índice automático para FK. Hoje existem `nome_item_categoriaId_idx`,
-`coleta_doadorId_idx`, `entrega_assistidoId_idx`, `item_status_idx`,
-`item_coletaId_idx` e `item_entregaId_idx` — as colunas que filtram as telas de
-lista. Quando a [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13)
-entrar, o índice tem que começar por `organization_id`.
+índice automático para FK. Os índices de acesso agora começam por
+`organization_id`, seguido da coluna usada na tela: categoria, doador,
+assistido, status, coleta ou entrega. Assim a mesma estrutura atende ao filtro
+obrigatório do tenant e à busca funcional.
 
 As 5 FKs de domínio declaram `on delete: "no action"` explicitamente: excluir um
 doador que tem coleta estoura, e a API responde `409`. A mesma constraint é o que
@@ -246,8 +221,8 @@ O catálogo também tem unicidade: `categoria_item_nome_uniq` e
 (a collation padrão do SQLite é BINARY) e é constraint de tabela — que o SQLite
 só consegue adicionar reconstruindo a tabela. Um índice sobre `lower(nome)` é um
 `CREATE UNIQUE INDEX` e não mexe nos dados. ⚠️ O seed usa
-`onConflictDoNothing()`, então um CSV com nome repetido vira linha pulada em
-silêncio: o banco recusa, o seed não avisa.
+`onConflictDoNothing()`. O seed agora avisa no console qual linha foi pulada por
+conflito, em vez de ocultar a inconsistência.
 
 ### Triggers: não adicionados
 
@@ -273,14 +248,11 @@ mapeamento de erro, não sozinho.
 
 ### Pendente
 
-- **Recriar as invariantes no `PATCH`.** As duas brechas que o `check()`
-  cobria, ver [Onde não há garantia](#onde-não-há-garantia).
-- **Nome do campo na `INVALID_REFERENCE`.** O texto do D1 não diz qual das cinco
-  chaves falhou, então a mensagem é genérica. Nomear exigiria voltar a consultar
-  antes de escrever — que é o que o `FOREIGN KEY` eliminou de graça.
-- **A migration que remove os `check()`.** `npm run gen-drizzle` ainda não foi
-  rodado depois da remoção, então o banco continua com eles. Ver [Os `check()`
-  foram removidos](#os-check-foram-removidos).
+- **Nome do campo na `INVALID_REFERENCE`.** A API já impede referência ausente
+  ou cross-tenant, mas mantém a mensagem genérica para não duplicar o mesmo
+  código para cada relacionamento.
+- **CRUD do catálogo.** `categoria_item` e `nome_item` ainda dependem do seed;
+  os endpoints dessas duas tabelas permanecem fora da issue #14.
 
 ### Feito: valores no zod
 

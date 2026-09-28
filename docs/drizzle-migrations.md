@@ -61,6 +61,24 @@ Since colleagues cannot pull data from the remote D1, they will have empty table
 ### Approach A: Drizzle Seed Script (Recommended)
 Create a `src/worker/db/seed.ts` file that uses Drizzle to insert baseline development data (e.g., default roles, test users).
 
+#### Formato dos CSVs deste projeto
+
+O seed de `src/worker/db/seed.ts` faz a conversão antes de chamar o Drizzle:
+
+- `True` e `False` viram booleanos reais e são persistidos no D1 como `1` e
+  `0`; nunca tratar essas strings diretamente como booleano, porque `"False"`
+  também é uma string truthy em JavaScript;
+- campo vazio sem aspas vira `null`;
+- `dataHora` e `createdAt` viram `Date`;
+- toda tabela de domínio recebe `organizationId`, e as referências do CSV devem
+  apontar para registros da mesma organização;
+- conflitos de unicidade são ignorados para permitir reexecutar o seed, mas a
+  linha pulada é exibida como aviso no console.
+
+Depois de alterar os mocks, execute `npm run local-db-init` e confira pelo menos
+os booleanos, as contagens, as chaves estrangeiras e a coerência dos status dos
+itens. Os CSVs contêm apenas dados fictícios.
+
 ```typescript
 // src/worker/db/seed.ts
 import { drizzle } from 'drizzle-orm/d1';

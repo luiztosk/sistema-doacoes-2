@@ -44,16 +44,19 @@ Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
 
 ## Testando a API:
 
-As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](./docs/api.md)).
-Depois de fazer login, envie o cookie de sessão:
+As rotas de domínio exigem sessão, organização ativa e membership, e ficam sob
+`/api/v1` (ver [`docs/api.md`](./docs/api.md)). Depois de fazer login e selecionar
+uma organização, envie o cookie de sessão:
 ```bash
 curl localhost:5173/api/v1/assistidos \
   -H "Cookie: better-auth.session_token=<seu-token>"
 ```
 > deve retornar `{ "data": [ ... ] }` com a lista de assistidos.
 
-Sem sessão, a resposta é `401`. Os demais testes estão na pasta `./insomnia`, basta
-importar o Environment e a Collection no seu Insomnia (Vault Local).
+Sem sessão, a resposta é `401`; sem organização ativa ou membership, `403`. A
+coleção da pasta mais recente em `./insomnia` usa a variável local
+`SESSION_COOKIE`, que deve ser preenchida fora do Git. Os testes automatizados
+do backend rodam com `npm test`.
 
 ## Contribuindo com o projeto (membros do grupo)
 

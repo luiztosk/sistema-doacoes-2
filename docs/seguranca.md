@@ -14,7 +14,7 @@ multiplicar a complexidade operacional (N bancos, N deploys, N segredos).
 ## Regras obrigatórias
 
 1. **Nunca confiar em parâmetro do cliente** para identificar a instituição.
-   `GET /api/doacoes?institutionId=123` é inseguro — o servidor deve derivar a
+   `GET /api/v1/itens?organizationId=123` é inseguro — o servidor deve derivar a
    organização da sessão autenticada.
 2. **Toda query filtra por `organization_id`** — sem exceção.
 3. **Todo acesso a registro por ID verifica a organização** — buscar
@@ -22,7 +22,8 @@ multiplicar a complexidade operacional (N bancos, N deploys, N segredos).
    da B trocando o número na URL). Sempre:
    `WHERE id = :id AND organization_id = :orgDaSessao`
 4. **Permissões no backend, não no frontend** — esconder botão não é segurança.
-   Papéis sugeridos: `owner`, `admin`, `staff`, `viewer`.
+   Papéis adotados: `owner`, `admin`, `staff` e `member` podem escrever;
+   `viewer` pode somente ler.
 5. **Convites são de uso único, com expiração e vinculados a uma organização** —
    o token do convite define a organização; o cliente não pode escolher.
 6. **Segredos nunca no repositório** — `BETTER_AUTH_SECRET` e afins vão via
@@ -31,12 +32,12 @@ multiplicar a complexidade operacional (N bancos, N deploys, N segredos).
 
 ## Checklist antes de considerar uma rota "pronta"
 
-- [ ] Exige autenticação
-- [ ] Valida que o usuário pertence à organização ativa
-- [ ] Filtra os dados por `organization_id`
-- [ ] Acesso por ID confere a organização do registro
-- [ ] Permissão do papel do usuário verificada no backend
-- [ ] Teste automatizado cobrindo acesso indevido (401/403 e cross-tenant)
+- [x] Exige autenticação
+- [x] Valida que o usuário pertence à organização ativa
+- [x] Filtra os dados por `organization_id`
+- [x] Acesso por ID confere a organização do registro
+- [x] Permissão do papel do usuário verificada no backend
+- [x] Teste automatizado cobrindo acesso indevido (401/403 e cross-tenant)
 
 ## LGPD no desenvolvimento
 

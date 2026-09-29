@@ -23,7 +23,7 @@ function Landing() {
 						disponíveis depois que você entrar.
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="flex flex-wrap gap-3">
+				<CardContent className="flex flex-wrap justify-center gap-3">
 					<Link to="/auth/login" className={buttonVariants()}>
 						Entrar
 					</Link>

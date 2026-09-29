@@ -24,6 +24,10 @@ function initials(name: string | null | undefined): string {
 		.join("");
 }
 
+function firstName(name: string | null | undefined): string {
+	return (name ?? "").trim().split(/\s+/)[0] ?? "";
+}
+
 export function UserMenu() {
 	const { data: session } = useQuery(sessionQueryOptions);
 
@@ -32,13 +36,13 @@ export function UserMenu() {
 			<div className="flex items-center gap-2">
 				<Link
 					to="/auth/login"
-					className={buttonVariants({ variant: "outline", size: "sm" })}
+					className={buttonVariants({ size: "sm" })}
 				>
 					Entrar
 				</Link>
 				<Link
 					to="/auth/signup"
-					className={buttonVariants({ size: "sm" })}
+					className={buttonVariants({ variant: "outline", size: "sm" })}
 				>
 					Cadastrar-se
 				</Link>
@@ -50,12 +54,21 @@ export function UserMenu() {
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				render={
-					<Button variant="ghost" size="icon-sm" aria-label="Abrir menu do usuário" />
+					<Button
+						variant="ghost"
+						className="h-auto gap-2 py-1.5 pr-2 pl-1.5"
+						aria-label="Abrir menu do usuário"
+					/>
 				}
 			>
-				<Avatar>
-					<AvatarFallback>{initials(session.user.name)}</AvatarFallback>
+				<Avatar className="size-7">
+					<AvatarFallback className="text-xs">
+						{initials(session.user.name)}
+					</AvatarFallback>
 				</Avatar>
+				<span className="hidden max-w-32 truncate text-sm font-medium sm:inline">
+					{firstName(session.user.name)}
+				</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
 				<DropdownMenuGroup>

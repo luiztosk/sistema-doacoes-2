@@ -88,16 +88,33 @@ Ordem ao mexer no schema:
 
 ## Dados de desenvolvimento
 
-Não existe `seeds/baseline.sql`. O seed é um script que lê CSVs de `mock_data/`:
+Não existe `seeds/baseline.sql`. O seed é um script que **gera** os dados antes de
+gravar, a partir dos schemas zod:
 
 ```bash
 npm run db-seed          # npx tsx src/worker/db/seed.ts
 ```
 
 Ele usa `getPlatformProxy()`, então escreve **sempre no banco local**, mesmo sem
-`--remote`. Os CSVs são lidos por nome de coluna (`columns: true`), então o
-cabeçalho precisa bater com as colunas da tabela — é por isso que a coluna
-`organizationId` foi removida dos CSVs quando saiu do schema.
+`--remote`. Quem gera é `src/worker/db/generate.ts`, que valida **cada linha** com
+o `*SelectSchema` da tabela antes de inserir — se o gerador produzir algo fora do
+schema, o seed para e diz qual campo e qual linha. Não é mais possível o banco
+divergir do que o gerador afirmou, que era a raiz dos bugs da
+[#44](https://github.com/luiztosk/sistema-doacoes-2/issues/44).
+
+O gerador é determinístico (`seed(42)`), então o banco de demonstração é o mesmo
+a cada execução. Os dados de entrada do gerador são dois JSONs versionados em
+`mock_data/`:
+
+| Arquivo | O que é |
+|---|---|
+| `municipios.json` | Pares cidade/UF do IBGE, capital mais três municípios por UF |
+| `catalogo.json` | As 9 categorias e os 114 nomes de item do catálogo |
+
+**O insert é sem tolerância a conflito.** Não há mais `onConflictDoNothing()`: um
+id repetido ou um nome de catálogo repetido estoura o `UNIQUE` e o seed sai com
+código 1, em vez de pular a linha em silêncio. Rodar o seed duas vezes seguidas
+falha — isso é intencional, o banco de demonstração se recria do zero.
 
 Depois de `git pull`, o caminho é:
 

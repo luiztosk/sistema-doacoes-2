@@ -58,37 +58,19 @@ const ESTADOS_CIVIS = [
 const STATUS_ITEM = ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"] as const;
 
 const nomeNaoVazio = (schema: z.ZodString) =>
-  schema.refine((valor) => valor.trim().length > 0, {
-    error: "cannot be empty or only whitespace.",
-  });
+  schema.trim().min(1, { error: "cannot be empty or only whitespace." });
 
 const naoNegativo = (schema: z.ZodNumber) =>
   schema.min(0, { error: "cannot be negative." });
 
+const emailValido = () => z.email();
+
 const CEP_INVALIDO = "must have 8 digits, and nothing else.";
 
-const cepDeEntrada = (schema: z.ZodString) =>
-  schema
-    .transform((valor) => valor.replaceAll("-", ""))
-    .pipe(z.string().regex(/^\d{8}$/, { error: CEP_INVALIDO }));
-
-const cepGuardado = (schema: z.ZodString) =>
+const cepComOitoDigitos = (schema: z.ZodString) =>
   schema.regex(/^\d{8}$/, { error: CEP_INVALIDO });
 
 const dataHoraDeEntrada = z.coerce.date().nullable().optional();
-
-function compatAluguelImovel(valores: {
-  tipoImovel?: string | null;
-  valorAluguel?: number | null;
-}) {
-  const { tipoImovel, valorAluguel } = valores;
-  if (tipoImovel == null) return true;
-  if (tipoImovel === "PROPRIO") return valorAluguel == null;
-  return valorAluguel != null && valorAluguel > 0;
-}
-
-const INCOMPAT_ALUGUEL =
-  "'valorAluguel' only exists on an 'ALUGADO' property, and an 'ALUGADO' property requires a 'valorAluguel' greater than zero.";
 
 export const assistido = sqliteTable("assistido", {
   id: text("id").primaryKey(),
@@ -121,7 +103,8 @@ export const assistido = sqliteTable("assistido", {
 
 const assistidoRefinements = {
   nome: nomeNaoVazio,
-  cep: cepDeEntrada,
+  email: emailValido,
+  cep: cepComOitoDigitos,
   valorAluguel: naoNegativo,
   renda: naoNegativo,
   numeroAdultos: naoNegativo,
@@ -129,26 +112,24 @@ const assistidoRefinements = {
   adolescentes: naoNegativo,
 };
 
-export const assistidoInsertSchema = createInsertSchema(assistido, assistidoRefinements)
+export const assistidoInsertSchema = createInsertSchema(
+  assistido,
+  assistidoRefinements,
+)
   .omit({ id: true })
-  .strict()
-  .refine(compatAluguelImovel, { error: INCOMPAT_ALUGUEL });
+  .strict();
 
-export const assistidoUpdateSchema = createUpdateSchema(assistido, assistidoRefinements)
+export const assistidoUpdateSchema = createUpdateSchema(
+  assistido,
+  assistidoRefinements,
+)
   .omit({ id: true })
-  .strict()
-  .refine(
-    (valores) =>
-      valores.tipoImovel === undefined ||
-      valores.valorAluguel === undefined ||
-      compatAluguelImovel(valores),
-    { error: INCOMPAT_ALUGUEL },
-  );
+  .strict();
 
-export const assistidoSelectSchema = createSelectSchema(assistido, {
-  ...assistidoRefinements,
-  cep: cepGuardado,
-});
+export const assistidoSelectSchema = createSelectSchema(
+  assistido,
+  assistidoRefinements,
+);
 
 export const doador = sqliteTable("doador", {
   id: text("id").primaryKey(),
@@ -166,7 +147,8 @@ export const doador = sqliteTable("doador", {
 
 const doadorRefinements = {
   nome: nomeNaoVazio,
-  cep: cepDeEntrada,
+  email: emailValido,
+  cep: cepComOitoDigitos,
 };
 
 export const doadorInsertSchema = createInsertSchema(doador, doadorRefinements)
@@ -177,10 +159,7 @@ export const doadorUpdateSchema = createUpdateSchema(doador, doadorRefinements)
   .omit({ id: true })
   .strict();
 
-export const doadorSelectSchema = createSelectSchema(doador, {
-  ...doadorRefinements,
-  cep: cepGuardado,
-});
+export const doadorSelectSchema = createSelectSchema(doador, doadorRefinements);
 
 export const categoriaItem = sqliteTable(
   "categoria_item",

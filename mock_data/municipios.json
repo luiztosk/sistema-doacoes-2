@@ -1,0 +1,422 @@
+[
+ {
+  "cidade": "Rio Branco",
+  "uf": "AC"
+ },
+ {
+  "cidade": "Acrelândia",
+  "uf": "AC"
+ },
+ {
+  "cidade": "Assis Brasil",
+  "uf": "AC"
+ },
+ {
+  "cidade": "Brasiléia",
+  "uf": "AC"
+ },
+ {
+  "cidade": "Maceió",
+  "uf": "AL"
+ },
+ {
+  "cidade": "Anadia",
+  "uf": "AL"
+ },
+ {
+  "cidade": "Arapiraca",
+  "uf": "AL"
+ },
+ {
+  "cidade": "Atalaia",
+  "uf": "AL"
+ },
+ {
+  "cidade": "Manaus",
+  "uf": "AM"
+ },
+ {
+  "cidade": "Alvarães",
+  "uf": "AM"
+ },
+ {
+  "cidade": "Amaturá",
+  "uf": "AM"
+ },
+ {
+  "cidade": "Anamã",
+  "uf": "AM"
+ },
+ {
+  "cidade": "Macapá",
+  "uf": "AP"
+ },
+ {
+  "cidade": "Amapá",
+  "uf": "AP"
+ },
+ {
+  "cidade": "Calçoene",
+  "uf": "AP"
+ },
+ {
+  "cidade": "Cutias",
+  "uf": "AP"
+ },
+ {
+  "cidade": "Salvador",
+  "uf": "BA"
+ },
+ {
+  "cidade": "Abaré",
+  "uf": "BA"
+ },
+ {
+  "cidade": "Abaíra",
+  "uf": "BA"
+ },
+ {
+  "cidade": "Acajutiba",
+  "uf": "BA"
+ },
+ {
+  "cidade": "Fortaleza",
+  "uf": "CE"
+ },
+ {
+  "cidade": "Abaiara",
+  "uf": "CE"
+ },
+ {
+  "cidade": "Acarape",
+  "uf": "CE"
+ },
+ {
+  "cidade": "Acaraú",
+  "uf": "CE"
+ },
+ {
+  "cidade": "Brasília",
+  "uf": "DF"
+ },
+ {
+  "cidade": "Vitória",
+  "uf": "ES"
+ },
+ {
+  "cidade": "Afonso Cláudio",
+  "uf": "ES"
+ },
+ {
+  "cidade": "Alegre",
+  "uf": "ES"
+ },
+ {
+  "cidade": "Alfredo Chaves",
+  "uf": "ES"
+ },
+ {
+  "cidade": "Goiânia",
+  "uf": "GO"
+ },
+ {
+  "cidade": "Abadia de Goiás",
+  "uf": "GO"
+ },
+ {
+  "cidade": "Abadiânia",
+  "uf": "GO"
+ },
+ {
+  "cidade": "Acreúna",
+  "uf": "GO"
+ },
+ {
+  "cidade": "São Luís",
+  "uf": "MA"
+ },
+ {
+  "cidade": "Afonso Cunha",
+  "uf": "MA"
+ },
+ {
+  "cidade": "Alcântara",
+  "uf": "MA"
+ },
+ {
+  "cidade": "Aldeias Altas",
+  "uf": "MA"
+ },
+ {
+  "cidade": "Belo Horizonte",
+  "uf": "MG"
+ },
+ {
+  "cidade": "Abadia dos Dourados",
+  "uf": "MG"
+ },
+ {
+  "cidade": "Abaeté",
+  "uf": "MG"
+ },
+ {
+  "cidade": "Abre Campo",
+  "uf": "MG"
+ },
+ {
+  "cidade": "Campo Grande",
+  "uf": "MS"
+ },
+ {
+  "cidade": "Alcinópolis",
+  "uf": "MS"
+ },
+ {
+  "cidade": "Amambai",
+  "uf": "MS"
+ },
+ {
+  "cidade": "Anastácio",
+  "uf": "MS"
+ },
+ {
+  "cidade": "Cuiabá",
+  "uf": "MT"
+ },
+ {
+  "cidade": "Acorizal",
+  "uf": "MT"
+ },
+ {
+  "cidade": "Alta Floresta",
+  "uf": "MT"
+ },
+ {
+  "cidade": "Alto Araguaia",
+  "uf": "MT"
+ },
+ {
+  "cidade": "Belém",
+  "uf": "PA"
+ },
+ {
+  "cidade": "Abaetetuba",
+  "uf": "PA"
+ },
+ {
+  "cidade": "Abel Figueiredo",
+  "uf": "PA"
+ },
+ {
+  "cidade": "Acará",
+  "uf": "PA"
+ },
+ {
+  "cidade": "João Pessoa",
+  "uf": "PB"
+ },
+ {
+  "cidade": "Aguiar",
+  "uf": "PB"
+ },
+ {
+  "cidade": "Alagoa Grande",
+  "uf": "PB"
+ },
+ {
+  "cidade": "Alagoa Nova",
+  "uf": "PB"
+ },
+ {
+  "cidade": "Recife",
+  "uf": "PE"
+ },
+ {
+  "cidade": "Abreu e Lima",
+  "uf": "PE"
+ },
+ {
+  "cidade": "Afogados da Ingazeira",
+  "uf": "PE"
+ },
+ {
+  "cidade": "Afrânio",
+  "uf": "PE"
+ },
+ {
+  "cidade": "Teresina",
+  "uf": "PI"
+ },
+ {
+  "cidade": "Acauã",
+  "uf": "PI"
+ },
+ {
+  "cidade": "Agricolândia",
+  "uf": "PI"
+ },
+ {
+  "cidade": "Alagoinha do Piauí",
+  "uf": "PI"
+ },
+ {
+  "cidade": "Curitiba",
+  "uf": "PR"
+ },
+ {
+  "cidade": "Abatiá",
+  "uf": "PR"
+ },
+ {
+  "cidade": "Adrianópolis",
+  "uf": "PR"
+ },
+ {
+  "cidade": "Agudos do Sul",
+  "uf": "PR"
+ },
+ {
+  "cidade": "Rio de Janeiro",
+  "uf": "RJ"
+ },
+ {
+  "cidade": "Angra dos Reis",
+  "uf": "RJ"
+ },
+ {
+  "cidade": "Aperibé",
+  "uf": "RJ"
+ },
+ {
+  "cidade": "Araruama",
+  "uf": "RJ"
+ },
+ {
+  "cidade": "Natal",
+  "uf": "RN"
+ },
+ {
+  "cidade": "Acari",
+  "uf": "RN"
+ },
+ {
+  "cidade": "Afonso Bezerra",
+  "uf": "RN"
+ },
+ {
+  "cidade": "Alexandria",
+  "uf": "RN"
+ },
+ {
+  "cidade": "Porto Velho",
+  "uf": "RO"
+ },
+ {
+  "cidade": "Alta Floresta D'Oeste",
+  "uf": "RO"
+ },
+ {
+  "cidade": "Alto Alegre dos Parecis",
+  "uf": "RO"
+ },
+ {
+  "cidade": "Alto Paraíso",
+  "uf": "RO"
+ },
+ {
+  "cidade": "Boa Vista",
+  "uf": "RR"
+ },
+ {
+  "cidade": "Alto Alegre",
+  "uf": "RR"
+ },
+ {
+  "cidade": "Amajari",
+  "uf": "RR"
+ },
+ {
+  "cidade": "Bonfim",
+  "uf": "RR"
+ },
+ {
+  "cidade": "Porto Alegre",
+  "uf": "RS"
+ },
+ {
+  "cidade": "Aceguá",
+  "uf": "RS"
+ },
+ {
+  "cidade": "Agudo",
+  "uf": "RS"
+ },
+ {
+  "cidade": "Ajuricaba",
+  "uf": "RS"
+ },
+ {
+  "cidade": "Florianópolis",
+  "uf": "SC"
+ },
+ {
+  "cidade": "Abdon Batista",
+  "uf": "SC"
+ },
+ {
+  "cidade": "Abelardo Luz",
+  "uf": "SC"
+ },
+ {
+  "cidade": "Agrolândia",
+  "uf": "SC"
+ },
+ {
+  "cidade": "Aracaju",
+  "uf": "SE"
+ },
+ {
+  "cidade": "Amparo do São Francisco",
+  "uf": "SE"
+ },
+ {
+  "cidade": "Aquidabã",
+  "uf": "SE"
+ },
+ {
+  "cidade": "Arauá",
+  "uf": "SE"
+ },
+ {
+  "cidade": "São Paulo",
+  "uf": "SP"
+ },
+ {
+  "cidade": "Adamantina",
+  "uf": "SP"
+ },
+ {
+  "cidade": "Adolfo",
+  "uf": "SP"
+ },
+ {
+  "cidade": "Aguaí",
+  "uf": "SP"
+ },
+ {
+  "cidade": "Palmas",
+  "uf": "TO"
+ },
+ {
+  "cidade": "Abreulândia",
+  "uf": "TO"
+ },
+ {
+  "cidade": "Aguiarnópolis",
+  "uf": "TO"
+ },
+ {
+  "cidade": "Aliança do Tocantins",
+  "uf": "TO"
+ }
+]

@@ -67,7 +67,7 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 | `cidade` | text | ViaCEP |
 | `uf` | text | sigla de UF, enum das 27, opcional |
 | `tipo_imovel` | text | `ALUGADO` \| `PROPRIO`, opcional |
-| `valor_aluguel` | integer | centavos, opcional |
+| `valor_aluguel` | integer | em reais, opcional |
 | `estado_civil` | text | `SOLTEIRO` \| `CASADO` \| `DIVORCIADO` \| `VIUVO` \| `UNIAO_ESTAVEL`, opcional |
 | `numero_adultos` | integer | opcional |
 | `criancas_pequenas` | integer | opcional |
@@ -234,8 +234,9 @@ não mandou:
   [`item`](#item)). A `FOREIGN KEY` garante que a coleta existe, não que ela
   esteja lá.
 
-Fechar qualquer uma das duas é uma linha em `validateAssistido`/`validateItem`:
-o `validate` do `registerResource` já recebe a linha existente, que é o que
+Fechar qualquer uma das duas é uma linha em um `validateAssistido` — que ainda
+não existe, só o `validateItem` está escrito — ou no `validateItem`: o
+`validate` do `registerResource` já recebe a linha existente, que é o que
 falta.
 
 ### Índices e `ON DELETE`
@@ -321,6 +322,17 @@ erDiagram
   coleta ||--o{ item : coleta_id
   entrega ||--o{ item : entrega_id
 
+  categoria_item {
+    text id PK
+    text nome
+  }
+
+  nome_item {
+    text id PK
+    text categoria_id FK
+    text nome
+  }
+
   assistido {
     text id PK
     text nome
@@ -370,17 +382,36 @@ erDiagram
   }
 ```
 
+O diagrama mostra as **relações**, e não a lista completa de colunas: os
+blocos de `assistido` e `doador` estão resumidos, e as 6 FKs de domínio
+`assistido_id`, `doador_id`, `categoria_id`, `nome_id`, `coleta_id` e
+`entrega_id` declaram `on delete: "no action"`. Para a lista completa, ver as
+seções acima.
+
 ## Esboço do schema Drizzle (`src/worker/db/schema.ts`)
 
 ```typescript
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
+// Os tres enums do arquivo sao `const` de modulo e nenhum deles e exportado,
+// menos `UFS`.
 const UFS = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
   "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ] as const;
 
-const endereco = {
+const TIPOS_IMOVEL = ["ALUGADO", "PROPRIO"] as const;
+const ESTADOS_CIVIS = [
+  "SOLTEIRO","CASADO","DIVORCIADO","VIUVO","UNIAO_ESTAVEL",
+] as const;
+
+// Os 7 campos de endereco sao colunas soltas, como abaixo. Nao existe um
+// objeto `endereco` compartilhado: `doador` lista os mesmos 7 um a um.
+export const assistido = sqliteTable("assistido", {
+  id: text("id").primaryKey(),
+  nome: text("nome").notNull(),
+  telefone: text("telefone"),
+  email: text("email"),
   cep: text("cep"),
   logradouro: text("logradouro"),
   numero: text("numero"),
@@ -388,19 +419,9 @@ const endereco = {
   bairro: text("bairro"),
   cidade: text("cidade"),
   uf: text("uf", { enum: UFS }),
-};
-
-export const assistido = sqliteTable("assistido", {
-  id: text("id").primaryKey(),
-  nome: text("nome").notNull(),
-  telefone: text("telefone"),
-  email: text("email"),
-  ...endereco,
-  tipoImovel: text("tipo_imovel", { enum: ["ALUGADO", "PROPRIO"] }),
+  tipoImovel: text("tipo_imovel", { enum: TIPOS_IMOVEL }),
   valorAluguel: integer("valor_aluguel"),
-  estadoCivil: text("estado_civil", {
-    enum: ["SOLTEIRO", "CASADO", "DIVORCIADO", "VIUVO", "UNIAO_ESTAVEL"],
-  }),
+  estadoCivil: text("estado_civil", { enum: ESTADOS_CIVIS }),
   numeroAdultos: integer("numero_adultos"),
   criancasPequenas: integer("criancas_pequenas"),
   adolescentes: integer("adolescentes"),
@@ -415,23 +436,35 @@ export const assistido = sqliteTable("assistido", {
   observacoes: text("observacoes"),
 });
 
-export const item = sqliteTable("item", {
-  id: text("id").primaryKey(),
-  nomeId: text("nome_id").notNull(),
-  status: text("status", {
-    enum: ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"],
-  })
-    .notNull()
-    .default("AGUARDA_COLETA"),
-  coletaId: text("coleta_id"),
-  entregaId: text("entrega_id"),
-});
+export const item = sqliteTable(
+  "item",
+  {
+    id: text("id").primaryKey(),
+    nomeId: text("nome_id")
+      .notNull()
+      .references(() => nomeItem.id, { onDelete: "no action" }),
+    status: text("status", { enum: STATUS_ITEM })
+      .notNull()
+      .default("AGUARDA_COLETA"),
+    coletaId: text("coleta_id").references(() => coleta.id, {
+      onDelete: "no action",
+    }),
+    entregaId: text("entrega_id").references(() => entrega.id, {
+      onDelete: "no action",
+    }),
+  },
+  (t) => [
+    index("item_status_idx").on(t.status),
+    index("item_coletaId_idx").on(t.coletaId),
+    index("item_entregaId_idx").on(t.entregaId),
+  ],
+);
 
 // doador, categoria_item, nome_item, coleta, entrega: mesmo padrão.
 ```
 
-O esboço acima omite os `index()` das tabelas e os schemas de zod que julgam
-cada uma — o arquivo real é `src/worker/db/schema.ts`.
+O esboço acima omite os schemas de zod que julgam cada tabela e o
+`export * from "./auth-schema"` — o arquivo real é `src/worker/db/schema.ts`.
 
 ## Migrations
 

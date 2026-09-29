@@ -23,5 +23,6 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["src/react-app"]
+	"include": ["src/react-app"],
+	"references": [{ "path": "./tsconfig.worker.json" }]
 }

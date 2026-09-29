@@ -30,6 +30,13 @@ em produção.
 - **Tabs, não espaços.** Não existe Prettier nem `.editorconfig` neste repo, então
   nada vai te avisar se você errar. As mensagens de commit e os comentários do
   código são em português, sem acento.
+- **Identificadores em inglês.** Variáveis, funções, parâmetros, chaves de objeto e
+  tipos. A exceção são os nomes de campo que vêm do schema ou da API —
+  `cestaBasica`, `tipoImovel`, `valorAluguel` — que seguem exatamente como estão
+  no banco, porque são o contrato com o servidor.
+- **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
+  mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
+  em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
 - Aspas duplas. Imports de tipo separados (`import type { ... }`).
 - `strict`, `noUnusedLocals` e `noUnusedParameters` estão ligados. Import não
   usado **quebra o build** — é por isso que o histórico tem tantos commits

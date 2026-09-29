@@ -44,30 +44,30 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader><CardTitle>Sign In</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Entrar</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }} className="space-y-4">
           <form.Field name="email" children={(field) => (
             <div>
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium">E-mail</label>
               <Input name={field.name} value={field.state.value} onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)} type="email" required />
             </div>
           )} />
           <form.Field name="password" children={(field) => (
             <div>
-              <label className="text-sm font-medium">Password</label>
+              <label className="text-sm font-medium">Senha</label>
               <Input name={field.name} value={field.state.value} onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)} type="password" required />
             </div>
           )} />
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]} children={([canSubmit, isSubmitting]) => (
             <Button type="submit" disabled={!canSubmit} className="w-full">
-              {isSubmitting ? 'Signing in...' : 'Sign In'}
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
           )} />
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <Link to="/auth/signup" className="underline">Sign up</Link>
+          Ainda não tem conta?{' '}
+          <Link to="/auth/signup" className="underline">Cadastre-se</Link>
         </p>
       </CardContent>
     </Card>

@@ -11,6 +11,6 @@ function Assistidos() {
 	);
 }
 
-export const Route = createFileRoute("/_authenticated/assistidos")({
+export const Route = createFileRoute("/_authenticated/assistidos/")({
 	component: Assistidos,
 });

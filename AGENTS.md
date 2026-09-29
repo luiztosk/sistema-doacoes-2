@@ -37,6 +37,11 @@ em produção.
 - **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
   mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
   em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
+- **Sem comentário de código.** O código se explica sozinho — quem lê raciocina
+  nele em vez de varrer comentário. Comentário só existe apontando uma issue
+  aberta ou marcando um TODO; nos dois casos, com o número ou o link. A exceção
+  são os componentes do shadcn em `components/ui/**`, que chegam com os
+  comentários da lib e são sobrescritos por `npx shadcn add`.
 - Aspas duplas. Imports de tipo separados (`import type { ... }`).
 - `strict`, `noUnusedLocals` e `noUnusedParameters` estão ligados. Import não
   usado **quebra o build** — é por isso que o histórico tem tantos commits
@@ -139,8 +144,10 @@ referência do estado atual.
   existirem no banco, uma escrita rejeitada por eles volta como `500` — item 2
   acima.
 - `handleApiError` não trata `CHECK constraint failed` (vira `500`).
-- `next-themes` é importado por `components/ui/sonner.tsx`, mas o `<Toaster>`
-  nunca é montado. Se nada usar toast, remova os dois.
+- `next-themes` monta o `ThemeProvider` em `main.tsx` e é o que alterna a classe
+  `dark` no `<html>`, lendo as variáveis de `styles.css`. O `<Toaster>` do
+  `sonner` continua sem ser montado; se nada usar toast, remova o `sonner` e
+  deixe o `next-themes`.
 - `src/react-app/lib/utils.ts` só faz `export { cn } from "cn"` e não é importado
   por ninguém — os componentes importam `cn` do pacote direto.
 - `tsconfig.json` mantém `ignoreDeprecations: "6.0"`.

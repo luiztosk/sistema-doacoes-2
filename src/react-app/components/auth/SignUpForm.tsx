@@ -39,7 +39,7 @@ export function SignUpForm() {
       await router.invalidate()
 
       // 4. Navigate into the protected route space safely
-      router.navigate({ to: '/assistidos' })
+      router.navigate({ to: '/painel' })
     },
   })
 

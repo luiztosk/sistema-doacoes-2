@@ -1,6 +1,4 @@
-import { Link, createRoute } from "@tanstack/react-router";
-
-import { Route as RootRoute } from "./__root";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 function About() {
 	return (
@@ -10,6 +8,10 @@ function About() {
 				O Sistema Doações 2 integra o cadastro de assistidos ao registro e ao
 				acompanhamento de doações.
 			</p>
+			<p>
+				É a segunda entrega do projeto integrador, escrita em React sobre
+				Cloudflare Workers.
+			</p>
 			<Link to="/" className="text-primary underline underline-offset-4">
 				Voltar ao início
 			</Link>
@@ -17,8 +19,6 @@ function About() {
 	);
 }
 
-export const Route = createRoute({
-	getParentRoute: () => RootRoute,
-	path: "/about",
+export const Route = createFileRoute("/about")({
 	component: About,
 });

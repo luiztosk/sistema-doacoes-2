@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { Button } from "@/react-app/components/ui/button";
+import { buttonVariants } from "@/react-app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/react-app/components/ui/card";
 
 function Landing() {
@@ -24,10 +24,15 @@ function Landing() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-wrap gap-3">
-					<Button render={<Link to="/auth/login" />}>Entrar</Button>
-					<Button variant="outline" render={<Link to="/auth/signup" />}>
+					<Link to="/auth/login" className={buttonVariants()}>
+						Entrar
+					</Link>
+					<Link
+						to="/auth/signup"
+						className={buttonVariants({ variant: "outline" })}
+					>
 						Cadastrar-se
-					</Button>
+					</Link>
 				</CardContent>
 			</Card>
 

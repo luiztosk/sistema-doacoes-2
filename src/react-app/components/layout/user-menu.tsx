@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { Avatar, AvatarFallback } from "@/react-app/components/ui/avatar";
-import { Button } from "@/react-app/components/ui/button";
+import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
@@ -29,12 +30,18 @@ export function UserMenu() {
 	if (!session) {
 		return (
 			<div className="flex items-center gap-2">
-				<Button variant="outline" size="sm" render={<Link to="/auth/login" />}>
+				<Link
+					to="/auth/login"
+					className={buttonVariants({ variant: "outline", size: "sm" })}
+				>
 					Entrar
-				</Button>
-				<Button size="sm" render={<Link to="/auth/signup" />}>
+				</Link>
+				<Link
+					to="/auth/signup"
+					className={buttonVariants({ size: "sm" })}
+				>
 					Cadastrar-se
-				</Button>
+				</Link>
 			</div>
 		);
 	}
@@ -51,22 +58,28 @@ export function UserMenu() {
 				</Avatar>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
-				<DropdownMenuLabel>
-					<span className="block truncate font-medium">
-						{session.user.name}
-					</span>
-					<span className="block truncate text-sm font-normal text-muted-foreground">
-						{session.user.email}
-					</span>
-				</DropdownMenuLabel>
+				<DropdownMenuGroup>
+					<DropdownMenuLabel>
+						<span className="block truncate font-medium">
+							{session.user.name}
+						</span>
+						<span className="block truncate text-sm font-normal text-muted-foreground">
+							{session.user.email}
+						</span>
+					</DropdownMenuLabel>
+				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem render={<Link to="/painel" />}>Início</DropdownMenuItem>
-				<DropdownMenuItem
-					variant="destructive"
-					render={<Link to="/auth/logout" />}
-				>
-					Sair
-				</DropdownMenuItem>
+				<DropdownMenuGroup>
+					<DropdownMenuItem render={<Link to="/painel" />}>
+						Início
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						variant="destructive"
+						render={<Link to="/auth/logout" />}
+					>
+						Sair
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

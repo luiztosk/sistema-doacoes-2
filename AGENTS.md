@@ -144,8 +144,10 @@ referência do estado atual.
   existirem no banco, uma escrita rejeitada por eles volta como `500` — item 2
   acima.
 - `handleApiError` não trata `CHECK constraint failed` (vira `500`).
-- `next-themes` é importado por `components/ui/sonner.tsx`, mas o `<Toaster>`
-  nunca é montado. Se nada usar toast, remova os dois.
+- `next-themes` monta o `ThemeProvider` em `main.tsx` e é o que alterna a classe
+  `dark` no `<html>`, lendo as variáveis de `styles.css`. O `<Toaster>` do
+  `sonner` continua sem ser montado; se nada usar toast, remova o `sonner` e
+  deixe o `next-themes`.
 - `src/react-app/lib/utils.ts` só faz `export { cn } from "cn"` e não é importado
   por ninguém — os componentes importam `cn` do pacote direto.
 - `tsconfig.json` mantém `ignoreDeprecations: "6.0"`.

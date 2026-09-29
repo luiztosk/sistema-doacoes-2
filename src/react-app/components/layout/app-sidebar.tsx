@@ -1,8 +1,12 @@
+import { Logout01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 
+import { ThemeToggle } from "@/react-app/components/layout/theme-toggle";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -10,6 +14,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarSeparator,
 } from "@/react-app/components/ui/sidebar";
 import { homePath, resources } from "@/react-app/lib/navigation";
 
@@ -57,6 +62,27 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter>
+				<SidebarSeparator className="mx-2 w-auto" />
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<ThemeToggle />
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							tooltip="Sair"
+							render={<Link to="/auth/logout" />}
+						>
+							<HugeiconsIcon
+								icon={Logout01Icon}
+								strokeWidth={2}
+								className="size-4"
+							/>
+							Sair
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarFooter>
 		</Sidebar>
 	);
 }

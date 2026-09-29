@@ -44,11 +44,6 @@
 	--sidebar-ring: oklch(0.708 0 0);
 }
 
-a {
-	color: inherit;
-	text-decoration: inherit;
-}
-
 @theme inline {
 	--font-heading: var(--font-sans);
 	--font-sans: 'Figtree Variable', sans-serif;
@@ -139,4 +134,8 @@ a {
   html {
     @apply font-sans;
 	}
+  a {
+	color: inherit;
+	text-decoration: inherit;
+  }
 }

@@ -38,7 +38,7 @@ export function LoginForm() {
       await router.invalidate()
 
       // 4. Navigate into the protected route space safely
-      router.navigate({ to: '/test-query' })
+      router.navigate({ to: '/assistidos' })
     },
   })
 

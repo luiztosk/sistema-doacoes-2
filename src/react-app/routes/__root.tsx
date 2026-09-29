@@ -26,7 +26,7 @@ function RootLayout() {
 								<Link to="/about">Sobre</Link>
 							</li>
 							<li>
-								<Link to="/test-query">Test query</Link>
+								<Link to="/assistidos">Assistidos</Link>
 							</li>
 								<UserMenu />
 						</ul>

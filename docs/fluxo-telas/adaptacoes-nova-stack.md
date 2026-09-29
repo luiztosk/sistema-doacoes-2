@@ -7,7 +7,7 @@ Drizzle vigente.
 
 ## Estado atual do PI II
 
-Atualizado em 28/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/2026):
+Atualizado em 29/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/2026):
 
 - o schema Drizzle/D1 já contém assistido, doador, categoria/nome de item,
   coleta, entrega e item;
@@ -21,12 +21,14 @@ Atualizado em 28/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/20
   obrigatória** e validação de payload por zod, mas **sem** autorização nem
   filtro por organização. Ver [`../api.md`](../api.md);
 - o frontend usa **TanStack Router** com rotas `/auth/login`, `/auth/signup` e
-  `/auth/logout`; a única tela de dados é a de exemplo do Vite em
-  `/test-query`. Ainda **não** existem telas dos fluxos do legado;
+  `/auth/logout`. A única tela de dados é `/assistidos`, que lista os
+  assistidos em uma tabela. Ainda **não** existem telas dos fluxos do legado:
+  sem ficha, sem criação, sem edição e sem busca, ordenação ou paginação;
 - TanStack Router, TanStack Query e shadcn/ui **são** dependências. O
   `better-auth-ui` chegou a ser instalado e foi removido (`1d51dd9`); o shadcn
-  foi montado sobre **Base UI**. O `@tanstack/react-table` está instalado mas
-  sem uso.
+  foi montado sobre **Base UI**. O `@tanstack/react-table` está instalado e
+  usado pela tabela de assistidos, sobre o primitivo `table` do shadcn: o
+  TanStack cuida do estado de exibição e o shadcn, da marcação.
 
 ## Matriz de migração
 
@@ -113,12 +115,15 @@ usados em seed, testes, screenshots ou vídeos.
 ## Proposta de rotas de tela, não de endpoints
 
 Os caminhos abaixo servem para organizar a SPA. Eles não constituem contrato de
-API:
+API. O que existe hoje está marcado — o login e o cadastro foram implementados
+em `/auth/login` e `/auth/signup`, sob o prefixo `/auth` em vez de `/login` e
+`/signup`:
 
 ```text
-/login
-/
-/assistidos
+/auth/login          [existe]
+/auth/signup         [existe]
+/auth/logout         [existe]
+/assistidos          [existe, só a lista]
 /assistidos/novo
 /assistidos/:id
 /assistidos/:id/editar
@@ -134,6 +139,15 @@ API:
 /entregas/:id
 /estoque
 ```
+
+`/assistidos` está implementada como
+[`src/react-app/routes/_authenticated/assistidos.tsx`](../../src/react-app/routes/_authenticated/assistidos.tsx):
+lista as colunas `nome`, cidade/UF, `telefone`, `email`, `renda`,
+`tipoImovel` e `cestaBasica`, com célula vazia para campo nulo. O tipo das
+linhas vem de `assistidoSelectSchema`, em `src/worker/db/schema.ts`, e não de
+uma lista escrita à mão. O endpoint devolve a tabela inteira — não há
+paginação, busca ou ordenação no servidor — então qualquer uma dessas
+capacidades nasce no cliente.
 
 O fluxo `nova coleta`/`nova entrega` pode ser modal ou rota própria. A decisão
 deve considerar salvamento atômico, retorno/cancelamento e acessibilidade.

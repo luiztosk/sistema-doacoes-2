@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as AuthenticatedTestQueryRouteImport } from './routes/_authenticated/test-query'
+import { Route as AuthenticatedAssistidosRouteImport } from './routes/_authenticated/assistidos'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthLogoutRouteImport } from './routes/auth/logout'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
@@ -31,9 +31,9 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedTestQueryRoute = AuthenticatedTestQueryRouteImport.update({
-  id: '/test-query',
-  path: '/test-query',
+const AuthenticatedAssistidosRoute = AuthenticatedAssistidosRouteImport.update({
+  id: '/assistidos',
+  path: '/assistidos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -55,7 +55,7 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/test-query': typeof AuthenticatedTestQueryRoute
+  '/assistidos': typeof AuthenticatedAssistidosRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -63,7 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/test-query': typeof AuthenticatedTestQueryRoute
+  '/assistidos': typeof AuthenticatedAssistidosRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -73,7 +73,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/_authenticated/test-query': typeof AuthenticatedTestQueryRoute
+  '/_authenticated/assistidos': typeof AuthenticatedAssistidosRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -83,7 +83,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/test-query'
+    | '/assistidos'
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
@@ -91,7 +91,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/test-query'
+    | '/assistidos'
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
@@ -100,7 +100,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/about'
-    | '/_authenticated/test-query'
+    | '/_authenticated/assistidos'
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
@@ -138,11 +138,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/test-query': {
-      id: '/_authenticated/test-query'
-      path: '/test-query'
-      fullPath: '/test-query'
-      preLoaderRoute: typeof AuthenticatedTestQueryRouteImport
+    '/_authenticated/assistidos': {
+      id: '/_authenticated/assistidos'
+      path: '/assistidos'
+      fullPath: '/assistidos'
+      preLoaderRoute: typeof AuthenticatedAssistidosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/auth/login': {
@@ -170,11 +170,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedTestQueryRoute: typeof AuthenticatedTestQueryRoute
+  AuthenticatedAssistidosRoute: typeof AuthenticatedAssistidosRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedTestQueryRoute: AuthenticatedTestQueryRoute,
+  AuthenticatedAssistidosRoute: AuthenticatedAssistidosRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

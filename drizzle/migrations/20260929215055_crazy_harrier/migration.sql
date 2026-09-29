@@ -24,31 +24,12 @@ CREATE TABLE `assistido` (
 	`atividade_remunerada` integer,
 	`renda` real,
 	`crianca_escola` integer,
-	`observacoes` text,
-	CONSTRAINT "assistido_nome_nao_vazio" CHECK(length(trim("nome")) > 0),
-	CONSTRAINT "assistido_cep_formato" CHECK("cep" IS NULL OR (length("cep") = 8 AND "cep" NOT GLOB '*[^0-9]*')),
-	CONSTRAINT "assistido_uf_valida" CHECK("uf" IS NULL OR "uf" IN ('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')),
-	CONSTRAINT "assistido_tipo_imovel_valido" CHECK("tipo_imovel" IS NULL OR "tipo_imovel" IN ('ALUGADO', 'PROPRIO')),
-	CONSTRAINT "assistido_valor_aluguel_compatipo_imovel" CHECK("tipo_imovel" IS NULL OR ("tipo_imovel" = 'PROPRIO' AND "valor_aluguel" IS NULL) OR ("tipo_imovel" = 'ALUGADO' AND "valor_aluguel" > 0)),
-	CONSTRAINT "assistido_estado_civil_valido" CHECK("estado_civil" IS NULL OR "estado_civil" IN ('SOLTEIRO', 'CASADO', 'DIVORCIADO', 'VIUVO', 'UNIAO_ESTAVEL')),
-	CONSTRAINT "assistido_valor_aluguel_nao_negativo" CHECK("valor_aluguel" IS NULL OR "valor_aluguel" >= 0),
-	CONSTRAINT "assistido_renda_nao_negativa" CHECK("renda" IS NULL OR "renda" >= 0),
-	CONSTRAINT "assistido_numero_adultos_nao_negativo" CHECK("numero_adultos" IS NULL OR "numero_adultos" >= 0),
-	CONSTRAINT "assistido_criancas_pequenas_nao_negativo" CHECK("criancas_pequenas" IS NULL OR "criancas_pequenas" >= 0),
-	CONSTRAINT "assistido_adolescentes_nao_negativo" CHECK("adolescentes" IS NULL OR "adolescentes" >= 0),
-	CONSTRAINT "assistido_doentes_valido" CHECK("doentes" IN (0, 1)),
-	CONSTRAINT "assistido_bolsa_familia_valido" CHECK("bolsa_familia" IN (0, 1)),
-	CONSTRAINT "assistido_aposentado_valido" CHECK("aposentado" IN (0, 1)),
-	CONSTRAINT "assistido_pensao_valido" CHECK("pensao" IN (0, 1)),
-	CONSTRAINT "assistido_cesta_basica_valido" CHECK("cesta_basica" IN (0, 1)),
-	CONSTRAINT "assistido_atividade_remunerada_valido" CHECK("atividade_remunerada" IN (0, 1)),
-	CONSTRAINT "assistido_crianca_escola_valido" CHECK("crianca_escola" IN (0, 1))
+	`observacoes` text
 );
 --> statement-breakpoint
 CREATE TABLE `categoria_item` (
 	`id` text PRIMARY KEY,
-	`nome` text NOT NULL,
-	CONSTRAINT "categoria_item_nome_nao_vazio" CHECK(length(trim("nome")) > 0)
+	`nome` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `coleta` (
@@ -69,10 +50,7 @@ CREATE TABLE `doador` (
 	`complemento` text,
 	`bairro` text,
 	`cidade` text,
-	`uf` text,
-	CONSTRAINT "doador_nome_nao_vazio" CHECK(length(trim("nome")) > 0),
-	CONSTRAINT "doador_uf_valida" CHECK("uf" IS NULL OR "uf" IN ('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')),
-	CONSTRAINT "doador_cep_formato" CHECK("cep" IS NULL OR (length("cep") = 8 AND "cep" NOT GLOB '*[^0-9]*'))
+	`uf` text
 );
 --> statement-breakpoint
 CREATE TABLE `entrega` (
@@ -90,18 +68,14 @@ CREATE TABLE `item` (
 	`entrega_id` text,
 	CONSTRAINT `fk_item_nome_id_nome_item_id_fk` FOREIGN KEY (`nome_id`) REFERENCES `nome_item`(`id`),
 	CONSTRAINT `fk_item_coleta_id_coleta_id_fk` FOREIGN KEY (`coleta_id`) REFERENCES `coleta`(`id`),
-	CONSTRAINT `fk_item_entrega_id_entrega_id_fk` FOREIGN KEY (`entrega_id`) REFERENCES `entrega`(`id`),
-	CONSTRAINT "item_status_valido" CHECK("status" IN ('AGUARDA_COLETA', 'EM_ESTOQUE', 'ENTREGUE')),
-	CONSTRAINT "item_entregue_exige_entrega" CHECK("status" <> 'ENTREGUE' OR "entrega_id" IS NOT NULL),
-	CONSTRAINT "item_entrega_exige_coleta" CHECK("entrega_id" IS NULL OR "coleta_id" IS NOT NULL)
+	CONSTRAINT `fk_item_entrega_id_entrega_id_fk` FOREIGN KEY (`entrega_id`) REFERENCES `entrega`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `nome_item` (
 	`id` text PRIMARY KEY,
 	`categoria_id` text NOT NULL,
 	`nome` text NOT NULL,
-	CONSTRAINT `fk_nome_item_categoria_id_categoria_item_id_fk` FOREIGN KEY (`categoria_id`) REFERENCES `categoria_item`(`id`),
-	CONSTRAINT "nome_item_nome_nao_vazio" CHECK(length(trim("nome")) > 0)
+	CONSTRAINT `fk_nome_item_categoria_id_categoria_item_id_fk` FOREIGN KEY (`categoria_id`) REFERENCES `categoria_item`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `account` (
@@ -185,11 +159,13 @@ CREATE TABLE `verification` (
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `categoria_item_nome_uniq` ON `categoria_item` (lower("nome"));--> statement-breakpoint
 CREATE INDEX `coleta_doadorId_idx` ON `coleta` (`doador_id`);--> statement-breakpoint
 CREATE INDEX `entrega_assistidoId_idx` ON `entrega` (`assistido_id`);--> statement-breakpoint
 CREATE INDEX `item_status_idx` ON `item` (`status`);--> statement-breakpoint
 CREATE INDEX `item_coletaId_idx` ON `item` (`coleta_id`);--> statement-breakpoint
 CREATE INDEX `item_entregaId_idx` ON `item` (`entrega_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `nome_item_nome_uniq` ON `nome_item` (lower("nome"));--> statement-breakpoint
 CREATE INDEX `nome_item_categoriaId_idx` ON `nome_item` (`categoria_id`);--> statement-breakpoint
 CREATE INDEX `account_userId_idx` ON `account` (`user_id`);--> statement-breakpoint
 CREATE INDEX `invitation_organizationId_idx` ON `invitation` (`organization_id`);--> statement-breakpoint

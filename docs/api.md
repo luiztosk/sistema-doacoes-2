@@ -100,10 +100,9 @@ O **código** é o contrato: é nele que o cliente deve ramificar, e é ele que 
 coleção do Insomnia verifica. A `message` é uma frase em inglês, escrita para
 quem está olhando a resposta, e vem em três formas — a genérica
 (`Field 'renda' has an invalid value.`) para valor inválido, a específica
-quando a regra diz mais do que isso (`Field 'uf' must be one of: …`, e a frase do
-próprio `refinement` para as regras de domínio), e a que **não traz o nome do
-campo**, usada pelas regras que envolvem dois campos ao mesmo tempo, como
-`compatAluguelImovel`.
+quando a regra diz mais do que isso (`Field 'uf' must be one of: …`), e a que
+**não traz o nome do campo**, reservada para as regras de domínio que envolvem
+dois campos ao mesmo tempo.
 
 > **Exceção ao idioma:** o handler de rota não encontrada devolve
 > `"Rota não encontrada."`, em português (`src/worker/index.ts`). Vale corrigir
@@ -123,8 +122,11 @@ campo**, usada pelas regras que envolvem dois campos ao mesmo tempo, como
   `400 INVALID_VALUE`, com o nome do campo na mensagem.
 - `uf` é `z.enum` das 27 UFs, não é normalizado: `uf: "sp"` é
   `400 INVALID_VALUE`. A sigla é a que o banco guarda.
-- `cep` aceita `01310-100` e guarda `01310100`: o traço do ViaCEP (#16) sai na
-  entrada. Oito dígitos, e nada além deles.
+- `cep` é `z.string().regex(/^\d{8}$/)`: oito dígitos, e nada além deles.
+  `01310-100` é recusado — o traço do ViaCEP (#16) sai na entrada, e a
+  normalização é do cliente, não da API.
+- `email`, quando presente, precisa ter formato de e-mail. O campo é opcional e
+  anulável, mas o que vem dentro é julgado.
 - Referências a doador, assistido, coleta, entrega e nome de item precisam
   existir: é o `FOREIGN KEY` do D1 que recusa a escrita, e o erro vira
   `400 INVALID_REFERENCE`.
@@ -146,7 +148,7 @@ erro capturado vira código aqui.
 | Regra | Onde |
 |---|---|
 | tipo, `NOT NULL`, `enum`, conversão | `src/worker/db/schema.ts` (`<tabela>InsertSchema` / `UpdateSchema` / `SelectSchema`, gerados por `drizzle-orm/zod`) |
-| `nome` não vazio, `cep` com 8 dígitos, `renda`/`valorAluguel`/contadores `>= 0`, `tipoImovel` × `valorAluguel` | `refinement` no mesmo arquivo, logo abaixo da tabela que ele julga |
+| `nome` não vazio, `email` com formato, `cep` com 8 dígitos, `renda`/`valorAluguel`/contadores `>= 0` | `refinement` no mesmo arquivo, logo abaixo da tabela que ele julga |
 | `INVALID_STATUS_TRANSITION`, `DELIVERY_REQUIRED` | `validateItem` em `src/worker/api/v1.ts` (dependem da linha anterior, que nenhum schema de payload enxerga) |
 | `INVALID_REFERENCE` | `FOREIGN KEY` do D1, mapeado em `handleApiError` (`src/worker/api/errors.ts`) |
 | envelope `{ error: { code, message } }` a partir dos issues do zod | `errorFromIssue` em `src/worker/api/errors.ts` |
@@ -157,13 +159,20 @@ O schema **teve** 26 `check()` ([#43](https://github.com/luiztosk/sistema-doacoe
 e não tem mais: a regra de valor existe em um lugar só, o zod. O motivo e o preço
 estão em [`modelos-db.md`](./modelos-db.md#os-check-foram-removidos). Para o
 cliente, a mudança é boa — nada de `409 CONFLICT` genérico por valor inválido,
-sempre `400 INVALID_VALUE` com o campo nomeado — com duas brechas, ambas
-conhecidas e registradas:
+sempre `400 INVALID_VALUE` com o campo nomeado — com uma brecha, conhecida e
+registrada:
 
-- `PATCH {"tipoImovel":"ALUGADO"}` sem `valorAluguel` é aceito: o schema julga o
-  par só quando o próprio pedido traz os dois campos.
 - `PATCH {"entregaId":...}` em item sem `coletaId` é aceito: a invariante de que
   toda entrega vem de uma coleta é da linha, e nada a julga.
+
+`tipoImovel` × `valorAluguel` deixou de ser regra. `POST {"tipoImovel":"PROPRIO",
+"valorAluguel":1}` volta `201`, e o mesmo vale no `PATCH`. Era o único `.refine()`
+que o zod não conseguia expressar como qualificador nativo, por ser entre duas
+colunas; a [#44](https://github.com/luiztosk/sistema-doacoes-2/issues/44) exigiu
+que o gerador de seed lesse estes schemas, e um `refine()` é opaco para qualquer
+ferramenta. Se a regra voltar, o lugar dela é um `validateAssistido` em
+`src/worker/api/v1.ts`, ao lado do `validateItem` — que tem o que o zod não tem,
+a linha anterior.
 
 ## Valores recusados pelo banco
 

@@ -60,7 +60,8 @@ em produção.
 | `src/worker/db/auth-schema.ts` | **Gerado.** Não editar à mão |
 | `src/react-app/` | SPA React, TanStack Router, shadcn sobre Base UI |
 | `tests/api.ts` | Runner de teste escrito à mão |
-| `mock_data/*.csv` | Fixtures de seed |
+| `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
+| `mock_data/*.json` | Dados de referência do gerador (cidades, catálogo) |
 
 ## API: como adicionar um recurso
 
@@ -68,7 +69,9 @@ em produção.
    `createUpdateSchema` (e `createSelectSchema` se precisar ler validado).
 2. Entrada no `registerResources` em `src/worker/api/v1.ts`.
 3. `npm run gen-drizzle` e a migration.
-4. CSV em `mock_data/` — o cabeçalho precisa bater com as colunas da tabela.
+4. Gerador em `src/worker/db/generate.ts` — a tabela entra em
+   `ROWS_PER_TABLE` e ganha uma função `criar*` que valida cada linha com o
+   `*SelectSchema`.
 5. Casos em `tests/api.ts`.
 6. **Atualizar `docs/api.md`** (seção de endpoints e, se vale, a tabela de
    códigos de erro).
@@ -99,10 +102,12 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
    reintroduza um valor fixo de organização para "simular" o filtro** — isso viola
    a regra 1 de [`docs/seguranca.md`](./docs/seguranca.md) e é explicitamente
    proibido em `docs/api.md`.
-2. **Existem 26 `check()` no banco que não estão no `schema.ts`.** A migration que
-   os remove não foi gerada. Enquanto eles existirem, uma escrita rejeitada por um
-   deles volta como `500 INTERNAL_ERROR`, porque `handleApiError` só traduz
-   `FOREIGN KEY` e `UNIQUE constraint`.
+2. **O `check()` que existia no banco foi removido com a recriação.** O schema
+   nunca teve `check()`, e a baseline antiga ainda tinha 26. As migrations
+   foram regeradas do zero, então o banco atual não tem nenhum. Vale saber
+   porque `handleApiError` só traduz `FOREIGN KEY` e `UNIQUE constraint`: se
+   algum `check()` voltar a ser criado direto no DDL, uma escrita rejeitada por
+   ele volta como `500 INTERNAL_ERROR`.
 3. **Não edite `src/react-app/route-tree.tsx`.** É gerado pelo
    `@tanstack/router-plugin` a partir de `src/react-app/routes/`. Para adicionar
    rota, crie o arquivo lá.
@@ -140,10 +145,10 @@ referência do estado atual.
 
 - **O banco local e o remoto vão ser recriados do zero.** Decisão de quem
   maintaina: em vez de escrever a migration que derruba os 26 `check()`, gerar as
-  migrations de um schema novo e semear em cima. Até lá, enquanto os `check()`
-  existirem no banco, uma escrita rejeitada por eles volta como `500` — item 2
-  acima.
+  migrations de um schema novo e semear em cima. Feito: as migrations foram
+  regeradas e o banco local já foi semeado. Falta o remoto.
 - `handleApiError` não trata `CHECK constraint failed` (vira `500`).
+
 - `next-themes` monta o `ThemeProvider` em `main.tsx` e é o que alterna a classe
   `dark` no `<html>`, lendo as variáveis de `styles.css`. O `<Toaster>` do
   `sonner` continua sem ser montado; se nada usar toast, remova o `sonner` e

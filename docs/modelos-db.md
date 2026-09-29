@@ -1,15 +1,9 @@
 # Modelos do Banco de Dados (D1 + Drizzle ORM)
 
-> ⚠️ **O schema e o banco divergem em um ponto.** Existem **26 `check()` no banco**
-> que **não estão mais** no `schema.ts` (removidos em `efca2a7`). As duas
-> migrations existentes são `20260926213838_lucky_karma` (baseline, com os 26
-> `check()`) e `20260926230000_sleepy_green_goblin` (dois `CREATE UNIQUE INDEX`).
-> **Decisão:** em vez de escrever a migration que os derruba, o banco local e o
-> remoto serão recriados do zero — `npm run local-db-init` a partir de um estado
-> vazio, gerando as migrations de um schema novo e semeando em cima. Enquanto os
-> `check()` existirem no banco, uma escrita rejeitada por eles volta como
-> `500 INTERNAL_ERROR` em vez de um erro de validação — ver
-> [Os `check()` foram removidos](#os-checks-foram-removidos).
+> O schema e o banco estão alinhados. As migrations foram regeradas do zero, sem
+> nenhum `check()` no DDL, e o banco local já foi semeado em cima. O histórico —
+> por que os 26 `check()` saíram e o que custou — está em
+> [Os `check()` foram removidos](#os-check-foram-removidos).
 
 Este documento descreve o modelo de dados do sistema novo, traduzido do projeto
 legado do PI I (Flask + SQLAlchemy + SQLite) e adaptado para a stack atual:
@@ -162,9 +156,8 @@ foi o contrário da intuição, e vale registrar o porquê:
   volta como `400 INVALID_VALUE` com o campo nomeado. Duas cópias da regra, dois
   formatos de erro, e o pior dos dois chegando ao cliente.
 - **O zod já cobria tudo que a API consegue julgar.** Nome em branco, `>= 0`,
-  formato de CEP, as listas de `enum` e a regra entre `tipoImovel` e
-  `valorAluguel` estão todas no `refinement`, com a mensagem escrita para o
-  usuário final.
+  formato de CEP e as listas de `enum` estão todas no schema, com a mensagem
+  escrita para o usuário final.
 - **O que o zod não alcança, o banco continua fazendo.** A `FOREIGN KEY` e o
   índice único do catálogo são constraints de verdade — não há como reescrevê-las
   em TypeScript — e continuam no DDL. Referência e unicidade não foram
@@ -196,14 +189,14 @@ vezes:
 
 | Regra | Tabela | Onde |
 |---|---|---|
-| `nome` não vazio (`length(trim(nome)) > 0`) | `assistido`, `doador`, `categoria_item`, `nome_item` | `nomeNaoVazio` |
-| `cep` com 8 dígitos, sem hífen (é o que o ViaCEP devolve) | `assistido`, `doador` | `cepDeEntrada`, `cepGuardado` |
+| `nome` não vazio e sem espaço nas pontas | `assistido`, `doador`, `categoria_item`, `nome_item` | `nomeNaoVazio` (`trim().min(1)`) |
+| `email` com formato de e-mail | `assistido`, `doador` | `emailValido` |
+| `cep` com 8 dígitos, sem hífen (é o que o ViaCEP devolve) | `assistido`, `doador` | `cepComOitoDigitos` |
 | uma das 27 UFs | `assistido`, `doador` | `enum` da coluna |
 | `ALUGADO` \| `PROPRIO` | `assistido` | `enum` da coluna |
 | um dos 5 estados civis | `assistido` | `enum` da coluna |
 | `renda >= 0` | `assistido` | `naoNegativo` |
 | `valorAluguel >= 0` | `assistido` | `naoNegativo` |
-| aluguel > 0 se `ALUGADO`, vazio se `PROPRIO` | `assistido` | `compatAluguelImovel` |
 | contadores de pessoas ≥ 0 | `assistido` | `naoNegativo` |
 | um dos 3 status | `item` | `enum` da coluna |
 | referência existe (doador, assistido, coleta, entrega, nome de item) | todas | `FOREIGN KEY` do D1, mapeado em `handleApiError` |
@@ -221,14 +214,9 @@ payload.
 
 ### Onde não há garantia
 
-Duas regras tinham `check()` e foram removidos com ele. O `PATCH` não consegue
-julgar nenhuma das duas, porque o campo que decide é justamente o que o cliente
-não mandou:
+Uma regra tinha `check()` e foi removida com ele. O `PATCH` não consegue julgá-la,
+porque o campo que decide é justamente o que o cliente não mandou:
 
-- `tipoImovel` × `valorAluguel`: `POST {"tipoImovel":"ALUGADO"}` sem
-  `valorAluguel` é recusado, e `PATCH {"tipoImovel":"ALUGADO"}` sem
-  `valorAluguel` é aceito. O `UpdateSchema` só julga o par quando o próprio
-  pedido traz os dois campos.
 - `entregaId` ⇒ `coletaId`: um item pode ficar apontando para uma entrega sem
   coleta, o que desfaz a fonte única de quem doou (ver
   [`item`](#item)). A `FOREIGN KEY` garante que a coleta existe, não que ela
@@ -238,6 +226,12 @@ Fechar qualquer uma das duas é uma linha em um `validateAssistido` — que aind
 não existe, só o `validateItem` está escrito — ou no `validateItem`: o
 `validate` do `registerResource` já recebe a linha existente, que é o que
 falta.
+
+`tipoImovel` × `valorAluguel` deixou de ser regra: `PROPRIO` com
+`valorAluguel` preenchido é aceito. Ela era o único `.refine()` que o zod não
+conseguia escrever como qualificador nativo, porque é entre duas colunas. O
+gerador de seed continua produzindo o dado coerente — aluguel só em `ALUGADO` —
+mas a API não impede mais o par contraditório.
 
 ### Índices e `ON DELETE`
 
@@ -264,9 +258,9 @@ O catálogo também tem unicidade: `categoria_item_nome_uniq` e
 "Arroz 5kg" contem como o mesmo nome. Um `UNIQUE` na coluna seria case-sensitive
 (a collation padrão do SQLite é BINARY) e é constraint de tabela — que o SQLite
 só consegue adicionar reconstruindo a tabela. Um índice sobre `lower(nome)` é um
-`CREATE UNIQUE INDEX` e não mexe nos dados. ⚠️ O seed usa
-`onConflictDoNothing()`, então um CSV com nome repetido vira linha pulada em
-silêncio: o banco recusa, o seed não avisa.
+`CREATE UNIQUE INDEX` e não mexe nos dados. O seed não usa mais
+`onConflictDoNothing()`: um nome repetido no catálogo estoura o `UNIQUE` e o
+processo sai com código 1, em vez de pular a linha em silêncio.
 
 ### Triggers: não adicionados
 
@@ -292,24 +286,31 @@ mapeamento de erro, não sozinho.
 
 ### Pendente
 
-- **Recriar as invariantes no `PATCH`.** As duas brechas que o `check()`
-  cobria, ver [Onde não há garantia](#onde-não-há-garantia).
+- **Recriar a invariante no `PATCH`.** A brecha que sobrou, ver
+  [Onde não há garantia](#onde-não-há-garantia).
 - **Nome do campo na `INVALID_REFERENCE`.** O texto do D1 não diz qual das cinco
   chaves falhou, então a mensagem é genérica. Nomear exigiria voltar a consultar
   antes de escrever — que é o que o `FOREIGN KEY` eliminou de graça.
-- **A migration que remove os `check()`.** `npm run gen-drizzle` ainda não foi
-  rodado depois da remoção, então o banco continua com eles. Ver [Os `check()`
-  foram removidos](#os-check-foram-removidos).
+- **A migration que remove os `check()` no remoto.** As migrations foram
+  regeradas sem eles e o banco local está limpo; falta aplicar no remoto. Ver
+  [Os `check()` foram removidos](#os-check-foram-removidos).
 
 ### Feito: valores no zod
 
 `createInsertSchema` da
 [#42](https://github.com/luiztosk/sistema-doacoes-2/issues/42) infere de graça o
-que a tabela já expressa — enum, boolean, required. O `refinement` cobre o que o
-tipo não diz: `>= 0`, texto não vazio, formato de CEP, e a regra entre
-`tipoImovel` e `valorAluguel`. Está em `src/worker/db/schema.ts`, cada
-`refinement` logo abaixo da tabela que ele julga, ao lado dos três schemas que o
-consumem — sem `check()` no banco e sem schema factory.
+que a tabela já expressa — enum, boolean, required. O que o tipo não diz — `>= 0`,
+texto não vazio, formato de CEP, formato de e-mail — entra por qualificadores
+nativos do zod (`min`, `regex`, `z.email()`), passados como `refinement` na
+geração do schema e escritos logo abaixo da tabela que eles julgam, ao lado dos
+três schemas que os consomem — sem `check()` no banco e sem schema factory.
+
+A escolha por qualificadores nativos tem um motivo além de estilo: o
+[`#44`](https://github.com/luiztosk/sistema-doacoes-2/issues/44) demandou que o
+gerador de dados consumisse estes schemas. Um `.refine()` vira um check opaco
+que nenhuma ferramenta consegue ler, enquanto `min` e `regex` são
+inspecionáveis. O `refinement` era o que impedia o seed de ser conferido contra
+o schema.
 
 ## Diagrama ER
 
@@ -491,7 +492,8 @@ Detalhes em [`drizzle-migrations.md`](./drizzle-migrations.md).
    O papel vive em `member.role`, que é um `text` sem constraint com default
    `'member'`; os valores usuais do Better Auth são `owner`, `admin` e `member`.
 5. **Sem migração de dados reais** — os dados do legado são fictícios (mock);
-   o seed novo pode ser gerado a partir dos JSONs de `mock_data/` do repo antigo.
+   hoje eles são gerados por `src/worker/db/generate.ts`, e o catálogo vem do
+   JSON em `mock_data/catalogo.json`.
 6. **`item` sem `doador_id`/`assistido_id`** — o legado guardava uma cópia
    denormalizada do doador e do assistido no item. Quem doou e quem recebeu saem
    da coleta e da entrega; a cópia divergia do evento de origem.

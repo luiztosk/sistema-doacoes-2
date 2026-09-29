@@ -13,18 +13,15 @@ function LogoutComponent() {
     const navigate = useNavigate()
     useEffect(() => {
         void (async () => {
-            // A ordem importa. O cookie de sessao e apagado pelo header Set-Cookie
-            // da resposta do sign-out, entao qualquer requisicao disparada antes
-            // de processar essa resposta leva o cookie ainda valido. Sem o await,
-            // o invalidateQueries abaixo dispara get-session antes disso e
-            // recoloca no cache a sessao que ainda existe — e era por isso que
-            // Sair exigia dois cliques. Ver #52.
             await authClient.signOut()
 
-            // removeQueries, nao invalidateQueries: invalidar dispararia outro
-            // get-session, que ainda poderia responder com a sessao velha se o
-            // cookie nao tivesse chegado.
-            queryClient.removeQueries({ queryKey: sessionQueryOptions.queryKey })
+            // `setQueryData` com null, e nao `removeQueries`: remover tira a
+            // query do cache enquanto o observador dela ainda esta montado, e
+            // nenhuma montagem posterior volta a buscar — o `invalidateQueries`
+            // do login passa a nao encontrar nada e vira no-op, entao o
+            // sign-in nao busca a sessao nova. Zerar o valor mantem a entrada
+            // saudavel e da o mesmo efeito na tela. Ver #52 e #53.
+            queryClient.setQueryData(sessionQueryOptions.queryKey, null)
 
             await navigate({ to: '/' })
         })()

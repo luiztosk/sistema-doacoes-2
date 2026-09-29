@@ -1,5 +1,12 @@
-import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
-import { sessionQueryOptions } from '../lib/auth-queries'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+
+import { AppHeader } from '@/react-app/components/layout/app-header'
+import { AppSidebar } from '@/react-app/components/layout/app-sidebar'
+import {
+  SidebarInset,
+  SidebarProvider,
+} from '@/react-app/components/ui/sidebar'
+import { sessionQueryOptions } from '@/react-app/lib/auth-queries'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context }) => {
@@ -12,6 +19,15 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({ to: '/auth/login' })
     }
   },
-  // If authenticated, render the sub-routes (dashboard, profile, etc.)
-  component: () => <Outlet /> 
+  component: () => (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <AppHeader />
+        <div className="flex-1 px-4 py-6 md:p-6">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  ),
 })

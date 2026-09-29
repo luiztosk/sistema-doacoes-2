@@ -37,6 +37,11 @@ em produção.
 - **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
   mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
   em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
+- **Sem comentário de código.** O código se explica sozinho — quem lê raciocina
+  nele em vez de varrer comentário. Comentário só existe apontando uma issue
+  aberta ou marcando um TODO; nos dois casos, com o número ou o link. A exceção
+  são os componentes do shadcn em `components/ui/**`, que chegam com os
+  comentários da lib e são sobrescritos por `npx shadcn add`.
 - Aspas duplas. Imports de tipo separados (`import type { ... }`).
 - `strict`, `noUnusedLocals` e `noUnusedParameters` estão ligados. Import não
   usado **quebra o build** — é por isso que o histórico tem tantos commits

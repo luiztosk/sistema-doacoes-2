@@ -1,39 +1,20 @@
-import { QueryClient } from "@tanstack/react-query";
-import {
-	Link,
-	Outlet,
-	createRootRouteWithContext,
-} from "@tanstack/react-router";
-import { UserMenu } from "../components/UserMenu";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+
+import { PublicHeader } from "@/react-app/components/layout/public-header";
+import { sessionQueryOptions } from "@/react-app/lib/auth-queries";
 
 function RootLayout() {
+	const { data: session } = useQuery(sessionQueryOptions);
+
+	if (session) {
+		return <Outlet />;
+	}
+
 	return (
-		<div className="min-h-screen">
-			<header className="border-b border-border">
-				<nav
-					className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3"
-					aria-label="Principal"
-				>
-					<Link to="/" className="font-semibold">
-						Sistema Doações 2
-					</Link>
-					<div className="flex flex-wrap items-center justify-end gap-4">
-						<ul className="flex flex-wrap justify-end gap-4">
-							<li>
-								<Link to="/">Início</Link>
-							</li>
-							<li>
-								<Link to="/about">Sobre</Link>
-							</li>
-							<li>
-								<Link to="/assistidos">Assistidos</Link>
-							</li>
-								<UserMenu />
-						</ul>
-					</div>
-				</nav>
-			</header>
-			<main className="mx-auto max-w-5xl px-4 py-8">
+		<div className="flex min-h-svh flex-col">
+			<PublicHeader />
+			<main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
 				<Outlet />
 			</main>
 		</div>
@@ -43,5 +24,10 @@ function RootLayout() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient;
 }>()({
+	beforeLoad: async ({ context }) => {
+		await context.queryClient
+			.ensureQueryData(sessionQueryOptions)
+			.catch(() => null);
+	},
 	component: RootLayout,
 });

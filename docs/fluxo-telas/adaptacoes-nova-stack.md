@@ -24,6 +24,13 @@ Atualizado em 29/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/20
   `/auth/logout`. A única tela de dados é `/assistidos`, que lista os
   assistidos em uma tabela. Ainda **não** existem telas dos fluxos do legado:
   sem ficha, sem criação, sem edição e sem busca, ordenação ou paginação;
+- a navegação é um **menu lateral**, como o do legado
+  ([`fluxos.md`](./fluxos.md)), com "Início" e uma entrada por recurso. A lista
+  vive em um lugar só, [`src/react-app/lib/navigation.ts`](../../src/react-app/lib/navigation.ts),
+  tipada contra a árvore de rotas gerada: acrescentar uma tabela é criar o
+  arquivo da rota e somar uma linha ali. O cabeçalho das telas autenticadas é o
+  do shell (`_authenticated.tsx`) e o das públicas é separado, então nenhuma
+  tela tem dois cabeçalhos;
 - TanStack Router, TanStack Query e shadcn/ui **são** dependências. O
   `better-auth-ui` chegou a ser instalado e foi removido (`1d51dd9`); o shadcn
   foi montado sobre **Base UI**. O `@tanstack/react-table` está instalado e
@@ -115,33 +122,40 @@ usados em seed, testes, screenshots ou vídeos.
 ## Proposta de rotas de tela, não de endpoints
 
 Os caminhos abaixo servem para organizar a SPA. Eles não constituem contrato de
-API. O que existe hoje está marcado — o login e o cadastro foram implementados
-em `/auth/login` e `/auth/signup`, sob o prefixo `/auth` em vez de `/login` e
-`/signup`:
+API. O que existe hoje está marcado. O login e o cadastro usam o prefixo
+`/auth`, e cada recurso mora em uma pasta para que lista, ficha, criação e
+edição fiquem juntas:
 
 ```text
 /auth/login          [existe]
 /auth/signup         [existe]
 /auth/logout         [existe]
+/                     [existe, pública, com as instruções de entrada]
+/about                [existe, pública, só a partir de /]
+/painel              [existe, painel com os recursos]
 /assistidos          [existe, só a lista]
 /assistidos/novo
-/assistidos/:id
-/assistidos/:id/editar
-/assistidos/:id/entregas
+/assistidos/$id
+/assistidos/$id/editar
+/assistidos/$id/entregas
 /doadores
 /doadores/novo
-/doadores/:id
-/doadores/:id/editar
-/doadores/:id/coletas
+/doadores/$id
+/doadores/$id/editar
+/doadores/$id/coletas
 /coletas
-/coletas/:id
+/coletas/$id
 /entregas
-/entregas/:id
+/entregas/$id
 /estoque
 ```
 
+`/` e `/about` são públicas e usam o cabeçalho simples. A partir do login, a
+tela inicial é `/painel`, que abre em "Início" do menu lateral, e todas as
+telas protegidas usam o shell de `_authenticated.tsx`.
+
 `/assistidos` está implementada como
-[`src/react-app/routes/_authenticated/assistidos.tsx`](../../src/react-app/routes/_authenticated/assistidos.tsx):
+[`src/react-app/routes/_authenticated/assistidos/index.tsx`](../../src/react-app/routes/_authenticated/assistidos/index.tsx):
 lista as colunas `nome`, cidade/UF, `telefone`, `email`, `renda`,
 `tipoImovel` e `cestaBasica`, com célula vazia para campo nulo. O tipo das
 linhas vem de `assistidoSelectSchema`, em `src/worker/db/schema.ts`, e não de

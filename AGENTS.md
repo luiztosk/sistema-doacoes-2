@@ -74,10 +74,15 @@ em produção.
 ### Frontend: onde um arquivo novo vai
 
 Agrupamento é por **tipo**, nunca por recurso: a tabela de assistidos fica em
-`components/tables/assistidos-table.tsx` e o formulário de coleta em
-`components/forms/coleta-form.tsx`. O nome do arquivo já carrega o recurso
-(`<recurso>-<tipo>.tsx`), então a pasta não precisa repetir isso. `components/auth/`
-é a exceção: é a superfície do Better Auth, não um tipo.
+`components/tables/assistidos.tsx` e o formulário de coleta em
+`components/forms/coleta.tsx`. O arquivo se chama só `<recurso>.tsx`, porque a
+pasta já diz o tipo — sufixo `-table` ou `-form` no nome seria repetir a pasta.
+`components/auth/` é a exceção: é a superfície do Better Auth, não um tipo.
+
+O **nome do símbolo** continua descrevendo o que a coisa é: o arquivo é
+`tables/assistidos.tsx` e exporta `AssistidosTable`. Caminho diz onde mora,
+símbolo diz o que é, e os dois são eixos separados — como o `accessorKey` em
+inglês e o `header` em português da mesma coluna.
 
 Nome de arquivo em **kebab-case** (`sign-up-form.tsx`), e não PascalCase. Os dois
 formulários de auth já foram renomeados porque eram os únicos em PascalCase.
@@ -147,7 +152,7 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
    montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
    encontrar nada e vira no-op, então o sign-in não busca a sessão nova. Zerar o
    valor mantém a entrada saudável e dá o mesmo efeito na tela.
-8. **`tableFeatures({})` em `components/tables/assistidos-table.tsx` é vazio de
+8. **`tableFeatures({})` em `components/tables/assistidos.tsx` é vazio de
    propósito**, porque a tabela só lê. Na primeira vez que entrar ordenação ou
    filtro, vira algo como
    `tableFeatures({ rowSortingFeature, sortedRowModel: createSortedRowModel(), sortFns })`

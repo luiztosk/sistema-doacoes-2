@@ -74,10 +74,21 @@ em produção.
 ### Frontend: onde um arquivo novo vai
 
 Agrupamento é por **tipo**, nunca por recurso: a tabela de assistidos fica em
-`components/tables/assistidos.tsx` e o formulário de coleta em
-`components/forms/coleta.tsx`. O arquivo se chama só `<recurso>.tsx`, porque a
-pasta já diz o tipo — sufixo `-table` ou `-form` no nome seria repetir a pasta.
-`components/auth/` é a exceção: é a superfície do Better Auth, não um tipo.
+`components/tables/assistidos.tsx` e o formulário em
+`components/forms/assistido.tsx`. O arquivo se chama só `<recurso>.tsx`,
+porque a pasta já diz o tipo — sufixo `-table` ou `-form` no nome seria repetir
+a pasta. `components/auth/` é a exceção: é a superfície do Better Auth, não um
+tipo.
+
+Plural onde é lista, singular onde é registro: `tables/assistidos.tsx` e
+`lib/queries/assistidos.ts` listam, `forms/assistido.tsx` age sobre um.
+
+**Um formulário por recurso, para criar e para editar.** Não exists
+`create-assistido.tsx` nem `edit-assistido.tsx`: o componente recebe o registro
+por prop opcional e é a rota que decide o modo — `assistido` ausente é criação,
+presente é edição. Assim os dois modos compartilham validação, e o `PATCH` não
+pode enviar `id` no corpo (`READ_ONLY_FIELD`, `docs/api.md`), o que empurra a
+decisão para o lado do componente mesmo.
 
 O **nome do símbolo** continua descrevendo o que a coisa é: o arquivo é
 `tables/assistidos.tsx` e exporta `AssistidosTable`. Caminho diz onde mora,

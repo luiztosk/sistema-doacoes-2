@@ -7,11 +7,11 @@ funcionalidades já implementadas.
 
 ## Documentos
 
-- [Transcrição visual do vídeo](./transcricao-video.md): linha do tempo da
+- [Transcrição visual do vídeo](transcricao-video.md): linha do tempo da
   apresentação e da demonstração prática.
-- [Síntese dos fluxos](./fluxos.md): mapa das telas e caminhos percorridos pelo
+- [Síntese dos fluxos](../archive/fluxos-pi1.md): mapa das telas e caminhos percorridos pelo
   usuário.
-- [Adaptações para a nova stack](./adaptacoes-nova-stack.md): o que pode ser
+- [Adaptações para a nova stack](../future/adaptacoes-nova-stack.md): o que pode ser
   mantido, o que precisa mudar e o que ainda não está implementado no PI II.
 
 ## Fontes e método

@@ -3,7 +3,7 @@
 Instruções para agentes de código neste repositório. O objetivo é registrar o que
 **não dá para deduzir lendo o código**.
 
-Comece por [`docs/README.md`](./docs/README.md) para saber qual documento é a
+Comece por [`docs/README.md`](docs/README.md) para saber qual documento é a
 fonte da verdade de cada assunto.
 
 ## Comandos
@@ -16,10 +16,9 @@ npm run build    # lint + test + tsc -b + vite build
 npm run check    # build + wrangler deploy --dry-run
 ```
 
-O `build` é o que o **Cloudflare Builds executa a cada push**. A ordem é
-`&&`, então um erro de lint ou um teste vermelho **impede o deploy** e deixa o
-status check do GitHub vermelho — e a `main` exige que ele passe. Não "conserte"
-o build removendo o lint ou o teste para destravar um merge.
+O `build` é o que o **Cloudflare Builds executa a cada push**, em `&&`, então um
+erro de lint ou um teste vermelho **impedem o deploy** e a `main` exige que o
+check passe. Não remova o lint nem o teste da cadeia para destravar um merge.
 
 `db-seed` usa `getPlatformProxy()` e escreve **sempre no banco local**. Nada de
 `--remote` sem querer: `remote-db-init` e `d1 migrations apply --remote` escrevem
@@ -67,9 +66,7 @@ em produção.
 | `src/react-app/lib/api/` | Um arquivo por recurso, mais `session.ts`. `queryOptions` e `mutationOptions` |
 | `src/react-app/components/ui/` | **Gerado** pelo shadcn. Não editar à mão |
 | `src/react-app/components/` | Agrupado por **tipo**: `ui/`, `layout/`, `auth/`, `tables/`, `forms/` |
-| `tests/api.ts` | Runner de teste escrito à mão |
 | `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
-| `mock_data/*.json` | Dados de referência do gerador (cidades, catálogo) |
 
 ### Frontend: onde um arquivo novo vai
 
@@ -90,6 +87,10 @@ componente recebe o registro por prop opcional e é a rota que decide o modo —
 interno (`isEditing`), não prop nem rota, porque "ver" e "editar" são a mesma
 tela.
 
+As duas receitas que espelham isso estão em
+[`docs/frontend-tabela.md`](docs/frontend-tabela.md) e
+[`docs/frontend-formulario.md`](docs/frontend-formulario.md).
+
 São três modos, e só dois têm botão de envio:
 
 | Modo | `assistido` | `isEditing` | Campos | Topo | Rodapé |
@@ -99,18 +100,12 @@ São três modos, e só dois têm botão de envio:
 | criação | ausente | `true` | liberados | `Voltar para a lista` | `Cadastrar assistido` |
 
 O `Cancelar` faz `form.reset()` e volta para `false`, porque voltar sem
-descartar deixaria a tela mostrando alteração que não foi salva. O `PATCH` não
-pode enviar `id` no corpo (`READ_ONLY_FIELD`, `docs/api.md`), o que empurra a
-decisão para o lado do componente mesmo.
+descartar deixaria a tela mostrando alteração que não foi salva.
 
 **O bloqueio vem do `EditableProvider`, não de uma prop por campo.** As
 primitivas de `forms/fields.tsx` leem `editable` de um contexto, senão seriam 25
 `disabled={...}` repetidos no `assistido.tsx`. O contexto tem `true` como
 padrão, então uma primitiva usada fora do provider fica editável.
-
-Na tabela, a linha inteira é clicável e navega para a mesma rota do botão
-`Mais detalhes`; o botão existe para o caminho por teclado e para deixar isso
-óbvio. Os dois `stopPropagation`, senão o clique dispara a navegação duas vezes.
 
 O **nome do símbolo** continua descrevendo o que a coisa é: o arquivo é
 `tables/assistidos.tsx` e exporta `AssistidosTable`. Caminho diz onde mora,
@@ -136,40 +131,42 @@ escrever. Então `assistidoOptions`, `assistidoDetailOptions(id)`,
 [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys),
 para o `invalidateQueries` ter um alvo nomeado em vez de um array solto.
 
-**O estado do formulário é o payload.** `AssistidoFormValues` é o
-`assistidoInsertSchema` com o `undefined` tirado, então `TextField` produz
-`string | null`, `NumberField` produz `number | null` e `CheckboxField` produz
-`boolean`. Não existe passo de conversão em `onSubmit`: quem converte é o
-`onChange` da primitiva, e o objeto que o `form` entrega é o objeto que vai no
-corpo. Isso é o que permite validar com `assistidoInsertSchema` direto e sem
-duplicar regra.
+**O estado do formulário é o payload** — `AssistidoFormValues` é o
+`assistidoInsertSchema` sem o `undefined`, e quem converte é o `onChange` da
+primitiva, não o `onSubmit`. Por isso dá para validar com o `*InsertSchema`
+direto, nos dois modos: o de update torna `nome` opcional e o de insert é o mais
+estrito.
 
-O mesmo schema valida nos dois modos, inclusive na edição: `assistidoUpdateSchema`
-torna `nome` opcional, então um `nome` vazio passaria no cliente e tomaria `400`
-no servidor. `assistidoInsertSchema` é o mais estrito dos dois e vale para os
-dois.
+## Telas: leia antes de escrever
 
-## API: como adicionar um recurso
+[`docs/frontend-tabela.md`](docs/frontend-tabela.md) e
+[`docs/frontend-formulario.md`](docs/frontend-formulario.md) são a receita das
+telas de recurso, e apontam para o código a espelhar em vez de descrever de
+novo.
 
-1. Tabela em `src/worker/db/schema.ts` + `createInsertSchema` /
-   `createUpdateSchema` (e `createSelectSchema` se precisar ler validado).
-2. Entrada no `registerResources` em `src/worker/api/v1.ts`.
-3. `npm run gen-drizzle` e a migration.
-4. Gerador em `src/worker/db/generate.ts` — a tabela entra em
-   `ROWS_PER_TABLE` e ganha uma função `criar*` que valida cada linha com o
-   `*SelectSchema`.
-5. Casos em `tests/api.ts`.
-6. **Atualizar `docs/api.md`** (seção de endpoints e, se vale, a tabela de
-   códigos de erro).
+**O backend está congelado nesta rodada.** Não crie tabela, coluna, endpoint,
+migration nem código de erro, e não edite nada em `src/worker/`. Se a tela
+precisa de um campo que não existe, pare e pergunte — não invente o schema. O
+`docs/frozen/` é leitura: ele descreve o contrato em que a tela opera, não uma
+lista de coisas a atualizar. Como se faria uma mudança lá está em
+[`docs/frozen/como-adicionar-recurso.md`](docs/frozen/como-adicionar-recurso.md).
 
-Contrato, que não muda por recurso:
+**Três recursos estão em redesenho: `coleta`, `entrega` e `item`.** O modelo de
+doação → estoque → entrega está sendo repensado antes de ganhar tela — quantidade
+por linha de doação, reserva de item, e a dúvida de fundir `nome_item` em
+`item`. Não crie tela para esses três nem mexa no schema deles: contra o modelo
+de hoje o trabalho é jogado fora. O que já foi decidido e o que falta está em
+[`docs/future/README.md`](docs/future/README.md). `doador` está liberado.
 
-- sucesso: `200`/`201` com `{"data": ...}`; `DELETE` devolve `204` sem corpo
-- erro: `{"error": {"code": "UPPER_SNAKE", "message": "frase em inglês"}}`
-- `401` é a única resposta sem corpo
-- uma requisição devolve **no máximo um** erro (o validador para no primeiro)
-- validação com zod na borda, gerada da própria tabela com `drizzle-orm/zod`
-- `id` é gerado pelo servidor e rejeitado no corpo (`READ_ONLY_FIELD`)
+A **única exceção** ao congelamento é registrar `nome-itens` e
+`categoria-itens` em `registerResources`, porque o catálogo precisa ser aditivo
+para quem registra uma doação trazer um item que não está nele.
+
+O contrato em si, que não muda por recurso: sucesso é `200`/`201` com
+`{"data": ...}` e `DELETE` devolve `204` sem corpo; erro é
+`{"error": {"code": "UPPER_SNAKE", "message": "frase em inglês"}}`; `401` é a
+única resposta sem corpo; uma requisição devolve **no máximo um** erro; a
+validação é o zod da própria tabela; e `id` é gerado pelo servidor.
 
 ## Testes
 
@@ -182,18 +179,16 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 
 ## Coisas que vão te morder
 
-1. **`organization_id` não existe** nas tabelas de domínio. Foi removida junto com
-   a integração do Better Auth e volta com a
-   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). **Não
-   reintroduza um valor fixo de organização para "simular" o filtro** — isso viola
-   a regra 1 de [`docs/seguranca.md`](./docs/seguranca.md) e é explicitamente
-   proibido em `docs/api.md`.
-2. **O `check()` que existia no banco foi removido com a recriação.** O schema
-   nunca teve `check()`, e a baseline antiga ainda tinha 26. As migrations
-   foram regeradas do zero, então o banco atual não tem nenhum. Vale saber
-   porque `handleApiError` só traduz `FOREIGN KEY` e `UNIQUE constraint`: se
-   algum `check()` voltar a ser criado direto no DDL, uma escrita rejeitada por
-   ele volta como `500 INTERNAL_ERROR`.
+1. **`organization_id` não existe** nas tabelas de domínio, e a API não filtra
+   por organização. O plugin `organization()` do Better Auth **está ativo** em
+   `auth.ts` e as tabelas de organização existem — essa é a isca mais fácil do
+   repo. **Não introduza um valor fixo para "simular" o filtro**: viola a regra 1
+   de [`docs/frozen/seguranca.md`](docs/frozen/seguranca.md) e é explicitamente
+   proibido em [`docs/frozen/api.md`](docs/frozen/api.md). Volta com a
+   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13).
+2. **Não crie `check()`.** O banco não tem nenhum, e `handleApiError` só traduz
+   `FOREIGN KEY` e `UNIQUE constraint`: uma escrita rejeitada por um `check()`
+   volta como `500 INTERNAL_ERROR`.
 3. **Não edite `src/react-app/route-tree.tsx`.** É gerado pelo
    `@tanstack/router-plugin` a partir de `src/react-app/routes/`. Para adicionar
    rota, crie o arquivo lá.
@@ -201,10 +196,10 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
    `prod-sistema-doacoes-2`, que hoje só tem seed. Não é ambiente isolado.
 5. **A API não está pronta para produção** e não deve receber dados reais: falta
    isolamento por tenant e não há `403` em lugar nenhum. Ver
-   [`docs/api.md`](./docs/api.md).
+   [`docs/frozen/api.md`](docs/frozen/api.md).
 6. O `notFound` em `src/worker/index.ts` responde `"Rota não encontrada."` em
-   português, quebrando a regra de mensagem em inglês do `docs/api.md`. Corrigir
-   junto, ou não mexe.
+   português, quebrando a regra de mensagem em inglês do
+   [`docs/frozen/api.md`](docs/frozen/api.md). Corrigir junto, ou não mexe.
 7. **No logout, use `setQueryData(key, null)` e nunca `removeQueries`.** Remover
    tira a query do cache enquanto o observador dela ainda está montado, e nenhuma
    montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
@@ -240,59 +235,55 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `schema.ts` estão em português e servem à validação de campo do formulário,
     mas a API responde em inglês via `errors.ts` — são públicos distintos, e não
     se traduz o mesmo texto. Ver o item 5 de
-    [`docs/backlog-pi2.md`](./docs/backlog-pi2.md).
+    [`docs/backlog-pi2.md`](docs/backlog-pi2.md).
 
 ## Branches e commits
 
 `main` é a única branch de longa vida. `dev` e `stage` existiram e foram
 abandonadas — não criar de novo. Feature branch a partir de `main`, PR, e o merge
-acontece quando o check passar e o teste manual estiver feito.
-
-Commits no formato Conventional Commits, com o motivo no corpo quando a mudança
-não for óbvia. Português, sem acento.
+acontece quando o check passar e o teste manual estiver feito. Commits no formato
+Conventional Commits, com o motivo no corpo quando a mudança não for óbvia.
+Português, sem acento.
 
 ## Ao mexer no código, atualize o doc
 
 | Mudança | Documento |
 |---|---|
-| Rota, contrato de erro, código novo | `docs/api.md` |
-| Tabela, coluna, constraint, índice | `docs/modelos-db.md` |
 | Script novo, passo de deploy | `docs/arquitetura.md` |
 | Work item novo ou requisito coberto | `docs/backlog-pi2.md` |
+| Tela de recurso nova | `docs/frontend-*.md` |
 
-Documento em `docs/archive/` é histórico: **não** atualize, e não use como
+`docs/frozen/`, `docs/future/` e `docs/archive/` estão fora desta tabela de
+propósito: **não** atualize nenhum dos três, e não use `archive/` como
 referência do estado atual.
 
-## Dívidas conhecidas
+## Fora de escopo
 
-- **O banco local e o remoto vão ser recriados do zero.** Decisão de quem
-  maintaina: em vez de escrever a migration que derruba os 26 `check()`, gerar as
-  migrations de um schema novo e semear em cima. Feito: as migrations foram
-  regeradas e o banco local já foi semeado. Falta o remoto.
-- `handleApiError` não trata `CHECK constraint failed` (vira `500`).
+Nada aqui é tarefa do trabalho atual. Cada item existe para você **não** mexer
+nele, e o motivo está escrito para não parecer convite:
 
-- `next-themes` monta o `ThemeProvider` em `main.tsx` e é o que alterna a classe
-  `dark` no `<html>`, lendo as variáveis de `styles.css`. O `<Toaster>` do
-  `sonner` continua sem ser montado; se nada usar toast, remova o `sonner` e
-  deixe o `next-themes`.
-- `src/react-app/lib/utils.ts` só faz `export { cn } from "cn"` e não é importado
-  por ninguém — os componentes importam `cn` do pacote direto.
-- `tsconfig.json` mantém `ignoreDeprecations: "6.0"`.
-- Sem CI no GitHub Actions: quem roda lint e teste é o Cloudflare Builds.
+- **O `sonner` e o `<Toaster>`.** `next-themes` monta o `ThemeProvider` em
+  `main.tsx` e é o que alterna a classe `dark`. O `<Toaster>` nunca foi
+  montado; quem decidir usar toast monta e pronto. Não remova o pacote.
+- **`src/react-app/lib/utils.ts`** só faz `export { cn } from "cn"` e ninguém
+  importa. Os componentes importam `cn` do pacote direto. Apagar só no momento
+  em que alguém mexer nesse arquivo.
+- **O banco remoto ainda não foi recriado.** As migrations foram regeradas e o
+  local foi semeado; falta aplicar no remoto. Não rode `--remote` para
+  "resolver", a menos que a tarefa seja essa.
+- **`handleApiError` não trata `CHECK constraint failed`** (vira `500`) — está
+  em [`docs/future/`](docs/future/README.md).
+- **`tsconfig.json` mantém `ignoreDeprecations: "6.0"`** porque o TypeScript 6
+  reclama do uso antigo. Não remova para silenciar.
 
 ## Lint: por que existem duas exceções no `eslint.config.js`
 
 `npm run lint` fecha em **zero warning**. As duas exceções estão no config, e não
-em comentário dentro do arquivo, porque ambos os arquivos são sobrescritos por
-ferramenta:
-
-- `react-refresh/only-export-components` desligada em
-  `src/react-app/components/ui/**`. Os componentes do shadcn exportam o
-  componente e o `cva` de variantes no mesmo arquivo, que é a convenção da lib.
-  Se alguém desabilitar por arquivo, `npx shadcn add` apaga o comentário na
-  próxima vez. Fora de `components/ui/` a regra continua valendo.
-- `reportUnusedDisableDirectives` desligada em `worker-configuration.d.ts`, que é
-  gerado por `npm run cf-typegen` e já vem com `// eslint-disable-line` que o lint
-  julga desnecessário.
+em comentário no arquivo, porque ambos são sobrescritos por ferramenta:
+`react-refresh/only-export-components` em `components/ui/**` (o shadcn exporta o
+componente e o `cva` de variantes no mesmo arquivo, que é a convenção da lib, e
+`npx shadcn add` apagaria um comentário por arquivo), e
+`reportUnusedDisableDirectives` em `worker-configuration.d.ts`, que é gerado por
+`npm run cf-typegen` e já vem com `// eslint-disable-line`.
 
 Se aparecer warning novo, **não** desligue a regra: ajuste o código.

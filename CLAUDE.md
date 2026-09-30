@@ -3,24 +3,23 @@
 As instruções deste projeto estão em **[`AGENTS.md`](./AGENTS.md)**. Leia esse
 arquivo e siga-o; este é apenas um ponteiro para evitar duas cópias divergindo.
 
-Quick reference:
+Comece por [`docs/README.md`](./docs/README.md) para saber qual documento é a
+fonte da verdade de cada assunto.
 
-| | |
-|---|---|
-| Comandos | `npm run dev` · `npm test` · `npm run lint` · `npm run build` · `npm run check` |
-| Estilo | **Tabs**, aspas duplas, imports de tipo separados |
-| Índice da documentação | [`docs/README.md`](./docs/README.md) |
-| Contrato da API | [`docs/api.md`](./docs/api.md) |
-| Modelo de dados | [`docs/modelos-db.md`](./docs/modelos-db.md) |
-| fluxo de branches e deploy | [`docs/arquitetura.md`](./docs/arquitetura.md) |
-| O que falta implementar | [`docs/backlog-pi2.md`](./docs/backlog-pi2.md) |
+As duas armadilhas que mais custam tempo aqui, resumidas:
 
-Os três erros que mais custam tempo aqui:
-
-1. `organization_id` **não existe** nas tabelas de domínio, e a API não filtra por
-   organização. Não introduza um valor fixo para simular.
-2. Não edite `src/react-app/route-tree.tsx` nem `src/worker/db/auth-schema.ts` —
-   os dois são gerados.
-3. O `build` roda `lint` e `test` antes do deploy. Não remova nenhum dos dois da
-   cadeia para destravar um merge: a `main` exige o check, e um teste vermelho
-   é justamente o que ele existe para pegar.
+1. `organization_id` **não existe** nas tabelas de domínio, e a API não filtra
+   por organização. O plugin `organization()` do Better Auth está ativo e as
+   tabelas de organização existem, mas **não introduza um valor fixo para
+   simular** o filtro.
+2. O backend está **congelado nesta rodada**: não crie tabela, coluna, endpoint,
+   migration nem código de erro, e não edite nada em `src/worker/`. A única
+   exceção é registrar `nome-itens` e `categoria-itens`, porque o catálogo
+   precisa ser aditivo. Para criar telas, leia
+   [`docs/frontend-tabela.md`](./docs/frontend-tabela.md) e
+   [`docs/frontend-formulario.md`](./docs/frontend-formulario.md).
+3. `coleta`, `entrega` e `item` estão em **redesenho** e não ganharam tela. O
+   modelo doação → estoque → entrega está sendo repensado (quantidade por linha
+   de doação, reserva de item, fundir `nome_item` em `item`). **Não construa nada
+   para esses três** — ver [`docs/future/README.md`](./docs/future/README.md).
+   `doador` está liberado.

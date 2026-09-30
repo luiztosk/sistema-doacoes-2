@@ -15,7 +15,7 @@ O middleware fica em `src/worker/session-middleware.ts`
 
 ## ⚠️ Não está pronto para produção
 
-O checklist de [`seguranca.md`](./seguranca.md) define o que uma rota precisa
+O checklist de [`seguranca.md`](seguranca.md) define o que uma rota precisa
 cumprir antes de ser considerada pronta. Hoje:
 
 | Requisito do checklist | Estado |
@@ -106,7 +106,7 @@ dois campos ao mesmo tempo.
 
 > **Exceção ao idioma:** o handler de rota não encontrada devolve
 > `"Rota não encontrada."`, em português (`src/worker/index.ts`). Vale corrigir
-> para manter a regra acima — está anotado em [`../AGENTS.md`](../AGENTS.md).
+> para manter a regra acima — está anotado em [`../AGENTS.md`](../../AGENTS.md).
 
 ## Regras de domínio
 
@@ -134,7 +134,7 @@ dois campos ao mesmo tempo.
 - A única sequência permitida é `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE`.
 - Um item marcado como `ENTREGUE` precisa de `entregaId`.
 - Quem doou e quem recebeu saem da coleta e da entrega, não de colunas do item —
-  ver [`modelos-db.md`](./modelos-db.md#item).
+  ver [`modelos-db.md`](modelos-db.md#item).
 - Exclusões bloqueadas por relacionamentos retornam `409` em vez de expor o erro
   interno do banco.
 
@@ -157,7 +157,7 @@ erro capturado vira código aqui.
 
 O schema **teve** 26 `check()` ([#43](https://github.com/luiztosk/sistema-doacoes-2/issues/43))
 e não tem mais: a regra de valor existe em um lugar só, o zod. O motivo e o preço
-estão em [`modelos-db.md`](./modelos-db.md#os-check-foram-removidos). Para o
+estão em [`modelos-db.md`](modelos-db.md#os-check-foram-removidos). Para o
 cliente, a mudança é boa — nada de `409 CONFLICT` genérico por valor inválido,
 sempre `400 INVALID_VALUE` com o campo nomeado — com uma brecha, conhecida e
 registrada:
@@ -195,7 +195,7 @@ para o que passa por ela — D1 Studio, `npm run db-seed` e scripts futuros
 escrevem sem nenhum desses filtros. A migration que remove os `check()` ainda não
 foi gerada, então os bancos já existentes **continuam recusando** esses valores
 com `409` genérico; ver
-[`modelos-db.md`](./modelos-db.md#os-check-foram-removidos).
+[`modelos-db.md`](modelos-db.md#os-check-foram-removidos).
 
 ## Limitação conhecida
 

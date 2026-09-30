@@ -78,55 +78,14 @@ mantém um lote longo confiável.
 ## Dados de demonstração
 
 Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas zod da
-própria aplicação, e o gerador é o único lugar onde o dado de demonstração é
-escrito:
-
-```
-src/worker/db/generate.ts   # gera e valida cada linha contra o *SelectSchema
-src/worker/db/seed.ts       # insere o que o gerador devolveu
-mock_data/municipios.json   # pares cidade/UF do IBGE
-mock_data/catalogo.json     # as 9 categorias e os 114 nomes de item
-```
-
-O ponto do desenho é que **o schema é a única fonte da verdade, e é conferido**:
-`gerarSeed()` valida cada linha com o `*SelectSchema` da tabela antes de
-devolvê-la, e o seed para com o nome do campo e da linha se algo estiver errado.
-Os dados não podem mais divergir do schema, que era a raiz dos bugs do
-[#44](https://github.com/luiztosk/sistema-doacoes-2/issues/44) — o CSV gravava
-`True` onde o banco queria `1`, e nada dizia nada.
-
-O gerador é determinístico (`seed(42)`), o que importa porque a coleção do Insomnia
-aponta para o banco de demonstração: o mesmo `npm run db-seed` produz sempre as
+própria aplicação: `src/worker/db/generate.ts` gera e valida cada linha contra o
+`*SelectSchema` antes de devolvê-la, e `src/worker/db/seed.ts` insere. O gerador é
+determinístico (`seed(42)`), então o mesmo `npm run db-seed` produz sempre as
 mesmas 888 linhas.
 
-O que o gerador faz sozinho, e o que ele não faz:
-
-| | |
-|---|---|
-| `fake()` a partir do schema | `enum`, faixas numéricas, `uuidv4`, `regex` (o CEP) |
-| `getFaker()` direto | nomes, logradouros, telefone, e-mail, booleanos |
-| `mock_data/municipios.json` | cidade e UF saem sempre coerentes entre si |
-| escrito à mão | a ordem entre as tabelas, as listas de id passadas adiante, a máquina `AGUARDA_COLETA → EM_ESTOQUE → ENTREGUE` e `entrega` depois de `coleta` |
-
-A última linha é o que nenhum schema consegue expressar: referência cruzada e
-ordem de evento dependem de linhas que ainda não existem quando o dado é gerado.
-`faker.seed()` só fixa a sequência de sorteios — não tem modo relacional.
+O que o gerador não faz: referência cruzada e ordem de evento. `faker` não tem
+modo relacional, então `criarColetas(doadores)` recebe as linhas já criadas e a
+ordem entre as tabelas é escrita à mão.
 
 Para virar o gerador em dado novo, mexa só em `ROWS_PER_TABLE` e na função
-`criar*` da tabela. Ajustar quantidade não exige tocar em mais nada.
-
-## Migração do sistema legado (PI I)
-
-O sistema anterior (Flask + SQLAlchemy + SQLite) está em
-[LuisGabriel01/sistema-doacoes](https://github.com/LuisGabriel01/sistema-doacoes),
-fixado para esta análise no commit `7741bd9` (a tag `pi1-final` citada
-anteriormente não existe no repositório legado). Ele serve como referência de:
-
-- **Modelo de dados**: tabelas `instituicao`, `doador`, `assistido`, `coleta`,
-  `entrega`, `item`, `categoria_item`, `nome_item` (ver ERM no README do repo legado)
-- **Fluxos de tela**: vídeo de demonstração em
-  <https://www.youtube.com/watch?v=8LkkXIC9ppg>
-- **Status dos itens**: `AGUARDA_COLETA` → `EM_ESTOQUE` → `ENTREGUE`
-
-Os dados do legado são fictícios (mock), então não há migração de dados reais —
-apenas o schema será traduzido para o Drizzle/D1.
+`criar*` da tabela.

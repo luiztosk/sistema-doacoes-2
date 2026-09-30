@@ -3,7 +3,7 @@
 > de propósito junto com a integração do Better Auth e está rastreado pela
 > [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13).
 > O bloco "Estado atual" abaixo descreve o repositório de 14/09/2026 e está
-> desatualizado. Schema real: [`../modelos-db.md`](../modelos-db.md).
+> desatualizado. Schema real: [`../modelos-db.md`](../frozen/modelos-db.md).
 
 # Plano de execução — Issue 11 (consolidado com #12)
 

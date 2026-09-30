@@ -11,17 +11,15 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 
 ## Documentação
 
-Comece por [`docs/README.md`](./docs/README.md) — é o índice com o estado de cada
-documento (ativo, política, referência, histórico).
+Comece por [`docs/README.md`](docs/README.md) — é o índice com o estado de cada
+documento (ativo, congelado, previsto, histórico).
 
-- [`docs/arquitetura.md`](./docs/arquitetura.md) — stack, fluxo de deploy, o que roda a cada build, fluxo de contribuição
-- [`docs/api.md`](./docs/api.md) — os 25 endpoints, o contrato de erro e o que ainda não está pronto para produção
-- [`docs/modelos-db.md`](./docs/modelos-db.md) — as 7 tabelas, constraints, índices e a tradução do modelo legado
-- [`docs/drizzle-migrations.md`](./docs/drizzle-migrations.md) — como gerar e aplicar migrations
-- [`docs/backlog-pi2.md`](./docs/backlog-pi2.md) — o que falta implementar, por prioridade
-- [`docs/seguranca.md`](./docs/seguranca.md) — regras de isolamento entre instituições e LGPD
-- [`docs/fluxo-telas/`](./docs/fluxo-telas/README.md) — transcrição visual do vídeo, fluxos confirmados e adaptações para o PI II
-- [`docs/archive/`](./docs/archive/README.md) — planos concluídos ou superados
+- [`docs/frontend-tabela.md`](docs/frontend-tabela.md) e [`docs/frontend-formulario.md`](docs/frontend-formulario.md) — como criar as telas de um recurso, espelhando o `assistido`
+- [`docs/arquitetura.md`](docs/arquitetura.md) — stack, fluxo de deploy, o que roda a cada build, fluxo de contribuição
+- [`docs/backlog-pi2.md`](docs/backlog-pi2.md) — o que falta implementar neste trimestre
+- [`docs/frozen/`](docs/frozen/README.md) — contrato da API, modelo do banco e política de segurança. **Leitura obrigatória, não mexa**
+- [`docs/future/`](docs/future/README.md) — isolamento por organização, ViaCEP, papéis, acessibilidade
+- [`docs/archive/`](docs/archive/README.md) — planos concluídos, o sistema do PI I e o que já foi superado
 
 ## Para rodar o projeto no seu computador:
 
@@ -49,7 +47,7 @@ Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
 
 ## Testando a API:
 
-As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](./docs/api.md)).
+As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](docs/frozen/api.md)).
 Depois de fazer login, envie o cookie de sessão:
 ```bash
 curl localhost:5173/api/v1/assistidos \
@@ -74,7 +72,7 @@ importar o Environment e a Collection no seu Insomnia (Vault Local).
    > commit na `main`. A `main` exige que o check do build passe, então um
    > merge com lint quebrado ou teste vermelho não entra.
 
-Detalhes do fluxo de deploy e de testes: [`docs/arquitetura.md`](./docs/arquitetura.md).
+Detalhes do fluxo de deploy e de testes: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 > A preview URL usa as mesmas bindings da produção, então testar por ela escreve
 > no banco `prod-sistema-doacoes-2`. Ele só tem dado de seed e `npm run db-seed`

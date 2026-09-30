@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { AssistidosTable } from "@/react-app/components/assistidos-table";
+import { AssistidosTable } from "@/react-app/components/tables/assistidos-table";
 
 function Assistidos() {
 	return (

@@ -2,7 +2,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 
 import { PublicHeader } from "@/react-app/components/layout/public-header";
-import { sessionQueryOptions } from "@/react-app/lib/auth-queries";
+import { sessionQueryOptions } from "@/react-app/lib/queries/session";
 
 function RootLayout() {
 	const { data: session } = useQuery(sessionQueryOptions);

@@ -5,8 +5,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Assistido } from "@/react-app/lib/assistidos-queries";
-import { assistidosQueryOptions } from "@/react-app/lib/assistidos-queries";
+import type { Assistido } from "@/react-app/lib/queries/assistidos";
+import { assistidosQueryOptions } from "@/react-app/lib/queries/assistidos";
 import {
 	Table,
 	TableBody,
@@ -16,27 +16,11 @@ import {
 	TableRow,
 } from "@/react-app/components/ui/table";
 
-/** Celula sem valor: todo campo do assistido, menos `nome`, aceita nulo. */
 const empty = "—";
 
-/** O banco guarda `cidade` e `uf` em colunas separadas. */
 const cityLabel = (row: Assistido) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 
-/**
- * Vazio de proposito enquanto a tabela so le. Na primeira vez que entrar
- * ordenacao ou filtro, isto vira algo como
- *
- *   tableFeatures({
- *     rowSortingFeature,
- *     sortedRowModel: createSortedRowModel(),
- *     sortFns,
- *   })
- *
- * e nada mais abaixo muda: o `columnHelper`, as colunas e o `useTable`
- * continuam iguais. Vale a pena citar os nomes das features para o
- * TypeScript passar a conhecer `sorting` e `columnFilters`.
- */
 const features = tableFeatures({});
 
 const columnHelper = createColumnHelper<typeof features, Assistido>();

@@ -28,8 +28,8 @@ em produção.
 ## Estilo de código
 
 - **Tabs, não espaços.** Não existe Prettier nem `.editorconfig` neste repo, então
-  nada vai te avisar se você errar. As mensagens de commit e os comentários do
-  código são em português, sem acento.
+  nada vai te avisar se você errar. As mensagens de commit são em português, sem
+  acento.
 - **Identificadores em inglês.** Variáveis, funções, parâmetros, chaves de objeto e
   tipos. A exceção são os nomes de campo que vêm do schema ou da API —
   `cestaBasica`, `tipoImovel`, `valorAluguel` — que seguem exatamente como estão
@@ -37,11 +37,15 @@ em produção.
 - **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
   mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
   em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
-- **Sem comentário de código.** O código se explica sozinho — quem lê raciocina
-  nele em vez de varrer comentário. Comentário só existe apontando uma issue
-  aberta ou marcando um TODO; nos dois casos, com o número ou o link. A exceção
-  são os componentes do shadcn em `components/ui/**`, que chegam com os
-  comentários da lib e são sobrescritos por `npx shadcn add`.
+- **Zero comentário de código.** Nem linha, nem bloco, nem JSDoc. Quem lê raciocina
+  no código em vez de varrer comentário, e um comentário desatualizado é pior do
+  que nenhum. Comentário só existe apontando uma issue **aberta** ou marcando um
+  TODO, com o número ou o link. Duas exceções: os componentes do shadcn em
+  `components/ui/**`, que chegam com os comentários da lib e são sobrescritos por
+  `npx shadcn add`; e este AGENTS.md, que é o lugar de verdade para tudo que era
+  comentário. **Se o código exige uma explicação para ser lido, a explicação vai
+  aqui** — em "Coisas que vão te morder" ou na seção do assunto — e não no
+  arquivo.
 - Aspas duplas. Imports de tipo separados (`import type { ... }`).
 - `strict`, `noUnusedLocals` e `noUnusedParameters` estão ligados. Import não
   usado **quebra o build** — é por isso que o histórico tem tantos commits
@@ -59,9 +63,28 @@ em produção.
 | `src/worker/db/schema.ts` | 7 tabelas de domínio + schemas zod |
 | `src/worker/db/auth-schema.ts` | **Gerado.** Não editar à mão |
 | `src/react-app/` | SPA React, TanStack Router, shadcn sobre Base UI |
+| `src/react-app/routes/` | Arquivo = rota. É o TanStack Router que gera o `route-tree.tsx` |
+| `src/react-app/lib/queries/` | Um arquivo por recurso, mais `session.ts`. `queryOptions` por recurso |
+| `src/react-app/components/ui/` | **Gerado** pelo shadcn. Não editar à mão |
+| `src/react-app/components/` | Agrupado por **tipo**: `ui/`, `layout/`, `auth/`, `tables/`, `forms/` |
 | `tests/api.ts` | Runner de teste escrito à mão |
 | `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
 | `mock_data/*.json` | Dados de referência do gerador (cidades, catálogo) |
+
+### Frontend: onde um arquivo novo vai
+
+Agrupamento é por **tipo**, nunca por recurso: a tabela de assistidos fica em
+`components/tables/assistidos-table.tsx` e o formulário de coleta em
+`components/forms/coleta-form.tsx`. O nome do arquivo já carrega o recurso
+(`<recurso>-<tipo>.tsx`), então a pasta não precisa repetir isso. `components/auth/`
+é a exceção: é a superfície do Better Auth, não um tipo.
+
+Nome de arquivo em **kebab-case** (`sign-up-form.tsx`), e não PascalCase. Os dois
+formulários de auth já foram renomeados porque eram os únicos em PascalCase.
+
+Query fica em `lib/queries/<recurso>.ts` e só lá. O sufixo `-queries` não existe:
+a pasta já diz. A pasta existe para separar query de `lib/` — que guarda o que não
+é query, como `auth-client.ts`, `query-client.ts` e `navigation.ts`.
 
 ## API: como adicionar um recurso
 
@@ -119,6 +142,23 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 6. O `notFound` em `src/worker/index.ts` responde `"Rota não encontrada."` em
    português, quebrando a regra de mensagem em inglês do `docs/api.md`. Corrigir
    junto, ou não mexe.
+7. **No logout, use `setQueryData(key, null)` e nunca `removeQueries`.** Remover
+   tira a query do cache enquanto o observador dela ainda está montado, e nenhuma
+   montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
+   encontrar nada e vira no-op, então o sign-in não busca a sessão nova. Zerar o
+   valor mantém a entrada saudável e dá o mesmo efeito na tela.
+8. **`tableFeatures({})` em `components/tables/assistidos-table.tsx` é vazio de
+   propósito**, porque a tabela só lê. Na primeira vez que entrar ordenação ou
+   filtro, vira algo como
+   `tableFeatures({ rowSortingFeature, sortedRowModel: createSortedRowModel(), sortFns })`
+   e nada mais abaixo muda: o `columnHelper`, as colunas e o `useTable`
+   continuam iguais. Vale citar os nomes das features para o TypeScript passar a
+   conhecer `sorting` e `columnFilters`.
+9. **O tipo `Assistido` em `lib/queries/assistidos.ts` é um `Pick`, não a linha
+   inteira.** Ele vem do `assistidoSelectSchema`, então não é escrito à mão, e o
+   `Pick` existe para a tela não carregar as ~25 colunas. Para a tabela mostrar
+   mais um campo, acrescente o nome na lista do `Pick` — o endpoint continua
+   devolvendo a linha completa.
 
 ## Branches e commits
 

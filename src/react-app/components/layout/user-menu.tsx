@@ -15,7 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/react-app/components/ui/dropdown-menu";
-import { sessionQueryOptions } from "@/react-app/lib/auth-queries";
+import { sessionQueryOptions } from "@/react-app/lib/queries/session";
 
 function initials(name: string | null | undefined): string {
 	const trimmed = (name ?? "").trim();

@@ -17,6 +17,8 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthLogoutRouteImport } from './routes/auth/logout'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthenticatedAssistidosIndexRouteImport } from './routes/_authenticated/assistidos/index'
+import { Route as AuthenticatedAssistidosIdRouteImport } from './routes/_authenticated/assistidos/$id'
+import { Route as AuthenticatedAssistidosNovoRouteImport } from './routes/_authenticated/assistidos/novo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +60,18 @@ const AuthenticatedAssistidosIndexRoute =
     path: '/assistidos/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAssistidosIdRoute =
+  AuthenticatedAssistidosIdRouteImport.update({
+    id: '/assistidos/$id',
+    path: '/assistidos/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAssistidosNovoRoute =
+  AuthenticatedAssistidosNovoRouteImport.update({
+    id: '/assistidos/novo',
+    path: '/assistidos/novo',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +80,8 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
+  '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
   '/assistidos/': typeof AuthenticatedAssistidosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -75,6 +91,8 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
+  '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
   '/assistidos': typeof AuthenticatedAssistidosIndexRoute
 }
 export interface FileRoutesById {
@@ -86,6 +104,8 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/_authenticated/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
+  '/_authenticated/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
   '/_authenticated/assistidos/': typeof AuthenticatedAssistidosIndexRoute
 }
 export interface FileRouteTypes {
@@ -97,6 +117,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
+    | '/assistidos/$id'
+    | '/assistidos/novo'
     | '/assistidos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -106,6 +128,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
+    | '/assistidos/$id'
+    | '/assistidos/novo'
     | '/assistidos'
   id:
     | '__root__'
@@ -116,6 +140,8 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
+    | '/_authenticated/assistidos/$id'
+    | '/_authenticated/assistidos/novo'
     | '/_authenticated/assistidos/'
   fileRoutesById: FileRoutesById
 }
@@ -186,16 +212,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistidosIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/assistidos/$id': {
+      id: '/_authenticated/assistidos/$id'
+      path: '/assistidos/$id'
+      fullPath: '/assistidos/$id'
+      preLoaderRoute: typeof AuthenticatedAssistidosIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/assistidos/novo': {
+      id: '/_authenticated/assistidos/novo'
+      path: '/assistidos/novo'
+      fullPath: '/assistidos/novo'
+      preLoaderRoute: typeof AuthenticatedAssistidosNovoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+  AuthenticatedAssistidosIdRoute: typeof AuthenticatedAssistidosIdRoute
+  AuthenticatedAssistidosNovoRoute: typeof AuthenticatedAssistidosNovoRoute
   AuthenticatedAssistidosIndexRoute: typeof AuthenticatedAssistidosIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+  AuthenticatedAssistidosIdRoute: AuthenticatedAssistidosIdRoute,
+  AuthenticatedAssistidosNovoRoute: AuthenticatedAssistidosNovoRoute,
   AuthenticatedAssistidosIndexRoute: AuthenticatedAssistidosIndexRoute,
 }
 

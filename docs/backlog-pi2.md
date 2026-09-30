@@ -15,7 +15,7 @@ acessibilidade, controle de versão e testes).
 | Consumo de API externa | ⏳ | **ViaCEP ainda não implementado** — plano abaixo (ver "ViaCEP") |
 | Acessibilidade | ⏳ | **Parcial** — `aria-label` e `<label htmlFor>` em login/cadastro e navegação; falta um teste automatizado com axe (ver "Acessibilidade") |
 | Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
-| Testes | ✅ | `npm test` (`tsx tests/api.ts`, 26 casos da API) + Insomnia (manual) |
+| Testes | ✅ | `npm test` (`tsx tests/api.ts`, 28 casos da API) + Insomnia (manual) |
 
 ## Ordem de prioridade sugerida
 
@@ -37,9 +37,17 @@ Itens marcados ✅ já estão feitos; os demais são o que falta.
 4. ⏳ **Endpoints da API** — os 25 endpoints de CRUD existem e exigem sessão
    ([`api.md`](./api.md)), mas **não** filtram por organização (depende do item 3).
 5. ⏳ **Telas React** — rotas protegidas existem via **TanStack Router**
-   (`/auth/login`, `/auth/signup`, `/auth/logout`), não React Router. Falta
-   qualquer tela de domínio: cadastros, coletas, entregas, estoque.
-6. ⏳ **Testes** — os 26 casos de endpoint existem (`tsx tests/api.ts`, sem
+   (`/auth/login`, `/auth/signup`, `/auth/logout`), não React Router. A tela de
+   assistidos existe (`/assistidos`, `/assistidos/novo`, `/assistidos/$id`) e é
+   a referência para os outros recursos: `lib/api/<recurso>.ts` com
+   `queryOptions` e `mutationOptions`, e um formulário por recurso em
+   `components/forms/`. Falta coletas, entregas, itens, doadores e estoque.
+   **Erro de mutation ainda não aparece na tela** — o `MutationCache` em
+   `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem
+   `errorMap` por campo para falha de servidor. As mensagens do zod em
+   `schema.ts` estão em português e cobrem validação de campo, mas a API
+   responde em inglês via `errors.ts`. Exibir erro é trabalho pendente.
+6. ⏳ **Testes** — os 28 casos de endpoint existem (`tsx tests/api.ts`, sem
    Vitest). **Faltam** os fluxos críticos: autenticação e isolamento entre
    organizações (403 e cross-tenant), que são justamente o que a [#13] precisa.
 7. ⏳ **API externa (ViaCEP)** — ver abaixo. As colunas de endereço separadas já

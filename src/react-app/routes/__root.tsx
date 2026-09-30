@@ -2,10 +2,10 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 
 import { PublicHeader } from "@/react-app/components/layout/public-header";
-import { sessionQueryOptions } from "@/react-app/lib/auth-queries";
+import { sessionOptions } from "@/react-app/lib/api/session";
 
 function RootLayout() {
-	const { data: session } = useQuery(sessionQueryOptions);
+	const { data: session } = useQuery(sessionOptions);
 
 	if (session) {
 		return <Outlet />;
@@ -26,7 +26,7 @@ export const Route = createRootRouteWithContext<{
 }>()({
 	beforeLoad: async ({ context }) => {
 		await context.queryClient
-			.ensureQueryData(sessionQueryOptions)
+			.ensureQueryData(sessionOptions)
 			.catch(() => null);
 	},
 	component: RootLayout,

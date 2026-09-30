@@ -10,7 +10,7 @@ fonte da verdade de cada assunto.
 
 ```bash
 npm run dev      # Vite dev server (não wrangler dev)
-npm test         # tsx tests/api.ts — 26 casos da API
+npm test         # tsx tests/api.ts — 28 casos da API
 npm run lint     # eslint .
 npm run build    # lint + test + tsc -b + vite build
 npm run check    # build + wrangler deploy --dry-run
@@ -28,8 +28,8 @@ em produção.
 ## Estilo de código
 
 - **Tabs, não espaços.** Não existe Prettier nem `.editorconfig` neste repo, então
-  nada vai te avisar se você errar. As mensagens de commit e os comentários do
-  código são em português, sem acento.
+  nada vai te avisar se você errar. As mensagens de commit são em português, sem
+  acento.
 - **Identificadores em inglês.** Variáveis, funções, parâmetros, chaves de objeto e
   tipos. A exceção são os nomes de campo que vêm do schema ou da API —
   `cestaBasica`, `tipoImovel`, `valorAluguel` — que seguem exatamente como estão
@@ -37,11 +37,15 @@ em produção.
 - **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
   mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
   em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
-- **Sem comentário de código.** O código se explica sozinho — quem lê raciocina
-  nele em vez de varrer comentário. Comentário só existe apontando uma issue
-  aberta ou marcando um TODO; nos dois casos, com o número ou o link. A exceção
-  são os componentes do shadcn em `components/ui/**`, que chegam com os
-  comentários da lib e são sobrescritos por `npx shadcn add`.
+- **Zero comentário de código.** Nem linha, nem bloco, nem JSDoc. Quem lê raciocina
+  no código em vez de varrer comentário, e um comentário desatualizado é pior do
+  que nenhum. Comentário só existe apontando uma issue **aberta** ou marcando um
+  TODO, com o número ou o link. Duas exceções: os componentes do shadcn em
+  `components/ui/**`, que chegam com os comentários da lib e são sobrescritos por
+  `npx shadcn add`; e este AGENTS.md, que é o lugar de verdade para tudo que era
+  comentário. **Se o código exige uma explicação para ser lido, a explicação vai
+  aqui** — em "Coisas que vão te morder" ou na seção do assunto — e não no
+  arquivo.
 - Aspas duplas. Imports de tipo separados (`import type { ... }`).
 - `strict`, `noUnusedLocals` e `noUnusedParameters` estão ligados. Import não
   usado **quebra o build** — é por isso que o histórico tem tantos commits
@@ -59,9 +63,91 @@ em produção.
 | `src/worker/db/schema.ts` | 7 tabelas de domínio + schemas zod |
 | `src/worker/db/auth-schema.ts` | **Gerado.** Não editar à mão |
 | `src/react-app/` | SPA React, TanStack Router, shadcn sobre Base UI |
+| `src/react-app/routes/` | Arquivo = rota. É o TanStack Router que gera o `route-tree.tsx` |
+| `src/react-app/lib/api/` | Um arquivo por recurso, mais `session.ts`. `queryOptions` e `mutationOptions` |
+| `src/react-app/components/ui/` | **Gerado** pelo shadcn. Não editar à mão |
+| `src/react-app/components/` | Agrupado por **tipo**: `ui/`, `layout/`, `auth/`, `tables/`, `forms/` |
 | `tests/api.ts` | Runner de teste escrito à mão |
 | `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
 | `mock_data/*.json` | Dados de referência do gerador (cidades, catálogo) |
+
+### Frontend: onde um arquivo novo vai
+
+Agrupamento é por **tipo**, nunca por recurso: a tabela de assistidos fica em
+`components/tables/assistidos.tsx` e o formulário em
+`components/forms/assistido.tsx`. O arquivo se chama só `<recurso>.tsx`,
+porque a pasta já diz o tipo — sufixo `-table` ou `-form` no nome seria repetir
+a pasta. `components/auth/` é a exceção: é a superfície do Better Auth, não um
+tipo.
+
+Plural onde é lista, singular onde é registro: `tables/assistidos.tsx` e
+`lib/api/assistidos.ts` listam, `forms/assistido.tsx` age sobre um.
+
+**Um formulário por recurso, para criar, ver e editar.** Não existe
+`create-assistido.tsx`, `view-assistido.tsx` nem `edit-assistido.tsx`: o
+componente recebe o registro por prop opcional e é a rota que decide o modo —
+`assistido` ausente é criação, presente é visualização. O terceiro modo é estado
+interno (`isEditing`), não prop nem rota, porque "ver" e "editar" são a mesma
+tela.
+
+São três modos, e só dois têm botão de envio:
+
+| Modo | `assistido` | `isEditing` | Campos | Topo | Rodapé |
+|---|---|---|---|---|---|
+| visualização | presente | `false` | travados | `Editar` + `Voltar para a lista` | nada |
+| edição | presente | `true` | liberados | `Voltar para a lista` | `Salvar alterações` + `Cancelar` |
+| criação | ausente | `true` | liberados | `Voltar para a lista` | `Cadastrar assistido` |
+
+O `Cancelar` faz `form.reset()` e volta para `false`, porque voltar sem
+descartar deixaria a tela mostrando alteração que não foi salva. O `PATCH` não
+pode enviar `id` no corpo (`READ_ONLY_FIELD`, `docs/api.md`), o que empurra a
+decisão para o lado do componente mesmo.
+
+**O bloqueio vem do `EditableProvider`, não de uma prop por campo.** As
+primitivas de `forms/fields.tsx` leem `editable` de um contexto, senão seriam 25
+`disabled={...}` repetidos no `assistido.tsx`. O contexto tem `true` como
+padrão, então uma primitiva usada fora do provider fica editável.
+
+Na tabela, a linha inteira é clicável e navega para a mesma rota do botão
+`Mais detalhes`; o botão existe para o caminho por teclado e para deixar isso
+óbvio. Os dois `stopPropagation`, senão o clique dispara a navegação duas vezes.
+
+O **nome do símbolo** continua descrevendo o que a coisa é: o arquivo é
+`tables/assistidos.tsx` e exporta `AssistidosTable`. Caminho diz onde mora,
+símbolo diz o que é, e os dois são eixos separados — como o `accessorKey` em
+inglês e o `header` em português da mesma coluna.
+
+Nome de arquivo em **kebab-case** (`sign-up-form.tsx`), e não PascalCase. Os dois
+formulários de auth já foram renomeados porque eram os únicos em PascalCase.
+
+Toda chamada ao servidor fica em `lib/api/<recurso>.ts` e só lá. O sufixo
+`-queries` e o `-mutations` não existem: a pasta já diz, e um recurso que lê e
+escreve fica em **um** arquivo só. A pasta existe para separar a camada de
+servidor de `lib/` — que guarda o que não fala com o servidor, como
+`auth-client.ts`, `query-client.ts` e `navigation.ts`.
+
+Os símbolos seguem o nome do [guia de
+`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options)
+do TanStack: `<entidade>Options` para ler, `<verbo><Entidade>Options` para
+escrever. Então `assistidoOptions`, `assistidoDetailOptions(id)`,
+`createAssistidoOptions` e `updateAssistidoOptions(id)` — e não
+`assistidosQueryOptions`. As chaves de query saem de uma factory por recurso
+(`assistidoKeys`), no spirit do
+[Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys),
+para o `invalidateQueries` ter um alvo nomeado em vez de um array solto.
+
+**O estado do formulário é o payload.** `AssistidoFormValues` é o
+`assistidoInsertSchema` com o `undefined` tirado, então `TextField` produz
+`string | null`, `NumberField` produz `number | null` e `CheckboxField` produz
+`boolean`. Não existe passo de conversão em `onSubmit`: quem converte é o
+`onChange` da primitiva, e o objeto que o `form` entrega é o objeto que vai no
+corpo. Isso é o que permite validar com `assistidoInsertSchema` direto e sem
+duplicar regra.
+
+O mesmo schema valida nos dois modos, inclusive na edição: `assistidoUpdateSchema`
+torna `nome` opcional, então um `nome` vazio passaria no cliente e tomaria `400`
+no servidor. `assistidoInsertSchema` é o mais estrito dos dois e vale para os
+dois.
 
 ## API: como adicionar um recurso
 
@@ -119,6 +205,42 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 6. O `notFound` em `src/worker/index.ts` responde `"Rota não encontrada."` em
    português, quebrando a regra de mensagem em inglês do `docs/api.md`. Corrigir
    junto, ou não mexe.
+7. **No logout, use `setQueryData(key, null)` e nunca `removeQueries`.** Remover
+   tira a query do cache enquanto o observador dela ainda está montado, e nenhuma
+   montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
+   encontrar nada e vira no-op, então o sign-in não busca a sessão nova. Zerar o
+   valor mantém a entrada saudável e dá o mesmo efeito na tela.
+8. **`tableFeatures({})` em `components/tables/assistidos.tsx` é vazio de
+   propósito**, porque a tabela só lê. Na primeira vez que entrar ordenação ou
+   filtro, vira algo como
+   `tableFeatures({ rowSortingFeature, sortedRowModel: createSortedRowModel(), sortFns })`
+   e nada mais abaixo muda: o `columnHelper`, as colunas e o `useTable`
+   continuam iguais. Vale citar os nomes das features para o TypeScript passar a
+   conhecer `sorting` e `columnFilters`.
+9. **O tipo `Assistido` em `lib/api/assistidos.ts` é um `Pick`, não a linha
+   inteira.** Ele vem do `assistidoSelectSchema`, então não é escrito à mão, e o
+   `Pick` existe para a tela não carregar as ~25 colunas. Para a tabela mostrar
+   mais um campo, acrescente o nome na lista do `Pick` — o endpoint continua
+   devolvendo a linha completa. Quem precisa da linha inteira usa o
+   `AssistidoCompleto`, que é o `ZodInfer` do mesmo schema, e a query
+   `assistidoDetailOptions(id)`: o `Pick` não serve para o formulário porque
+   faltam `logradouro`, `observacoes` e os 7 booleanos.
+10. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
+    checa isso *antes* do zod, então nem um `id` válido escapa. É por isso que
+    `updateAssistidoOptions` recebe o id como **argumento separado** do payload,
+    e que o estado do formulário não tem `id`. O mesmo `id` volta no corpo do
+    `GET`, nunca no do `PATCH`.
+11. **O formulário manda os 25 campos sempre, nos dois modos.** A API aceita
+    `PATCH` parcial, mas um corpo vazio é `400 EMPTY_UPDATE`, então enviar tudo
+    satisfaz a regra sem lógica de dirty field. Não "melhore" isso com diff sem
+    revisar esse item.
+12. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
+    `errorMap` por campo para falha de servidor: o `MutationCache` em
+    `lib/query-client.ts` joga no `console` e pronto. As mensagens do zod em
+    `schema.ts` estão em português e servem à validação de campo do formulário,
+    mas a API responde em inglês via `errors.ts` — são públicos distintos, e não
+    se traduz o mesmo texto. Ver o item 5 de
+    [`docs/backlog-pi2.md`](./docs/backlog-pi2.md).
 
 ## Branches e commits
 

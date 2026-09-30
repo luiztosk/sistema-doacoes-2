@@ -45,9 +45,9 @@ export const UFS = [
   "TO",
 ] as const;
 
-const TIPOS_IMOVEL = ["ALUGADO", "PROPRIO"] as const;
+export const TIPOS_IMOVEL = ["ALUGADO", "PROPRIO"] as const;
 
-const ESTADOS_CIVIS = [
+export const ESTADOS_CIVIS = [
   "SOLTEIRO",
   "CASADO",
   "DIVORCIADO",
@@ -58,14 +58,20 @@ const ESTADOS_CIVIS = [
 const STATUS_ITEM = ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"] as const;
 
 const nomeNaoVazio = (schema: z.ZodString) =>
-  schema.trim().min(1, { error: "cannot be empty or only whitespace." });
+  schema.trim().min(1, { error: "O nome não pode ficar em branco." });
 
 const naoNegativo = (schema: z.ZodNumber) =>
-  schema.min(0, { error: "cannot be negative." });
+  schema.min(0, { error: "Não pode ser negativo." });
 
-const emailValido = () => z.email();
+const inteiroNaoNegativo = () =>
+  z
+    .number()
+    .int({ error: "Informe um número inteiro." })
+    .min(0, { error: "Não pode ser negativo." });
 
-const CEP_INVALIDO = "must have 8 digits, and nothing else.";
+const emailValido = () => z.email({ error: "E-mail inválido." });
+
+const CEP_INVALIDO = "O CEP deve ter 8 dígitos.";
 
 const cepComOitoDigitos = (schema: z.ZodString) =>
   schema.regex(/^\d{8}$/, { error: CEP_INVALIDO });
@@ -105,11 +111,11 @@ const assistidoRefinements = {
   nome: nomeNaoVazio,
   email: emailValido,
   cep: cepComOitoDigitos,
-  valorAluguel: naoNegativo,
+  valorAluguel: inteiroNaoNegativo,
   renda: naoNegativo,
-  numeroAdultos: naoNegativo,
-  criancasPequenas: naoNegativo,
-  adolescentes: naoNegativo,
+  numeroAdultos: inteiroNaoNegativo,
+  criancasPequenas: inteiroNaoNegativo,
+  adolescentes: inteiroNaoNegativo,
 };
 
 export const assistidoInsertSchema = createInsertSchema(

@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
 	tableFeatures,
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Assistido } from "@/react-app/lib/queries/assistidos";
-import { assistidosQueryOptions } from "@/react-app/lib/queries/assistidos";
+import type { Assistido } from "@/react-app/lib/api/assistidos";
+import { assistidoOptions } from "@/react-app/lib/api/assistidos";
+import { Button } from "@/react-app/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -58,10 +60,32 @@ const columns = columnHelper.columns([
 			return value == null ? empty : value ? "Sim" : "Não";
 		},
 	}),
+	columnHelper.display({
+		id: "details",
+		header: "Detalhes",
+		cell: ({ row }) => (
+			<Button
+				size="xs"
+				variant="outline"
+				nativeButton={false}
+				onClick={(event) => event.stopPropagation()}
+				render={
+					<Link
+						to="/assistidos/$id"
+						params={{ id: row.id }}
+						onClick={(event) => event.stopPropagation()}
+					/>
+				}
+			>
+				Mais detalhes
+			</Button>
+		),
+	}),
 ]);
 
 export function AssistidosTable() {
-	const { data } = useQuery(assistidosQueryOptions);
+	const { data } = useQuery(assistidoOptions);
+	const navigate = useNavigate();
 
 	const table = useTable({
 		features,
@@ -87,7 +111,13 @@ export function AssistidosTable() {
 			</TableHeader>
 			<TableBody>
 				{table.getRowModel().rows.map((row) => (
-					<TableRow key={row.id}>
+					<TableRow
+						key={row.id}
+						className="cursor-pointer"
+						onClick={() =>
+							navigate({ to: "/assistidos/$id", params: { id: row.id } })
+						}
+					>
 						{row.getAllCells().map((cell) => (
 							<TableCell key={cell.id}>
 								<table.FlexRender cell={cell} />

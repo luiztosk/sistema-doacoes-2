@@ -15,7 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/react-app/components/ui/dropdown-menu";
-import { sessionQueryOptions } from "@/react-app/lib/queries/session";
+import { sessionOptions } from "@/react-app/lib/api/session";
 
 function initials(name: string | null | undefined): string {
 	const trimmed = (name ?? "").trim();
@@ -32,7 +32,7 @@ function firstName(name: string | null | undefined): string {
 }
 
 export function UserMenu() {
-	const { data: session } = useQuery(sessionQueryOptions);
+	const { data: session } = useQuery(sessionOptions);
 
 	if (!session) {
 		return (

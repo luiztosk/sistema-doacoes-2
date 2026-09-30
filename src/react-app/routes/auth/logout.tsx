@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/react-app/lib/auth-client";
-import { sessionQueryOptions } from "@/react-app/lib/queries/session";
+import { sessionOptions } from "@/react-app/lib/api/session";
 import { queryClient } from "@/react-app/lib/query-client";
 
 export const Route = createFileRoute("/auth/logout")({
@@ -15,7 +15,7 @@ function LogoutComponent() {
 		void (async () => {
 			await authClient.signOut();
 
-			queryClient.setQueryData(sessionQueryOptions.queryKey, null);
+			queryClient.setQueryData(sessionOptions.queryKey, null);
 
 			await navigate({ to: "/" });
 		})();

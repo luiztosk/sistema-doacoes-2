@@ -12,7 +12,7 @@ import {
 	CardTitle,
 } from "@/react-app/components/ui/card";
 import { authClient } from "@/react-app/lib/auth-client";
-import { sessionQueryOptions } from "@/react-app/lib/queries/session";
+import { sessionOptions } from "@/react-app/lib/api/session";
 
 export function SignUpForm() {
 	const router = useRouter();
@@ -34,7 +34,7 @@ export function SignUpForm() {
 
 			if (data) {
 				await queryClient.invalidateQueries({
-					queryKey: sessionQueryOptions.queryKey,
+					queryKey: sessionOptions.queryKey,
 				});
 			}
 

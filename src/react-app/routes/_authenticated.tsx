@@ -6,13 +6,13 @@ import {
 	SidebarInset,
 	SidebarProvider,
 } from "@/react-app/components/ui/sidebar";
-import { sessionQueryOptions } from "@/react-app/lib/queries/session";
+import { sessionOptions } from "@/react-app/lib/api/session";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: async ({ context }) => {
 		try {
 			const session = await context.queryClient.ensureQueryData(
-				sessionQueryOptions,
+				sessionOptions,
 			);
 			if (!session) {
 				throw redirect({ to: "/auth/login" });

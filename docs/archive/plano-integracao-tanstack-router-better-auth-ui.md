@@ -2,8 +2,8 @@
 > outro desenho: o route tree é **gerado** por `@tanstack/router-plugin`
 > (contradiz o item marcado `[x]` na Fase 2) e `src/lib`/`src/components` foram
 > movidos para dentro de `src/react-app`. As fases 3 e 4 seguem em pé.
-> Contexto e o que ainda vale: [`README.md`](./README.md).
-> Estado atual: [`../arquitetura.md`](../arquitetura.md), [`../api.md`](../api.md).
+> Contexto e o que ainda vale: [`README.md`](../README.md).
+> Estado atual: [`../arquitetura.md`](../arquitetura.md), [`../api.md`](../frozen/api.md).
 
 # Plano de integração — TanStack Router e Better Auth UI
 
@@ -32,7 +32,7 @@ O frontend agora usa TanStack Router como entrada principal:
 - [`tsconfig.json`](../../tsconfig.json) contém `ignoreDeprecations: "6.0"`; o TypeScript instalado aceita a configuração, mas a remoção pode ser feita como limpeza.
 - [`tsconfig.app.json`](../../tsconfig.app.json) inclui `src/react-app`, `src/lib` e `src/components`.
 
-A documentação [`plano-ui-stack.md`](./plano-ui-stack.md) é a referência da stack, mas ainda descreve parte do estado anterior. [`adaptacoes-nova-stack.md`](../fluxo-telas/adaptacoes-nova-stack.md) também está desatualizada e deve ser revisada após a implementação.
+A documentação [`plano-ui-stack.md`](plano-ui-stack.md) é a referência da stack, mas ainda descreve parte do estado anterior. [`adaptacoes-nova-stack.md`](../future/adaptacoes-nova-stack.md) também está desatualizada e deve ser revisada após a implementação.
 
 ---
 
@@ -237,7 +237,7 @@ Critério de conclusão: cada recurso habilitado na UI tem implementação compa
 Objetivo: integrar autenticação ao sistema de doações sem expor dados entre organizações.
 
 - [ ] Criar layout autenticado da aplicação.
-- [ ] Criar rotas para assistidos, doadores, coletas, entregas e estoque, conforme [`adaptacoes-nova-stack.md`](../fluxo-telas/adaptacoes-nova-stack.md).
+- [ ] Criar rotas para assistidos, doadores, coletas, entregas e estoque, conforme [`adaptacoes-nova-stack.md`](../future/adaptacoes-nova-stack.md).
 - [ ] Criar guard/`beforeLoad` que verifica sessão antes de renderizar rotas protegidas.
 - [ ] Obter organização ativa da sessão, nunca de parâmetro enviado pelo cliente.
 - [ ] Aplicar autorização no backend para `401`, `403` e acesso cruzado.

@@ -5,7 +5,7 @@
 > estão implementadas**. Não existe isolamento entre instituições: as tabelas de
 > domínio perderam a coluna `organization_id`, e nenhuma query filtra por
 > organização. O estado real está em
-> [`api.md` §Não está pronto para produção](./api.md#%EF%B8%8F-n%C3%A3o-est%C3%A1-pronto-para-produ%C3%A7%C3%A3o)
+> [`api.md` §Não está pronto para produção](api.md#%EF%B8%8F-n%C3%A3o-est%C3%A1-pronto-para-produ%C3%A7%C3%A3o)
 > e o trabalho restante é a
 > [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13).
 

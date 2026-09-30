@@ -14,18 +14,18 @@ Atualizado em 29/09/2026 (o retrato original era o commit `5b3d005`, de 18/09/20
 - **as tabelas de domínio não possuem `organization_id`** — a coluna foi removida
   junto com a integração do Better Auth e volta com a
   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Ver
-  [`../modelos-db.md`](../modelos-db.md);
+  [`../modelos-db.md`](../frozen/modelos-db.md);
 - o Better Auth e o plugin Organization estão configurados no backend, e login e
   cadastro funcionam;
 - a API expõe CRUD completo dos 5 recursos sob `/api/v1`, **com sessão
   obrigatória** e validação de payload por zod, mas **sem** autorização nem
-  filtro por organização. Ver [`../api.md`](../api.md);
+  filtro por organização. Ver [`../api.md`](../frozen/api.md);
 - o frontend usa **TanStack Router** com rotas `/auth/login`, `/auth/signup` e
   `/auth/logout`. A única tela de dados é `/assistidos`, que lista os
   assistidos em uma tabela. Ainda **não** existem telas dos fluxos do legado:
   sem ficha, sem criação, sem edição e sem busca, ordenação ou paginação;
 - a navegação é um **menu lateral**, como o do legado
-  ([`fluxos.md`](./fluxos.md)), com "Início" e uma entrada por recurso. A lista
+  ([`fluxos.md`](../archive/fluxos-pi1.md)), com "Início" e uma entrada por recurso. A lista
   vive em um lugar só, [`src/react-app/lib/navigation.ts`](../../src/react-app/lib/navigation.ts),
   tipada contra a árvore de rotas gerada: acrescentar uma tabela é criar o
   arquivo da rota e somar uma linha ali. O cabeçalho das telas autenticadas é o

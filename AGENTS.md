@@ -287,9 +287,14 @@ acontece quando o check passar e o teste manual estiver feito. Commits no format
 Conventional Commits, com o motivo no corpo quando a mudança não for óbvia.
 Português, sem acento.
 
-**Sem trailer de coautoria.** Nada de `Co-authored-by`, `Co-Authored-By` ou
-qualquer trailer decredited, mesmo quando a mudança foi escrita por um agente — o
-histórico deste repo não tem nenhum, e não é para começar agora.
+**Sem trailer de coautoria.** Nada de `Co-authored-by`, `Co-Authored-By`,
+`Signed-off-by` ou qualquer trailer decredited, mesmo quando a mudança foi
+escrita por um agente. Os 134 commits alcançáveis deste repo — toda a `main` e
+todas as branches — **não têm nenhum**. Existem 4 commits órfãos, só no reflog
+(sem ref apontando), com trailer de Claude: `0bb230e`, `3a5bfb9` e `4613ec7` do
+redesenho de estoque, e `a93ea07` da tela de assistidos. Nenhum deles chegou à
+`main`: o PR #59 foi squash-merged como `995c348`, e o squash descartou o trailer.
+Não é para recomeçar.
 
 ## Ao mexer no código, atualize o doc
 

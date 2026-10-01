@@ -151,14 +151,16 @@ precisa de um campo que não existe, pare e pergunte — não invente o schema. 
 lista de coisas a atualizar. Como se faria uma mudança lá está em
 [`docs/frozen/como-adicionar-recurso.md`](docs/frozen/como-adicionar-recurso.md).
 
-**Três recursos estão em redesenho: `coleta`, `entrega` e `item`.** O modelo de
-doação → estoque → entrega está sendo repensado antes de ganhar tela — quantidade
-por linha de doação, reserva de item, e a dúvida de fundir `nome_item` em
-`item`. Não crie tela para esses três nem mexa no schema deles: contra o modelo
-de hoje o trabalho é jogado fora. O que já foi decidido e o que falta está em
-[`docs/future/README.md`](docs/future/README.md). `doador` está liberado.
+**O modelo de estoque foi decidido e ainda não foi implementado: `inventory_item`,
+`donation`, `delivery`, e as tabelas de reserva e ajuste.** `coleta`, `entrega` e
+`item` **não ganham tela** — não porque o modelo esteja em dúvida, mas porque ele
+vai ser **outro**. Os nomes ficam em inglês (`donation` no lugar de `coleta`,
+`delivery` no lugar de `entrega`, `donor`, `beneficiary`), então uma tela escrita
+contra `coleta`/`entrega` morre no rename. O desenho inteiro está em
+[`docs/future/README.md`](docs/future/README.md). `doador` está liberado, e é o
+`assistido` sem a parte social.
 
-A **única exceção** ao congelamento é registrar `nome-itens` e
+**A única exceção** ao congelamento é registrar `nome-itens` e
 `categoria-itens` em `registerResources`, porque o catálogo precisa ser aditivo
 para quem registra uma doação trazer um item que não está nele.
 

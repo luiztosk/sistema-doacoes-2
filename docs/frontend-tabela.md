@@ -43,12 +43,13 @@ O nome do arquivo segue o recurso e o da pasta: `tables/` para lista,
 | Recurso | Situação |
 |---|---|
 | `doador` | **Liberado.** É o `assistido` sem a parte social: só texto e o enum `uf`. Serve de primeiro teste da receita. |
-| `coleta`, `entrega`, `item` | **Bloqueado.** Estão em redesenho. |
+| `coleta`, `entrega`, `item` | **Modelo decidido, não implementado.** Viram `donation`, `delivery` e `inventory_item`. |
 
-**Não construa tela para `coleta`, `entrega` ou `item`.** O modelo de doação →
-estoque → entrega está sendo repensado — quantidade por linha de doação, reserva
-de item, e a dúvida de fundir `nome_item` em `item`. Tela feita contra o modelo de
-hoje é trabalho jogado fora. O que já foi decidido e o que falta está em
+**Não construa tela para `coleta`, `entrega` ou `item`.** O modelo de estoque já
+foi decidido — `inventory_item` com dois contadores e uma coluna gerada, `donation`
+com `donation_line`, `delivery` com `delivery_line` como reserva, e ajuste
+registrado. Tela feita contra `coleta`/`entrega`/`item` morre no rename, porque os
+nomes novos são em inglês. O desenho inteiro está em
 [`future/README.md`](future/README.md).
 
 `nome_item` e `categoria_item` **passam a ganhar tela** — o contrário do que este

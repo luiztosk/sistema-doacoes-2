@@ -70,29 +70,29 @@ export type AssistidoFormValues = RequiredNullable<
 `doador` é o próximo e está **liberado**: é o `assistido` sem a parte social, só
 texto e o enum `uf`. Comece por ele.
 
-`coleta`, `entrega` e `item` estão **bloqueados**. O modelo de doação → estoque →
-entrega está sendo repensado antes de ganhar tela — quantidade por linha de
-doação, reserva de item, e se `nome_item` se funde em `item`. Não escreva nem o
-formulário deles: o estado do formulário é o payload, e o payload vai mudar de
-forma. O que já foi decidido e o que falta está em
+`coleta`, `entrega` e `item` **não ganham tela**: o modelo já foi decidido e vira
+`donation`, `delivery` e `inventory_item`, com `donation_line` e `delivery_line`
+abaixo. Não escreva nem o formulário deles: o estado do formulário é o payload, e
+o payload muda de forma. O desenho está em
 [`future/README.md`](future/README.md).
 
 Duas coisas que só aparecem nesses formulários e que valem lembrar quando o
-redesenho for decidido:
+redesenho for implementado:
 
-- **Nenhuma primitiva faz data.** `coleta` e `entrega` têm `dataHora`, que é
+- **Nenhuma primitiva faz data.** As duas fichas têm `occurred_at`, que é
   `z.coerce.date()`, então o estado do formulário é `Date | null` e não `string`
   — um `DateField` precisa ser escrito, e não é um `TextField` com
   `type="date"`, porque o `value` do input é `"AAAA-MM-DD"`.
-- **A ficha de coleta e de entrega tem a tabela de filhos abaixo do formulário**,
-  com adicionar, ver e remover. Nada no código exemplifica esse padrão ainda: o
-  `assistido` não tem filho, então ele **não** serve de referência aqui.
+- **A ficha tem a tabela de filhos abaixo do formulário**, com adicionar, ver e
+  remover, e a linha de filho carrega `quantity`. Nada no código exemplifica esse
+  padrão ainda: o `assistido` não tem filho, então ele **não** serve de
+  referência aqui.
 
 ## Sem exemplo ainda
 
 `SelectField` **alimentado por outra lista** não tem exemplo, e não vai ter até o
-redesenho de coleta e entrega: os únicos recursos com chave estrangeira são os
-bloqueados. `doador`, que é o próximo, só tem texto e o enum `uf`.
+redesenho de coleta e entrega: os únicos recursos com chave estrangeira são os que
+não ganharam tela. `doador`, que é o próximo, só tem texto e o enum `uf`.
 
 Quando o caso aparecer, a query da tabela de origem já existe e as opções são o
 array dela (`{ value: linha.id, label: linha.nome }` — o `value` é o que vai no
@@ -111,8 +111,9 @@ UI não resolve sozinho:
 - **Não mexa em `src/worker/`.** Esquema, `registerResources` e migrations estão
   congelados nesta rodada. A única exceção é registrar `nome-itens` e
   `categoria-itens`, para o catálogo ser aditivo.
-- **Não escreva tela de `coleta`, `entrega` ou `item`.** Estão em redesenho; ver
-  [`future/README.md`](future/README.md).
+- **Não escreva tela de `coleta`, `entrega` ou `item`.** O modelo de estoque já
+  foi decidido e vira `donation`, `delivery` e `inventory_item`, com `donation_line`
+  e `delivery_line`; ver [`future/README.md`](future/README.md).
 - Não exibia erro de mutation na tela. Não há `Alert`, nem `toast`, nem
   `errorMap` por campo: o `MutationCache` em `lib/query-client.ts` joga no
   `console` e pronto.

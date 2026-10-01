@@ -29,10 +29,9 @@ Estado conferido em 30/09/2026.
 3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
    três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/$id`).
    `doador` está **liberado** e é o próximo: é o `assistido` sem a parte social.
-   `coleta`, `entrega` e `item` **não ganham tela**: o modelo de estoque já foi
-   decidido (`inventory_item`, `donation`, `delivery`, reserva e ajuste) e ainda
-   não foi implementado, em [`future/README.md`](future/README.md). As receitas
-   estão em [`frontend-tabela.md`](frontend-tabela.md) e
+   `coleta`, `entrega` e `item` estão **bloqueados** até o redesenho do modelo de
+   estoque, em [`future/README.md`](future/README.md). As receitas estão em
+   [`frontend-tabela.md`](frontend-tabela.md) e
    [`frontend-formulario.md`](frontend-formulario.md).
 4. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem

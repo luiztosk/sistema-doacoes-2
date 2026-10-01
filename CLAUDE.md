@@ -18,8 +18,8 @@ As duas armadilhas que mais custam tempo aqui, resumidas:
    precisa ser aditivo. Para criar telas, leia
    [`docs/frontend-tabela.md`](./docs/frontend-tabela.md) e
    [`docs/frontend-formulario.md`](./docs/frontend-formulario.md).
-3. O modelo de estoque está **decidido e não implementado** (`inventory_item`,
-   `donation`, `delivery`, reserva e ajuste), e os nomes novos são em inglês.
-   **Não construa tela para `coleta`, `entrega` ou `item`** — uma tela escrita
-   contra esses nomes morre no rename. Ver
-   [`docs/future/README.md`](./docs/future/README.md). `doador` está liberado.
+3. `coleta`, `entrega` e `item` estão em **redesenho** e não ganharam tela. O
+   modelo doação → estoque → entrega está sendo repensado (quantidade por linha
+   de doação, reserva de item, fundir `nome_item` em `item`). **Não construa nada
+   para esses três** — ver [`docs/future/README.md`](./docs/future/README.md).
+   `doador` está liberado.

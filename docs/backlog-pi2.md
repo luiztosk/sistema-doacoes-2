@@ -4,7 +4,7 @@ O que falta **neste trimestre**, e o que já está resolvido. Os itens que não
 dependem deste trimestre estão em [`future/`](future/README.md) e
 [`frozen/`](frozen/README.md).
 
-Estado conferido em 30/09/2026.
+Estado conferido em 01/10/2026.
 
 ## Cobertura dos requisitos do tema
 
@@ -29,6 +29,8 @@ Estado conferido em 30/09/2026.
 3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
    três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/$id`).
    `doador` está **liberado** e é o próximo: é o `assistido` sem a parte social.
+   Vale o aviso do item 7: `doador` vira `donor` no redesenho do estoque, então a
+   tela nasce com o nome que vai morrer.
    `coleta`, `entrega` e `item` **não ganham tela**: o modelo de estoque já foi
    decidido (`inventory_item`, `donation`, `delivery`, reserva e ajuste) e ainda
    não foi implementado, em [`future/README.md`](future/README.md). As receitas
@@ -47,6 +49,45 @@ Estado conferido em 30/09/2026.
    [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não
    existir, a API não deve receber dados reais. Não implementado nesta rodada:
    ver [`future/`](future/README.md).
+7. ⏳ **Redesenho do estoque** — o modelo está decidido e escrito por inteiro em
+   [`future/README.md`](future/README.md), e **não está implementado**: as tabelas
+   de hoje continuam `coleta`, `entrega` e `item`. A implementação está na branch
+   `feat/redesenho-estoque`, que **não está congelada**: nela mudanças quebrantes
+   são autorizadas, sem passar pela regra 1 do
+   [`frozen/seguranca.md`](frozen/seguranca.md) nem pelo contrato de forma do
+   erro de [`frozen/api.md`](frozen/api.md). As três dúvidas que o desenho tinha
+   sobre o D1 foram medidas localmente, e as três passaram:
+
+   | Dúvida | Resultado |
+   |---|---|
+   | Coluna gerada `VIRTUAL` | funciona — o valor é calculado, a escrita é recusada no `INSERT` e no `UPDATE`, e recalcula a cada `UPDATE` |
+   | `json_each` | existe |
+   | `ON CONFLICT` sobre índice único de expressão | funciona, e a dedup por `lower()` vale |
+
+   Consequência: criar N itens numa doação custa **2 statements**, e não 2 por
+   linha. O `WHERE true` é obrigatório —
+   `INSERT ... SELECT ... FROM json_each(...) WHERE true ON CONFLICT DO NOTHING` —
+   porque sem ele o parser do SQLite não distingue o `ON` do upsert do `ON` de join
+   e o statement nem compila (`near "DO": syntax error`).
+
+   E o `db.batch()` devolve um `D1Result` por statement, na ordem, cada um com o seu
+   `meta.changes`: uma reserva em que só dois dos três itens tinham estoque devolveu
+   `[1, 0, 1]`. O `results[i].meta.changes === 0` do desenho funciona como está
+   escrito. `RETURNING` também é aceito pelo D1, como sinal independente.
+
+   **O que segue sem confirmação:** o teto de 50 queries por invocação no plano Free
+   é limite de plataforma e só dá para medir no remoto. Com o custo por entrega em
+   2N, é ele que corta os "~45 itens distintos por entrega".
+
+   Uma ressalva: a recusa de escrita na coluna gerada sai como `SQLITE_ERROR` cru,
+   que o `handleApiError` não traduz — a mesma classe do `CHECK constraint failed`.
+   Não é problema enquanto ninguém escreve nela.
+
+   O próximo passo é a migration, e ela carrega **o rename das 7 tabelas**:
+   `assistido` vira `beneficiary` e `doador` vira `donor`, junto com
+   `coleta`/`entrega`/`item`. Isso toca a tela de `assistido`, já mergeada, e a de
+   `doador`, que é a próxima da lista. Ainda não está decidido se o rename entra na
+   mesma migration do estoque ou se vira migration própria.
 
 ## Fora do escopo do MVP
 

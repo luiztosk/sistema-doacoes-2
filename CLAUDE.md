@@ -15,7 +15,9 @@ As duas armadilhas que mais custam tempo aqui, resumidas:
 2. O backend está **congelado nesta rodada**: não crie tabela, coluna, endpoint,
    migration nem código de erro, e não edite nada em `src/worker/`. A única
    exceção é registrar `nome-itens` e `categoria-itens`, porque o catálogo
-   precisa ser aditivo. Para criar telas, leia
+   precisa ser aditivo. **Na branch `feat/redesenho-estoque` esse congelamento
+   não vale**: lá mudanças quebrantes são autorizadas, e só as regras de
+   segurança e de forma do erro continuam de pé. Para criar telas, leia
    [`docs/frontend-tabela.md`](./docs/frontend-tabela.md) e
    [`docs/frontend-formulario.md`](./docs/frontend-formulario.md).
 3. O modelo de estoque está **decidido e não implementado** (`inventory_item`,

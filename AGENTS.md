@@ -151,6 +151,29 @@ precisa de um campo que não existe, pare e pergunte — não invente o schema. 
 lista de coisas a atualizar. Como se faria uma mudança lá está em
 [`docs/frozen/como-adicionar-recurso.md`](docs/frozen/como-adicionar-recurso.md).
 
+### Exceção: `feat/redesenho-estoque` lifts o congelamento
+
+A branch do redesenho do estoque tem **autorização para qualquer mudança
+quebrante que a gente achar necessária** — sem perguntar e sem tratar
+`docs/frozen/` como limite. Isso vale enquanto o redesenho estiver em andamento
+nessa branch, e na `main` o congelamento acima continua valendo.
+
+O que isso libera: renomear tabela e coluna, derrubar `coleta`, `entrega` e
+`item`, trocar endpoint e rota, reescrever o gerador do seed, reescrever os 28
+casos de [`tests/api.ts`](tests/api.ts) e a tela de `assistido` que já está
+mergeada.
+
+O que o congelamento **não** segurava, e que continua de pé, porque não é sobre
+o modelo: todas as regras de [`docs/frozen/seguranca.md`](docs/frozen/seguranca.md)
+— em particular `organization_id` fixo continua proibido e `check()` continua sem
+criação. E o contrato de [`docs/frozen/api.md`](docs/frozen/api.md) continua
+valendo no que é segurança e forma do erro: `401` sem corpo, no máximo um erro
+por requisição, e mensagem em inglês.
+
+**A única exceção** ao congelamento, fora daquela branch, é registrar
+`nome-itens` e `categoria-itens` em `registerResources`, porque o catálogo precisa
+ser aditivo para quem registra uma doação trazer um item que não está nele.
+
 **O modelo de estoque foi decidido e ainda não foi implementado: `inventory_item`,
 `donation`, `delivery`, e as tabelas de reserva e ajuste.** `coleta`, `entrega` e
 `item` **não ganham tela** — não porque o modelo esteja em dúvida, mas porque ele
@@ -159,10 +182,6 @@ vai ser **outro**. Os nomes ficam em inglês (`donation` no lugar de `coleta`,
 contra `coleta`/`entrega` morre no rename. O desenho inteiro está em
 [`docs/future/README.md`](docs/future/README.md). `doador` está liberado, e é o
 `assistido` sem a parte social.
-
-**A única exceção** ao congelamento é registrar `nome-itens` e
-`categoria-itens` em `registerResources`, porque o catálogo precisa ser aditivo
-para quem registra uma doação trazer um item que não está nele.
 
 O contrato em si, que não muda por recurso: sucesso é `200`/`201` com
 `{"data": ...}` e `DELETE` devolve `204` sem corpo; erro é

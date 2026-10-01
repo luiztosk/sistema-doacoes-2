@@ -174,14 +174,13 @@ por requisição, e mensagem em inglês.
 `nome-itens` e `categoria-itens` em `registerResources`, porque o catálogo precisa
 ser aditivo para quem registra uma doação trazer um item que não está nele.
 
-**O modelo de estoque foi decidido e ainda não foi implementado: `inventory_item`,
-`donation`, `delivery`, e as tabelas de reserva e ajuste.** `coleta`, `entrega` e
-`item` **não ganham tela** — não porque o modelo esteja em dúvida, mas porque ele
-vai ser **outro**. Os nomes ficam em inglês (`donation` no lugar de `coleta`,
-`delivery` no lugar de `entrega`, `donor`, `beneficiary`), então uma tela escrita
-contra `coleta`/`entrega` morre no rename. O desenho inteiro está em
-[`docs/future/README.md`](docs/future/README.md). `doador` está liberado, e é o
-`assistido` sem a parte social.
+**O modelo de estoque foi implementado** em 01/10/2026: `inventory_item`,
+`donation`, `delivery`, e as tabelas de reserva, contagem e ajuste. `coleta`,
+`entrega`, `item`, `nome_item` e `categoria_item` **foram removidas do banco** —
+não ganham tela porque não existem mais. `item` **não vira `inventory_item` por
+rename**: eram coisas diferentes, e é por isso que a deduplicação de nome foi
+fundida em `inventory_item.name` em vez de sobreviver numa tabela de catálogo.
+`doador` está liberado, e é o `assistido` sem a parte social.
 
 O contrato em si, que não muda por recurso: sucesso é `200`/`201` com
 `{"data": ...}` e `DELETE` devolve `204` sem corpo; erro é
@@ -257,6 +256,28 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     mas a API responde em inglês via `errors.ts` — são públicos distintos, e não
     se traduz o mesmo texto. Ver o item 5 de
     [`docs/backlog-pi2.md`](docs/backlog-pi2.md).
+13. **`.refine()` num schema que a API valida vaza português.** A resposta da API
+    tem que ser em inglês, e ela só é porque `errorFromIssue` reconstrói a frase a
+    partir de `issue.code` e ignora `issue.message` — **menos** no ramo
+    `"custom"`, que é o que `.refine()` produz. Regra que atravessa dois campos
+    vai no handler, com `apiError(...)` e frase em inglês.
+14. **`await db.prepare(sql)` não executa nada no D1.** Uma prepared statement só
+    roda com `.run()`, `.all()` ou `.raw()`, e o `await` em cima de uma delas não
+    faz nada: ela só vai virar promise. Isso apareceu como um rollback que não
+    desfez nada — o registro recusado continuava na tabela. No `stock.ts`, as
+    compensações que precisam ser transacionais usam `db.batch()`, e as de uma
+    linha só, `.run()`.
+15. **`db.batch()` é transação contra erro, não contra zero linhas.** A guarda da
+    reserva não dá erro, ela só não casa. Por isso toda operação guardada é
+    "escreve, confere, compensa", e a compensação tem que **desfazer o contador**,
+    não só apagar a linha: apagar é idempotente, mas o `reserved_quantity` que
+    subiu continua lá e vira drift. É a armadilha que a invariante do
+    [`tests/inventory.ts`](tests/inventory.ts) pegou.
+16. **`registerResource` não serve para quem nasce com linhas.** `donation` e
+    `delivery` são criados com as linhas no mesmo batch, então eles passam
+    `create: false` e registram o `POST` à mão em `stock.ts`. A fábrica
+    genérica ficou em [`src/worker/api/resource.ts`](src/worker/api/resource.ts),
+    e `v1.ts` só compõe.
 
 ## Branches e commits
 
@@ -265,6 +286,10 @@ abandonadas — não criar de novo. Feature branch a partir de `main`, PR, e o m
 acontece quando o check passar e o teste manual estiver feito. Commits no formato
 Conventional Commits, com o motivo no corpo quando a mudança não for óbvia.
 Português, sem acento.
+
+**Sem trailer de coautoria.** Nada de `Co-authored-by`, `Co-Authored-By` ou
+qualquer trailer decredited, mesmo quando a mudança foi escrita por um agente — o
+histórico deste repo não tem nenhum, e não é para começar agora.
 
 ## Ao mexer no código, atualize o doc
 

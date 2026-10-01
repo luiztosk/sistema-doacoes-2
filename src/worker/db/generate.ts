@@ -7,13 +7,17 @@ import { faker as fakerPTBR } from "@faker-js/faker/locale/pt_BR";
 import {
 	assistido,
 	assistidoSelectSchema,
-	categoriaItemSelectSchema,
-	coletaSelectSchema,
+	deliveryLineSelectSchema,
+	deliverySelectSchema,
+	donationLineSelectSchema,
+	donationSelectSchema,
 	doadorSelectSchema,
-	entregaSelectSchema,
-	item,
-	itemSelectSchema,
-	nomeItemSelectSchema,
+	inventoryAdjustmentSelectSchema,
+	inventoryCountLineSelectSchema,
+	inventoryCountSelectSchema,
+	inventoryItem,
+	inventoryItemSelectSchema,
+	itemCategorySelectSchema,
 } from "./schema";
 
 setFaker(fakerPTBR);
@@ -25,17 +29,20 @@ const BASE_DIR = "mock_data";
 const ROWS_PER_TABLE = {
 	assistido: 100,
 	doador: 25,
-	coleta: 80,
-	entrega: 60,
-	item: 500,
+	donation: 45,
+	delivery: 30,
+	inventoryCount: 3,
+	adjustment: 6,
 } as const;
 
 const ENUM_VALUES = {
 	uf: getTableColumns(assistido).uf.enumValues,
 	tipoImovel: getTableColumns(assistido).tipoImovel.enumValues,
 	estadoCivil: getTableColumns(assistido).estadoCivil.enumValues,
-	status: getTableColumns(item).status.enumValues,
+	unit: getTableColumns(inventoryItem).unit.enumValues,
 } as const;
+
+const ADJUSTMENT_REASONS = ["DONOR_RETURN", "LOSS", "DAMAGE"] as const;
 
 const TIPO_DE_LOGRADOURO = [
 	"Rua",
@@ -63,7 +70,7 @@ const BAIRRO = [
 const OBSERVACAO = [
 	"Prefere receber pelo período da manhã.",
 	"Faz acompanhar a vizinha nas entregas.",
-	"Já esteve cadastrado em outra门市 da cidade.",
+	"Já esteve cadastrado em outra一门，据门口的 mimeType is Portuguese.",
 	"Solicita aviso por telefone um dia antes.",
 	"Conta com apoio da associação de bairro.",
 	null,
@@ -72,29 +79,39 @@ const OBSERVACAO = [
 const TITULO = /^(Sr|Sra|Srta|Srto|Dona|Dono)\.?\s+/i;
 
 const JANELA = {
-	coleta: { de: Date.UTC(2026, 0, 5), ate: Date.UTC(2026, 2, 31) },
-	entrega: { de: Date.UTC(2026, 3, 5), ate: Date.UTC(2026, 5, 30) },
+	donation: { de: Date.UTC(2026, 0, 5), ate: Date.UTC(2026, 2, 31) },
+	delivery: { de: Date.UTC(2026, 3, 5), ate: Date.UTC(2026, 5, 30) },
+	count: { de: Date.UTC(2026, 6, 1), ate: Date.UTC(2026, 6, 20) },
+	adjustment: { de: Date.UTC(2026, 6, 21), ate: Date.UTC(2026, 7, 20) },
 } as const;
 
 type Municipio = { cidade: string; uf: string };
-type Catalogo = { categoria: string; itens: string[] };
+type Catalogo = { categoria: string; itens: { nome: string; unit: string }[] };
 
 type AssistidoRow = z.infer<typeof assistidoSelectSchema>;
 type DoadorRow = z.infer<typeof doadorSelectSchema>;
-type CategoriaItemRow = z.infer<typeof categoriaItemSelectSchema>;
-type NomeItemRow = z.infer<typeof nomeItemSelectSchema>;
-type ColetaRow = z.infer<typeof coletaSelectSchema>;
-type EntregaRow = z.infer<typeof entregaSelectSchema>;
-type ItemRow = z.infer<typeof itemSelectSchema>;
+type ItemCategoryRow = z.infer<typeof itemCategorySelectSchema>;
+type InventoryItemRow = z.infer<typeof inventoryItemSelectSchema>;
+type DonationRow = z.infer<typeof donationSelectSchema>;
+type DonationLineRow = z.infer<typeof donationLineSelectSchema>;
+type DeliveryRow = z.infer<typeof deliverySelectSchema>;
+type DeliveryLineRow = z.infer<typeof deliveryLineSelectSchema>;
+type InventoryCountRow = z.infer<typeof inventoryCountSelectSchema>;
+type InventoryCountLineRow = z.infer<typeof inventoryCountLineSelectSchema>;
+type InventoryAdjustmentRow = z.infer<typeof inventoryAdjustmentSelectSchema>;
 
 export type SeedData = {
 	assistido: AssistidoRow[];
 	doador: DoadorRow[];
-	categoriaItem: CategoriaItemRow[];
-	nomeItem: NomeItemRow[];
-	coleta: ColetaRow[];
-	entrega: EntregaRow[];
-	item: ItemRow[];
+	itemCategory: ItemCategoryRow[];
+	inventoryItem: InventoryItemRow[];
+	donation: DonationRow[];
+	donationLine: DonationLineRow[];
+	delivery: DeliveryRow[];
+	deliveryLine: DeliveryLineRow[];
+	inventoryCount: InventoryCountRow[];
+	inventoryCountLine: InventoryCountLineRow[];
+	inventoryAdjustment: InventoryAdjustmentRow[];
 };
 
 function lerJson<T>(arquivo: string): T {
@@ -130,7 +147,9 @@ function endereco(municipios: Municipio[]) {
 		cep: faker.location.zipCode().replace("-", ""),
 		logradouro: `${faker.helpers.arrayElement(TIPO_DE_LOGRADOURO)} ${faker.person.firstName()} ${faker.person.lastName()}`,
 		numero: faker.location.buildingNumber(),
-		complemento: faker.datatype.boolean() ? faker.location.secondaryAddress() : null,
+		complemento: faker.datatype.boolean()
+			? faker.location.secondaryAddress()
+			: null,
 		bairro: faker.helpers.arrayElement(BAIRRO),
 		cidade: municipio.cidade,
 		uf: municipio.uf,
@@ -196,111 +215,313 @@ function criarDoadores(municipios: Municipio[]): DoadorRow[] {
 }
 
 function criarCatalogo(catalogo: Catalogo[]) {
-	const categorias: CategoriaItemRow[] = [];
-	const nomes: NomeItemRow[] = [];
+	const categorias: ItemCategoryRow[] = [];
+	const itens = new Map<string, InventoryItemRow>();
 
 	for (const grupo of catalogo) {
 		const id = fake(z.uuidv4());
 		categorias.push(
-			validar(categoriaItemSelectSchema, "categoria_item", {
+			validar(itemCategorySelectSchema, "item_category", {
 				id,
-				nome: grupo.categoria,
+				name: grupo.categoria,
 			}),
 		);
 
-		for (const nome of grupo.itens) {
-			nomes.push(
-				validar(nomeItemSelectSchema, "nome_item", {
-					id: fake(z.uuidv4()),
-					categoriaId: id,
-					nome,
-				}),
-			);
+		for (const item of grupo.itens) {
+			const itemId = fake(z.uuidv4());
+			itens.set(itemId, {
+				id: itemId,
+				name: item.nome,
+				categoryId: id,
+				unit: item.unit as InventoryItemRow["unit"],
+				onHand: 0,
+				reservedQuantity: 0,
+				available: 0,
+			});
 		}
 	}
 
-	return { categorias, nomes };
+	return { categorias, itens };
 }
 
-function criarColetas(doadores: DoadorRow[]): ColetaRow[] {
-	return Array.from({ length: ROWS_PER_TABLE.coleta }, () => {
-		const doadorId = faker.helpers.arrayElement(doadores).id;
-		return validar(coletaSelectSchema, "coleta", {
-			id: fake(z.uuidv4()),
-			doadorId,
-			dataHora: instante(JANELA.coleta),
-		});
-	});
+type Estado = { onHand: number; reserved: number };
+
+function disponivel(estado: Estado): number {
+	return estado.onHand - estado.reserved;
 }
 
-function criarEntregas(assistidos: AssistidoRow[]): EntregaRow[] {
-	return Array.from({ length: ROWS_PER_TABLE.entrega }, () => {
-		const assistidoId = faker.helpers.arrayElement(assistidos).id;
-		return validar(entregaSelectSchema, "entrega", {
-			id: fake(z.uuidv4()),
-			assistidoId,
-			dataHora: instante(JANELA.entrega),
-		});
-	});
-}
+function escolherItens<T>(itens: Map<string, T>, quantidade: number): T[] {
+	const todos = [...itens.values()];
+	const escolhidos: T[] = [];
+	const usados = new Set<T>();
 
-function sortearStatus(quantidade: number): string[] {
-	const pesos: Record<string, number> = {
-		AGUARDA_COLETA: 0.4,
-		EM_ESTOQUE: 0.25,
-		ENTREGUE: 0.35,
-	};
-
-	const sorteados: string[] = [];
-	for (const [status, peso] of Object.entries(pesos)) {
-		const vezes = Math.round(quantidade * peso);
-		for (let i = 0; i < vezes; i += 1) sorteados.push(status);
+	while (escolhidos.length < quantidade && usados.size < todos.length) {
+		const item = faker.helpers.arrayElement(todos);
+		if (usados.has(item)) continue;
+		usados.add(item);
+		escolhidos.push(item);
 	}
 
-	return faker.helpers.shuffle(sorteados);
+	return escolhidos;
 }
 
-function criarItens(
-	nomes: NomeItemRow[],
-	coletas: ColetaRow[],
-	entregas: EntregaRow[],
-): ItemRow[] {
-	const statusDeCadaItem = sortearStatus(ROWS_PER_TABLE.item);
+function criarDoacoes(
+	doadores: DoadorRow[],
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+) {
+	const donations: DonationRow[] = [];
+	const donationLines: DonationLineRow[] = [];
 
-	return statusDeCadaItem.map((status) => {
-		const nomeId = faker.helpers.arrayElement(nomes).id;
-		const coletado = status === "AGUARDA_COLETA" ? null : faker.helpers.arrayElement(coletas).id;
-		const entregue =
-			status === "ENTREGUE" ? faker.helpers.arrayElement(entregas).id : null;
+	for (let i = 0; i < ROWS_PER_TABLE.donation; i += 1) {
+		const id = fake(z.uuidv4());
+		const donorId = faker.helpers.arrayElement(doadores).id;
+		const status = faker.datatype.boolean(0.75) ? "RECEIVED" : "DRAFT";
 
-		return validar(itemSelectSchema, "item", {
-			id: fake(z.uuidv4()),
-			nomeId,
-			status,
-			coletaId: coletado,
-			entregaId: entregue,
-		});
-	});
+		donations.push(
+			validar(donationSelectSchema, "donation", {
+				id,
+				donorId,
+				occurredAt: instante(JANELA.donation),
+				status,
+				note: faker.datatype.boolean(0.3) ? "Doação de campanha" : null,
+			}),
+		);
+
+		for (const item of escolherItens(itens, fake(z.int().min(1).max(3)))) {
+			const quantity = fake(z.int().min(1).max(20));
+			donationLines.push(
+				validar(donationLineSelectSchema, "donation_line", {
+					donationId: id,
+					inventoryItemId: item.id,
+					quantity,
+				}),
+			);
+
+			if (status === "RECEIVED") {
+				estado.get(item.id)!.onHand += quantity;
+			}
+		}
+	}
+
+	return { donations, donationLines };
+}
+
+function comDisponibilidade(
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+) {
+	return new Map(
+		[...itens.entries()].filter(([id]) => disponivel(estado.get(id)!) > 0),
+	);
+}
+
+function criarEntregas(
+	beneficiaries: AssistidoRow[],
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+) {
+	const deliveries: DeliveryRow[] = [];
+	const deliveryLines: DeliveryLineRow[] = [];
+
+	for (let i = 0; i < ROWS_PER_TABLE.delivery; i += 1) {
+		const sorteio = faker.number.float({ min: 0, max: 1 });
+		const status =
+			sorteio < 0.3 ? "OPEN" : sorteio < 0.7 ? "COMPLETED" : "CANCELLED";
+		const id = fake(z.uuidv4());
+
+		const disponiveis = comDisponibilidade(itens, estado);
+		const linhas = [];
+		for (const item of escolherItens(disponiveis, fake(z.int().min(1).max(3)))) {
+			const quantity = Math.min(
+				fake(z.int().min(1).max(20)),
+				disponivel(estado.get(item.id)!),
+			);
+			if (quantity < 1) continue;
+			linhas.push({ item, quantity });
+		}
+
+		if (linhas.length === 0) continue;
+
+		deliveries.push(
+			validar(deliverySelectSchema, "delivery", {
+				id,
+				beneficiaryId: faker.helpers.arrayElement(beneficiaries).id,
+				occurredAt: instante(JANELA.delivery),
+				status,
+				note: faker.datatype.boolean(0.25) ? "Entrega programada" : null,
+			}),
+		);
+
+		for (const { item, quantity } of linhas) {
+			deliveryLines.push(
+				validar(deliveryLineSelectSchema, "delivery_line", {
+					deliveryId: id,
+					inventoryItemId: item.id,
+					quantity,
+				}),
+			);
+
+			const atual = estado.get(item.id)!;
+			if (status === "OPEN") {
+				atual.reserved += quantity;
+			} else if (status === "COMPLETED") {
+				atual.onHand -= quantity;
+			}
+		}
+	}
+
+	return { deliveries, deliveryLines };
+}
+
+function criarContagens(
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+) {
+	const counts: InventoryCountRow[] = [];
+	const countLines: InventoryCountLineRow[] = [];
+	const adjustments: InventoryAdjustmentRow[] = [];
+
+	for (let i = 0; i < ROWS_PER_TABLE.inventoryCount; i += 1) {
+		const id = fake(z.uuidv4());
+		const occurredAt = instante(JANELA.count);
+
+		counts.push(
+			validar(inventoryCountSelectSchema, "inventory_count", {
+				id,
+				occurredAt,
+				countedBy: "seed",
+				note: `Contagem ${i + 1}`,
+			}),
+		);
+
+		for (const item of escolherItens(itens, 6)) {
+			const atual = estado.get(item.id)!;
+			const counted = Math.max(
+				atual.reserved,
+				atual.onHand + fake(z.int().min(-4).max(4)),
+			);
+
+			countLines.push(
+				validar(inventoryCountLineSelectSchema, "inventory_count_line", {
+					countId: id,
+					inventoryItemId: item.id,
+					countedQuantity: counted,
+				}),
+			);
+
+			adjustments.push(
+				validar(inventoryAdjustmentSelectSchema, "inventory_adjustment", {
+					id: fake(z.uuidv4()),
+					inventoryItemId: item.id,
+					delta: counted - atual.onHand,
+					reason: "STOCKTAKE",
+					occurredAt,
+					countId: id,
+				}),
+			);
+
+			atual.onHand = counted;
+		}
+	}
+
+	return { counts, countLines, adjustments };
+}
+
+function criarAjustes(
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+): InventoryAdjustmentRow[] {
+	const adjustments: InventoryAdjustmentRow[] = [];
+
+	for (let i = 0; i < ROWS_PER_TABLE.adjustment; i += 1) {
+		const item = faker.helpers.arrayElement([...itens.values()]);
+		const atual = estado.get(item.id)!;
+		const delta = -fake(z.int().min(1).max(3));
+		if (atual.onHand + delta < 0) continue;
+
+		adjustments.push(
+			validar(inventoryAdjustmentSelectSchema, "inventory_adjustment", {
+				id: fake(z.uuidv4()),
+				inventoryItemId: item.id,
+				delta,
+				reason: fake(z.enum(ADJUSTMENT_REASONS)),
+				occurredAt: instante(JANELA.adjustment),
+				countId: null,
+			}),
+		);
+
+		atual.onHand += delta;
+	}
+
+	return adjustments;
+}
+
+function conferirInvariantes(
+	itens: Map<string, InventoryItemRow>,
+	estado: Map<string, Estado>,
+) {
+	for (const [id, item] of itens) {
+		const atual = estado.get(id)!;
+		if (atual.reserved < 0 || atual.onHand < atual.reserved) {
+			throw new Error(
+				`inventory_item ${id} (${item.name}) ficou com on_hand=${atual.onHand} e reserved_quantity=${atual.reserved}`,
+			);
+		}
+	}
 }
 
 export function gerarSeed(): SeedData {
 	const municipios = lerJson<Municipio[]>("municipios.json");
 	const catalogo = lerJson<Catalogo[]>("catalogo.json");
-	const { categorias, nomes } = criarCatalogo(catalogo);
+	const { categorias, itens } = criarCatalogo(catalogo);
+
+	const estado = new Map<string, Estado>();
+	for (const id of itens.keys()) {
+		estado.set(id, { onHand: 0, reserved: 0 });
+	}
 
 	const assistidos = criarAssistidos(municipios);
 	const doadores = criarDoadores(municipios);
-	const coletas = criarColetas(doadores);
-	const entregas = criarEntregas(assistidos);
-	const itens = criarItens(nomes, coletas, entregas);
+	const { donations, donationLines } = criarDoacoes(doadores, itens, estado);
+	const { deliveries, deliveryLines } = criarEntregas(
+		assistidos,
+		itens,
+		estado,
+	);
+	const { counts, countLines, adjustments } = criarContagens(itens, estado);
+	const ajustes = criarAjustes(itens, estado);
+
+	for (const [id, item] of itens) {
+		const atual = estado.get(id)!;
+		item.onHand = atual.onHand;
+		item.reservedQuantity = atual.reserved;
+		item.available = atual.onHand - atual.reserved;
+	}
+
+	const inventoryItems = [...itens.values()].map((item) =>
+		validar<InventoryItemRow>(inventoryItemSelectSchema, "inventory_item", item),
+	);
+
+	conferirInvariantes(itens, estado);
+
+	const total = inventoryItems.reduce((soma, i) => soma + i.onHand, 0);
+	const reservado = inventoryItems.reduce((s, i) => s + i.reservedQuantity, 0);
+	console.log(
+		`  estoque: ${total} unidades em ${inventoryItems.length} itens, ${reservado} reservadas`,
+	);
 
 	return {
 		assistido: assistidos,
 		doador: doadores,
-		categoriaItem: categorias,
-		nomeItem: nomes,
-		coleta: coletas,
-		entrega: entregas,
-		item: itens,
+		itemCategory: categorias,
+		inventoryItem: inventoryItems,
+		donation: donations,
+		donationLine: donationLines,
+		delivery: deliveries,
+		deliveryLine: deliveryLines,
+		inventoryCount: counts,
+		inventoryCountLine: countLines,
+		inventoryAdjustment: [...adjustments, ...ajustes],
 	};
 }

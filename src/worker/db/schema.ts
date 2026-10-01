@@ -56,8 +56,6 @@ export const ESTADOS_CIVIS = [
 	"UNIAO_ESTAVEL",
 ] as const;
 
-const STATUS_ITEM = ["AGUARDA_COLETA", "EM_ESTOQUE", "ENTREGUE"] as const;
-
 export const UNITS = ["KG", "UNIT", "LITER", "PACK", "BOX"] as const;
 
 export const STATUS_DONATION = ["DRAFT", "RECEIVED"] as const;
@@ -97,8 +95,6 @@ const CEP_INVALIDO = "O CEP deve ter 8 dígitos.";
 
 const cepComOitoDigitos = (schema: z.ZodString) =>
 	schema.regex(/^\d{8}$/, { error: CEP_INVALIDO });
-
-const dataHoraDeEntrada = z.coerce.date().nullable().optional();
 
 export const assistido = sqliteTable("assistido", {
 	id: text("id").primaryKey(),
@@ -189,158 +185,6 @@ export const doadorUpdateSchema = createUpdateSchema(doador, doadorRefinements)
 
 export const doadorSelectSchema = createSelectSchema(doador, doadorRefinements);
 
-export const categoriaItem = sqliteTable(
-	"categoria_item",
-	{
-		id: text("id").primaryKey(),
-		nome: text("nome").notNull(),
-	},
-	(t) => [uniqueIndex("categoria_item_nome_uniq").on(sql`lower(${t.nome})`)],
-);
-
-const categoriaItemRefinements = { nome: nomeNaoVazio };
-
-export const categoriaItemInsertSchema = createInsertSchema(
-	categoriaItem,
-	categoriaItemRefinements,
-)
-	.omit({ id: true })
-	.strict();
-
-export const categoriaItemUpdateSchema = createUpdateSchema(
-	categoriaItem,
-	categoriaItemRefinements,
-)
-	.omit({ id: true })
-	.strict();
-
-export const categoriaItemSelectSchema = createSelectSchema(
-	categoriaItem,
-	categoriaItemRefinements,
-);
-
-export const nomeItem = sqliteTable(
-	"nome_item",
-	{
-		id: text("id").primaryKey(),
-		categoriaId: text("categoria_id")
-			.notNull()
-			.references(() => categoriaItem.id, { onDelete: "no action" }),
-		nome: text("nome").notNull(),
-	},
-	(t) => [
-		uniqueIndex("nome_item_nome_uniq").on(sql`lower(${t.nome})`),
-		index("nome_item_categoriaId_idx").on(t.categoriaId),
-	],
-);
-
-const nomeItemRefinements = { nome: nomeNaoVazio };
-
-export const nomeItemInsertSchema = createInsertSchema(
-	nomeItem,
-	nomeItemRefinements,
-)
-	.omit({ id: true })
-	.strict();
-
-export const nomeItemUpdateSchema = createUpdateSchema(
-	nomeItem,
-	nomeItemRefinements,
-)
-	.omit({ id: true })
-	.strict();
-
-export const nomeItemSelectSchema = createSelectSchema(
-	nomeItem,
-	nomeItemRefinements,
-);
-
-export const coleta = sqliteTable(
-	"coleta",
-	{
-		id: text("id").primaryKey(),
-		doadorId: text("doador_id")
-			.notNull()
-			.references(() => doador.id, { onDelete: "no action" }),
-		dataHora: integer("data_hora", { mode: "timestamp" }),
-	},
-	(t) => [index("coleta_doadorId_idx").on(t.doadorId)],
-);
-
-export const coletaInsertSchema = createInsertSchema(coleta, {
-	dataHora: dataHoraDeEntrada,
-})
-	.omit({ id: true })
-	.strict();
-
-export const coletaUpdateSchema = createUpdateSchema(coleta, {
-	dataHora: dataHoraDeEntrada,
-})
-	.omit({ id: true })
-	.strict();
-
-export const coletaSelectSchema = createSelectSchema(coleta);
-
-export const entrega = sqliteTable(
-	"entrega",
-	{
-		id: text("id").primaryKey(),
-		assistidoId: text("assistido_id")
-			.notNull()
-			.references(() => assistido.id, { onDelete: "no action" }),
-		dataHora: integer("data_hora", { mode: "timestamp" }),
-	},
-	(t) => [index("entrega_assistidoId_idx").on(t.assistidoId)],
-);
-
-export const entregaInsertSchema = createInsertSchema(entrega, {
-	dataHora: dataHoraDeEntrada,
-})
-	.omit({ id: true })
-	.strict();
-
-export const entregaUpdateSchema = createUpdateSchema(entrega, {
-	dataHora: dataHoraDeEntrada,
-})
-	.omit({ id: true })
-	.strict();
-
-export const entregaSelectSchema = createSelectSchema(entrega);
-
-export const item = sqliteTable(
-	"item",
-	{
-		id: text("id").primaryKey(),
-		nomeId: text("nome_id")
-			.notNull()
-			.references(() => nomeItem.id, { onDelete: "no action" }),
-		status: text("status", { enum: STATUS_ITEM })
-			.notNull()
-			.default("AGUARDA_COLETA"),
-		coletaId: text("coleta_id").references(() => coleta.id, {
-			onDelete: "no action",
-		}),
-		entregaId: text("entrega_id").references(() => entrega.id, {
-			onDelete: "no action",
-		}),
-	},
-	(t) => [
-		index("item_status_idx").on(t.status),
-		index("item_coletaId_idx").on(t.coletaId),
-		index("item_entregaId_idx").on(t.entregaId),
-	],
-);
-
-export const itemInsertSchema = createInsertSchema(item)
-	.omit({ id: true })
-	.strict();
-
-export const itemUpdateSchema = createUpdateSchema(item)
-	.omit({ id: true })
-	.strict();
-
-export const itemSelectSchema = createSelectSchema(item);
-
 export const itemCategory = sqliteTable(
 	"item_category",
 	{
@@ -403,14 +247,14 @@ export const inventoryItemInsertSchema = createInsertSchema(
 	inventoryItem,
 	inventoryItemRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, onHand: true, reservedQuantity: true })
 	.strict();
 
 export const inventoryItemUpdateSchema = createUpdateSchema(
 	inventoryItem,
 	inventoryItemRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, onHand: true, reservedQuantity: true })
 	.strict();
 
 export const inventoryItemSelectSchema = createSelectSchema(
@@ -443,14 +287,14 @@ export const donationInsertSchema = createInsertSchema(
 	donation,
 	donationRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, status: true })
 	.strict();
 
 export const donationUpdateSchema = createUpdateSchema(
 	donation,
 	donationRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, status: true })
 	.strict();
 
 export const donationSelectSchema = createSelectSchema(
@@ -515,14 +359,14 @@ export const deliveryInsertSchema = createInsertSchema(
 	delivery,
 	deliveryRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, status: true })
 	.strict();
 
 export const deliveryUpdateSchema = createUpdateSchema(
 	delivery,
 	deliveryRefinements,
 )
-	.omit({ id: true })
+	.omit({ id: true, status: true })
 	.strict();
 
 export const deliverySelectSchema = createSelectSchema(

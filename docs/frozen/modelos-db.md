@@ -1,15 +1,19 @@
 # Modelos do Banco de Dados (D1 + Drizzle ORM)
 
-> Três destas tabelas — `coleta`, `entrega` e `item` — estão em **redesenho**, e
-> o formato delas ainda vai mudar: quantidade por linha de doação, reserva de
-> item, e a dúvida de fundir `nome_item` em `item`. Trate a seção delas como o
-> que o banco é **hoje**, não como o que ele será. Ver
-> [`../future/README.md`](../future/README.md).
+> **O redesenho de estoque foi aplicado em 01/10/2026.** `coleta`, `entrega`,
+> `item`, `nome_item` e `categoria_item` **não existem mais** — a migration
+> `20261001222515_remarkable_wendell_rand` derruba as cinco, e o desenho está em
+> [Estoque](#estoque). O desenho original, com as sete operações e a regra de
+> idempotência, está em [`../future/README.md`](../future/README.md).
+>
+> `assistido` e `doador` **não** entram no redesenho agora: viram `beneficiary` e
+> `donor` depois, para não colidir com a branch que está construindo a tela de
+> doador. Enquanto isso, `donation.donor_id` aponta para `doador.id` e
+> `delivery.beneficiary_id` para `assistido.id`.
 
-> O schema e o banco estão alinhados. As migrations foram regeradas do zero, sem
-> nenhum `check()` no DDL, e o banco local já foi semeado em cima. O histórico —
+> O schema e o banco estão alinhados, sem nenhum `check()` no DDL. O histórico —
 > por que os 26 `check()` saíram e o que custou — está em
-> [Os `check()` foram removidos](#os-check-foram-removidos).
+> [`api.md`](api.md#o-check-foi-removido-e-isso-é-visível-no-contrato).
 
 Este documento descreve o modelo de dados do sistema novo, traduzido do projeto
 legado do PI I (Flask + SQLAlchemy + SQLite) e adaptado para a stack atual:
@@ -95,54 +99,77 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 | `email` | text | opcional |
 | endereço | mesmas 7 colunas de endereço do `assistido` | ViaCEP |
 
-### `categoria_item` e `nome_item`
+## Estoque
 
-Catálogo de itens (ex.: categoria "Alimento", nome "Arroz 5kg").
-
-| Tabela | Colunas |
-|---|---|
-| `categoria_item` | `id` text PK, `nome` text |
-| `nome_item` | `id` text PK, `categoria_id` FK → categoria_item.id, `nome` text |
-
-### `coleta` e `entrega`
-
-Eventos de doação. `coleta` = doação recebida de um doador;
-`entrega` = doação destinada a um assistido.
+O modelo que substituiu `item`/`coleta`/`entrega`. O desenho completo, com as
+sete operações e a regra de idempotência, está em
+[`../future/README.md`](../future/README.md); aqui é a forma das tabelas.
 
 | Tabela | Colunas |
 |---|---|
-| `coleta` | `id` text PK, `doador_id` FK → doador.id (**obrigatório**), `data_hora` timestamp |
-| `entrega` | `id` text PK, `assistido_id` FK → assistido.id (**obrigatório**), `data_hora` timestamp |
+| `item_category` | `id` text PK, `name` text |
+| `inventory_item` | `id` text PK, `name` text, `category_id` FK, `unit` text enum, `on_hand` integer default 0, `reserved_quantity` integer default 0, `available` integer **gerada** |
+| `donation` | `id` text PK, `donor_id` FK → `doador.id`, `occurred_at` integer, `status` text default `DRAFT`, `note` text |
+| `donation_line` | PK (`donation_id`, `inventory_item_id`), `quantity` integer |
+| `delivery` | `id` text PK, `beneficiary_id` FK → `assistido.id`, `occurred_at` integer, `status` text default `OPEN`, `note` text |
+| `delivery_line` | PK (`delivery_id`, `inventory_item_id`), `quantity` integer |
+| `inventory_count` | `id` text PK, `occurred_at` integer, `counted_by` text, `note` text |
+| `inventory_count_line` | PK (`count_id`, `inventory_item_id`), `counted_quantity` integer |
+| `inventory_adjustment` | `id` text PK, `inventory_item_id` FK, `delta` integer, `reason` text enum, `occurred_at` integer, `count_id` FK |
 
-Sem doador ou sem assistido o evento não existe: uma coleta órfã não diz de quem
-foi a doação, e uma entrega órfã não diz para quem foi.
+`unit` ∈ `KG`, `UNIT`, `LITER`, `PACK`, `BOX`. `status` de `donation` ∈ `DRAFT`,
+`RECEIVED`. `status` de `delivery` ∈ `OPEN`, `COMPLETED`, `CANCELLED`. `reason` ∈
+`STOCKTAKE`, `DONOR_RETURN`, `LOSS`, `DAMAGE`, `CORRECTION` — e o cliente só
+envia os três do meio.
 
-### `item`
+`available` é `GENERATED ALWAYS AS ("on_hand" - "reserved_quantity") VIRTUAL`.
+Ninguém escreve nela, e o zod não a expõe no insert nem no update. A **guarda da
+reserva** não usa a coluna gerada, e sim a aritmética escrita à mão
+(`on_hand - reserved_quantity >= ?`): uma coluna virtual dentro do `WHERE` de um
+`UPDATE` muda de comportamento entre builds de SQLite.
 
-Item concreto que passa pelo estoque. É o coração do rastreio: cada item nasce
-numa coleta e termina numa entrega.
+`on_hand` e `reserved_quantity` são reconstruíveis, e por isso são verificáveis:
 
-| Coluna | Tipo | Obs |
-|---|---|---|
-| `id` | text PK | |
-| `nome_id` | text FK → nome_item.id | **obrigatório** |
-| `status` | text | `AGUARDA_COLETA` → `EM_ESTOQUE` → `ENTREGUE`, `NOT NULL`, default `AGUARDA_COLETA` |
-| `coleta_id` | text FK → coleta.id | preenchido na coleta |
-| `entrega_id` | text FK → entrega.id | preenchido na entrega |
-
-Quem doou e quem recebeu **não** são colunas do `item`: saem da coleta e da
-entrega (`item → coleta → doador`, `item → entrega → assistido`). Antes havia
-uma cópia denormalizada de cada lado, e elas divergiam do evento de origem — nos
-dados de mock, 12 dos 44 itens discordavam sobre o destinatário. Para listar
-"itens recebidos por um assistido" a consulta faz o join pelas duas tabelas.
-
-Regra de negócio do status (vem do legado):
-
-```text
-item criado (doação registrada)  → AGUARDA_COLETA
-coleta registrada                → EM_ESTOQUE
-entrega registrada               → ENTREGUE
 ```
+reserved_quantity = SUM(delivery_line) JOIN delivery WHERE status = 'OPEN'
+
+on_hand = SUM(donation_line)  JOIN donation  WHERE status = 'RECEIVED'
+         - SUM(delivery_line) JOIN delivery  WHERE status = 'COMPLETED'
+         + SUM(inventory_adjustment.delta)
+```
+
+Essas duas fórmulas são as invariantes que
+[`tests/inventory.ts`](../../tests/inventory.ts) verifica depois de cada uma das
+sete operações. Detalhe em [`../arquitetura.md`](../arquitetura.md).
+
+`donation.donor_id` e `delivery.beneficiary_id` são `NOT NULL`: a doação
+conciliatória deixou de existir porque o ajuste ficou simétrico e absorveu os dois
+sentidos. Todo `onDelete` é `no action` — cancelar uma entrega **libera**, nunca
+cascateia.
+
+`nome_item` e `categoria_item` **sumiram** de propósito: `inventory_item.name` é
+`UNIQUE` sobre `lower(name)` e absorveu o catálogo de nomes, porque a linha da
+doação já carrega o nome. A deduplicação continua acontecendo, na camada certa —
+e `item_category` guarda só o agrupamento.
+
+## Seed
+
+`npm run db-seed` gera as 11 tabelas. Os dois contadores **não são sorteados**:
+o gerador percorre as doações, as entregas, as contagens e os ajustes na ordem,
+aplicando cada movimento numa simulação em memória, e só depois escreve
+`inventory_item` com o resultado. Isso faz o banco nascer consistente por
+construção, e não por sorte — o que era a raiz da
+[#44](https://github.com/luiztosk/sistema-doacoes-2/issues/44).
+
+Duas consequências: o gerador só sorteia uma entrega para item que tem
+disponibilidade, então ele respeita a mesma guarda que a API; e ele **valida as
+duas invariantes antes de devolver**, então um seed que produzisse drift falharia
+em vez de escrever.
+
+`mock_data/catalogo.json` lista os 130 itens com a `unit` de cada um. A categoria
+`Alimentos` tem 16 itens com `KG` e `LITER` de verdade — sem ela o modelo de
+quantidade não teria o que somar, porque as outras 8 categorias são quase tudo
+`UNIT`.
 
 ## Migrations
 

@@ -20,8 +20,8 @@ As duas armadilhas que mais custam tempo aqui, resumidas:
    segurança e de forma do erro continuam de pé. Para criar telas, leia
    [`docs/frontend-tabela.md`](./docs/frontend-tabela.md) e
    [`docs/frontend-formulario.md`](./docs/frontend-formulario.md).
-3. O modelo de estoque está **decidido e não implementado** (`inventory_item`,
-   `donation`, `delivery`, reserva e ajuste), e os nomes novos são em inglês.
-   **Não construa tela para `coleta`, `entrega` ou `item`** — uma tela escrita
-   contra esses nomes morre no rename. Ver
+3. O modelo de estoque **foi implementado** (`inventory_item`, `donation`,
+   `delivery`, reserva, contagem e ajuste). `coleta`, `entrega`, `item`,
+   `nome_item` e `categoria_item` saíram do banco — **não construa tela para
+   elas**, porque não existem mais. Ver
    [`docs/future/README.md`](./docs/future/README.md). `doador` está liberado.

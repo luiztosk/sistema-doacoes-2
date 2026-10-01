@@ -8,9 +8,13 @@ O que **não existe ainda** e está previsto. Não é tarefa deste trimestre.
 
 ## Redesenho de estoque
 
-**Estado: modelo decidido, não implementado.** O desenho abaixo está fechado;
-falta virar migration, seed e tela. Nada em `src/worker/` mudou até lá, e as
-tabelas de hoje continuam sendo `coleta`, `entrega` e `item`.
+**Estado: implementado em 01/10/2026.** As tabelas, as sete operações, o seed e
+a verificação existem; o desenho abaixo é o que foi implementado, e o que
+sobrou é o rename de `assistido` e `doador` e as telas. `coleta`, `entrega`,
+`item`, `nome_item` e `categoria_item` saíram do banco pela migration
+`20261001222515_remarkable_wendell_rand`. A forma das tabelas está em
+[`../frozen/modelos-db.md`](../frozen/modelos-db.md) e o contrato das rotas, em
+[`../frozen/api.md`](../frozen/api.md).
 
 O modelo antigo — `item` como unidade física, `status` como coluna, `nome_item`
 como catálogo separado — está errado em três pontos que valem registrar, porque

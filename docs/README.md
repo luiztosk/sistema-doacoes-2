@@ -10,7 +10,7 @@ descrição do código.
 | [`arquitetura.md`](arquitetura.md) | **ativo** | Stack, o gate de build e o fluxo de branch |
 | [`backlog-pi2.md`](backlog-pi2.md) | **ativo** | O que falta, só deste trimestre |
 | [`frozen/`](frozen/README.md) | **congelado** | Contrato da API e modelo do banco. Leitura obrigatória, **não mexa** |
-| [`future/`](future/README.md) | **previsto** | Isolamento por organização, ViaCEP, papéis, acessibilidade |
+| [`future/`](future/README.md) | **previsto** | Isolamento por organização, ViaCEP, papéis, acessibilidade. Também guarda o desenho do modelo de estoque, que já foi implementado e é leitura histórica |
 | [`archive/`](archive/README.md) | **histórico** | O que já aconteceu. Não use como referência do estado atual |
 
 ## Estado, em uma linha

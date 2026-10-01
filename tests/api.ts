@@ -22,40 +22,60 @@ type Row = Record<string, unknown>;
  */
 function selectedColumns(sql: string): string[] {
 	const list =
-		sql.match(/select (.+?) from /i)?.[1] ?? sql.match(/returning (.+)$/i)?.[1] ?? "";
+		sql.match(/select (.+?) from /i)?.[1] ??
+		sql.match(/returning (.+)$/i)?.[1] ??
+		"";
 
-	return list
-		.split(",")
-		.map((column) => column.trim().replace(/^"|"$/g, ""));
+	return list.split(",").map((column) => column.trim().replace(/^"|"$/g, ""));
 }
 
-function stubEnv(opts: { dbError?: string; rows?: Row[] } = {}) {
+type BatchChanges = number[][];
+
+function stubEnv(
+	opts: { dbError?: string; rows?: Row[]; batches?: BatchChanges } = {},
+) {
 	const rows = opts.rows ?? [];
+	let chamada = 0;
 	const fail = () => {
 		throw new DbError(opts.dbError ?? "unexpected query");
 	};
 
+	const prepare = (sql: string) => {
+		// Drizzle reads every result through `raw()`, which is positional:
+		// the values of a row, in the order the query asked for them.
+		const columns = selectedColumns(sql);
+		const stmt = {
+			bind: () => stmt,
+			raw: async () => {
+				if (opts.dbError) fail();
+				return rows.map((row) => columns.map((column) => row[column] ?? null));
+			},
+			run: async () => {
+				if (opts.dbError) fail();
+				return { success: true, meta: { changes: 1 } };
+			},
+		};
+
+		return stmt;
+	};
+
 	return {
 		prod_sistema_doacoes_2: {
-			prepare: (sql: string) => {
-				// Drizzle reads every result through `raw()`, which is positional:
-				// the values of a row, in the order the query asked for them.
-				const columns = selectedColumns(sql);
-				const stmt = {
-					bind: () => stmt,
-					raw: async () => {
-						if (opts.dbError) fail();
-						return rows.map((row) =>
-							columns.map((column) => row[column] ?? null),
-						);
-					},
-					run: async () => {
-						if (opts.dbError) fail();
-						return { success: true };
-					},
-				};
+			prepare,
+			batch: async (statements: unknown[]) => {
+				if (opts.dbError) fail();
+				const changes = opts.batches?.[chamada] ?? [];
+				chamada += 1;
 
-				return stmt;
+				return statements.map((_, i) => ({
+					success: true,
+					results: [],
+					meta: { changes: changes[i] ?? 1 },
+				}));
+			},
+			exec: async () => {
+				if (opts.dbError) fail();
+				return { count: 0, duration: 0 };
 			},
 		},
 	};
@@ -71,9 +91,6 @@ app.get("/sem-sessao", () => {
 app.onError(handleApiError);
 
 const ASSISTIDO: Row = { id: "1", nome: "Ana", renda: 0 };
-const ITEM: Row = { id: "1", nome_id: "n1", status: "AGUARDA_COLETA" };
-const ITEM_EM_ESTOQUE: Row = { ...ITEM, status: "EM_ESTOQUE" };
-
 type Caso = {
 	nome: string;
 	method: string;
@@ -81,12 +98,34 @@ type Caso = {
 	body?: unknown;
 	contentType?: string;
 	rows?: Row[];
+	batches?: BatchChanges;
 	dbError?: string;
 	status: number;
 	code?: string;
 	mensagem?: string;
 	semCorpo?: boolean;
 };
+
+const DOACAO_RECEBIDA: Row = {
+	id: "d1",
+	donor_id: "dn1",
+	occurred_at: 1750000000,
+	status: "RECEIVED",
+};
+
+const DOACAO_RASCUNHO: Row = {
+	...DOACAO_RECEBIDA,
+	status: "DRAFT",
+};
+
+const ENTREGA_ABERTA: Row = {
+	id: "e1",
+	beneficiary_id: "a1",
+	occurred_at: 1750000000,
+	status: "OPEN",
+};
+
+const ENTREGA_CONCLUIDA: Row = { ...ENTREGA_ABERTA, status: "COMPLETED" };
 
 const casos: Caso[] = [
 	{
@@ -199,15 +238,6 @@ const casos: Caso[] = [
 		rows: [{ ...ASSISTIDO, tipoImovel: "PROPRIO", valorAluguel: 1 }],
 	},
 	{
-		nome: "data que não é data",
-		method: "POST",
-		path: "/api/v1/coletas",
-		body: { doadorId: "d1", dataHora: "ontem" },
-		status: 400,
-		code: "INVALID_VALUE",
-		mensagem: "Field 'dataHora' has an invalid value.",
-	},
-	{
 		nome: "campo que não existe",
 		method: "POST",
 		path: "/api/v1/assistidos",
@@ -224,43 +254,6 @@ const casos: Caso[] = [
 		status: 400,
 		code: "READ_ONLY_FIELD",
 		mensagem: "Field 'id' is set by the server.",
-	},
-	{
-		nome: "item novo não pode nascer entregue",
-		method: "POST",
-		path: "/api/v1/itens",
-		body: { nomeId: "n1", status: "EM_ESTOQUE" },
-		status: 400,
-		code: "INVALID_STATUS_TRANSITION",
-		mensagem: "A new item must start with the status AGUARDA_COLETA.",
-	},
-	{
-		nome: "status fora do enum",
-		method: "POST",
-		path: "/api/v1/itens",
-		body: { nomeId: "n1", status: "PERDIDO" },
-		status: 400,
-		code: "INVALID_VALUE",
-		mensagem:
-			"Field 'status' must be one of: AGUARDA_COLETA, EM_ESTOQUE, ENTREGUE.",
-	},
-	{
-		nome: "entregue sem entregaId",
-		method: "PATCH",
-		path: "/api/v1/itens/1",
-		body: { status: "ENTREGUE" },
-		rows: [ITEM_EM_ESTOQUE],
-		status: 400,
-		code: "DELIVERY_REQUIRED",
-		mensagem: "A delivered item must have an entregaId.",
-	},
-	{
-		nome: "transição de status pulada",
-		method: "PATCH",
-		path: "/api/v1/itens/1",
-		body: { status: "EM_ESTOQUE" },
-		rows: [ITEM],
-		status: 200,
 	},
 	{
 		nome: "patch sem nenhum campo",
@@ -282,14 +275,6 @@ const casos: Caso[] = [
 		mensagem: "Assistido not found.",
 	},
 	{
-		nome: "data ISO vira Date e o insert grava",
-		method: "POST",
-		path: "/api/v1/coletas",
-		body: { doadorId: "d1", dataHora: "2026-01-02T03:04:05Z" },
-		rows: [{ id: "c1", doador_id: "d1" }],
-		status: 201,
-	},
-	{
 		nome: "content-type errado",
 		method: "POST",
 		path: "/api/v1/assistidos",
@@ -302,8 +287,12 @@ const casos: Caso[] = [
 	{
 		nome: "referência que não existe no POST",
 		method: "POST",
-		path: "/api/v1/coletas",
-		body: { doadorId: "nao-existe" },
+		path: "/api/v1/donations",
+		body: {
+			donorId: "nao-existe",
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [{ inventoryItemId: "i1", quantity: 1 }],
+		},
 		dbError:
 			"FOREIGN KEY constraint failed: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_FOREIGNKEY)",
 		status: 400,
@@ -322,9 +311,9 @@ const casos: Caso[] = [
 	{
 		nome: "valor repetido no catálogo",
 		method: "POST",
-		path: "/api/v1/itens",
-		body: { nomeId: "n1" },
-		dbError: "UNIQUE constraint failed: nome_item.nome",
+		path: "/api/v1/inventory-items",
+		body: { name: "Arroz 5kg", categoryId: "c1", unit: "KG" },
+		dbError: "UNIQUE constraint failed: index 'inventory_item_name_uniq'",
 		status: 409,
 		code: "CONFLICT",
 		mensagem: "A record with that value already exists.",
@@ -344,6 +333,159 @@ const casos: Caso[] = [
 		path: "/sem-sessao",
 		status: 401,
 		semCorpo: true,
+	},
+	{
+		nome: "doação nasce com as linhas em DRAFT",
+		method: "POST",
+		path: "/api/v1/donations",
+		body: {
+			donorId: "dn1",
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [{ inventoryItemId: "i1", quantity: 5 }],
+		},
+		rows: [DOACAO_RASCUNHO],
+		status: 201,
+	},
+	{
+		nome: "quantidade zero na linha",
+		method: "POST",
+		path: "/api/v1/donations",
+		body: {
+			donorId: "dn1",
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [{ inventoryItemId: "i1", quantity: 0 }],
+		},
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem: "Field 'lines' has an invalid value.",
+	},
+	{
+		nome: "doação sem nenhuma linha",
+		method: "POST",
+		path: "/api/v1/donations",
+		body: { donorId: "dn1", occurredAt: "2026-01-02T03:04:05Z", lines: [] },
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem: "Field 'lines' has an invalid value.",
+	},
+	{
+		nome: "mesmo item duas vezes na mesma doação",
+		method: "POST",
+		path: "/api/v1/donations",
+		body: {
+			donorId: "dn1",
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [
+				{ inventoryItemId: "i1", quantity: 1 },
+				{ inventoryItemId: "i1", quantity: 2 },
+			],
+		},
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem: "An item cannot appear twice in the same donation.",
+	},
+	{
+		nome: "status da doação não é do cliente",
+		method: "POST",
+		path: "/api/v1/donations",
+		body: {
+			donorId: "dn1",
+			occurredAt: "2026-01-02T03:04:05Z",
+			status: "RECEIVED",
+			lines: [{ inventoryItemId: "i1", quantity: 1 }],
+		},
+		status: 400,
+		code: "UNKNOWN_FIELD",
+		mensagem: "Field 'status' is not accepted in this resource.",
+	},
+	{
+		nome: "receber doação que não é DRAFT",
+		method: "POST",
+		path: "/api/v1/donations/d1/receive",
+		rows: [DOACAO_RECEBIDA],
+		status: 400,
+		code: "INVALID_TRANSITION",
+		mensagem: "Cannot receive a donation in status RECEIVED.",
+	},
+	{
+		nome: "entrega sem estoque é conflito, e diz quantos faltam",
+		method: "POST",
+		path: "/api/v1/deliveries",
+		body: {
+			beneficiaryId: "a1",
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [
+				{ inventoryItemId: "i1", quantity: 3 },
+				{ inventoryItemId: "i2", quantity: 5 },
+			],
+		},
+		batches: [
+			[1, 1, 1, 1, 0],
+			[1, 1],
+		],
+		status: 409,
+		code: "INSUFFICIENT_STOCK",
+		mensagem: "One of the items does not have enough stock available.",
+	},
+	{
+		nome: "concluir entrega que não está OPEN",
+		method: "POST",
+		path: "/api/v1/deliveries/e1/complete",
+		rows: [ENTREGA_CONCLUIDA],
+		status: 400,
+		code: "INVALID_TRANSITION",
+		mensagem: "Cannot complete a delivery in status COMPLETED.",
+	},
+	{
+		nome: "contagem abaixo do reservado",
+		method: "POST",
+		path: "/api/v1/inventory-counts",
+		body: {
+			occurredAt: "2026-01-02T03:04:05Z",
+			lines: [{ inventoryItemId: "i1", countedQuantity: 1 }],
+		},
+		rows: [{ id: "i1", on_hand: 10, reserved_quantity: 5 }],
+		status: 409,
+		code: "INSUFFICIENT_STOCK",
+		mensagem: "One of the items does not have enough stock available.",
+	},
+	{
+		nome: "ajuste que deixaria o estoque negativo",
+		method: "POST",
+		path: "/api/v1/inventory-adjustments",
+		body: {
+			inventoryItemId: "i1",
+			delta: -99,
+			reason: "LOSS",
+			occurredAt: "2026-01-02T03:04:05Z",
+		},
+		batches: [[1, 0]],
+		status: 409,
+		code: "CONFLICT",
+		mensagem: "The adjustment would leave the stock below zero.",
+	},
+	{
+		nome: "CORRECTION e STOCKTAKE não são do cliente",
+		method: "POST",
+		path: "/api/v1/inventory-adjustments",
+		body: {
+			inventoryItemId: "i1",
+			delta: 1,
+			reason: "CORRECTION",
+			occurredAt: "2026-01-02T03:04:05Z",
+		},
+		status: 400,
+		code: "INVALID_VALUE",
+		mensagem: "Field 'reason' must be one of: DONOR_RETURN, LOSS, DAMAGE.",
+	},
+	{
+		nome: "o contador do estoque não é do cliente",
+		method: "POST",
+		path: "/api/v1/inventory-items",
+		body: { name: "Arroz 5kg", categoryId: "c1", unit: "KG", onHand: 500 },
+		status: 400,
+		code: "UNKNOWN_FIELD",
+		mensagem: "Field 'onHand' is not accepted in this resource.",
 	},
 ];
 
@@ -368,7 +510,11 @@ async function run() {
 				headers: { "content-type": caso.contentType ?? "application/json" },
 				body: caso.body === undefined ? undefined : JSON.stringify(caso.body),
 			},
-			stubEnv({ dbError: caso.dbError, rows: caso.rows }) as never,
+			stubEnv({
+				dbError: caso.dbError,
+				rows: caso.rows,
+				batches: caso.batches,
+			}) as never,
 		);
 
 		esperado = false;
@@ -378,6 +524,13 @@ async function run() {
 
 		if (res.status !== caso.status) {
 			problemas.push(`status ${res.status} !== ${caso.status}`);
+		}
+
+		if (
+			!caso.semCorpo &&
+			!res.headers.get("content-type")?.includes("application/json")
+		) {
+			problemas.push(`corpo não é JSON: "${texto.slice(0, 80)}"`);
 		}
 
 		if (caso.semCorpo) {
@@ -390,17 +543,16 @@ async function run() {
 		}
 
 		if (caso.code !== undefined) {
-			const recebido = (JSON.parse(texto) as { error?: { code?: string } }).error
-				?.code;
+			const recebido = (JSON.parse(texto) as { error?: { code?: string } })
+				.error?.code;
 			if (recebido !== caso.code) {
 				problemas.push(`code ${recebido} !== ${caso.code}`);
 			}
 		}
 
 		if (caso.mensagem !== undefined) {
-			const recebido = (
-				JSON.parse(texto) as { error?: { message?: string } }
-			).error?.message;
+			const recebido = (JSON.parse(texto) as { error?: { message?: string } })
+				.error?.message;
 			if (recebido !== caso.mensagem) {
 				problemas.push(`mensagem ${JSON.stringify(recebido)}`);
 			}

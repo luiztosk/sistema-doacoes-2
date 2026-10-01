@@ -70,7 +70,7 @@ export type AssistidoFormValues = RequiredNullable<
 `doador` é o próximo e está **liberado**: é o `assistido` sem a parte social, só
 texto e o enum `uf`. Comece por ele.
 
-`coleta`, `entrega` e `item` **não ganham tela**: o modelo já foi decidido e vira
+`coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**: o modelo já foi implementado e virou
 `donation`, `delivery` e `inventory_item`, com `donation_line` e `delivery_line`
 abaixo. Não escreva nem o formulário deles: o estado do formulário é o payload, e
 o payload muda de forma. O desenho está em
@@ -111,7 +111,7 @@ UI não resolve sozinho:
 - **Não mexa em `src/worker/`.** Esquema, `registerResources` e migrations estão
   congelados nesta rodada. A única exceção é registrar `nome-itens` e
   `categoria-itens`, para o catálogo ser aditivo.
-- **Não escreva tela de `coleta`, `entrega` ou `item`.** O modelo de estoque já
+- **Não escreva tela de `coleta`, `entrega` ou `item`.** Eles saíram do banco em 01/10/2026. O modelo de estoque já
   foi decidido e vira `donation`, `delivery` e `inventory_item`, com `donation_line`
   e `delivery_line`; ver [`future/README.md`](future/README.md).
 - Não exibia erro de mutation na tela. Não há `Alert`, nem `toast`, nem

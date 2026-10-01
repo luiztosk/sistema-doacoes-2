@@ -89,6 +89,43 @@ Estado conferido em 01/10/2026.
    `doador`, que é a próxima da lista. Ainda não está decidido se o rename entra na
    mesma migration do estoque ou se vira migration própria.
 
+### O que já está feito na branch
+
+1. **As 9 tabelas novas** no `schema.ts`, com migration, e o DDL do drizzle
+   conferido contra o D1 real.
+2. **As sete operações** em `src/worker/api/stock.ts`, com o SQL do
+   `future/README.md` e os schemas fechados contra escrita de contador e status.
+   Endpoints: `POST /donations`, `POST /donations/:id/receive`,
+   `POST /deliveries`, `POST /deliveries/:id/complete`,
+   `POST /deliveries/:id/cancel`, `POST /inventory-counts` e
+   `POST /inventory-adjustments`, mais o CRUD de `item-categories` e
+   `inventory-items`. Os verbos são em inglês; a interface do React fica em
+   português.
+3. **`tests/inventory.ts`**: as sete operações contra o D1 local, com as duas
+   invariantes verificadas depois de cada passo. É a única camada que consegue
+   provar a aritmética dos contadores, porque o stub de `tests/api.ts` é sem
+   estado. Ver [`arquitetura.md`](arquitetura.md).
+4. **`tests/api.ts`** com `batch()` e `meta.changes`, cobrindo os códigos novos.
+
+5. **Modelo antigo removido** — `coleta`, `entrega`, `item`, `nome_item` e
+   `categoria_item` saíram do schema, dos endpoints e dos casos de teste. A
+   migration `20261001222515_remarkable_wendell_rand` derruba as cinco e o
+   histórico de migrations foi preservado, para servir de caminho ao banco remoto.
+6. **Seed reescrito** — `generate.ts` deriva `on_hand` e `reserved_quantity`
+   das movimentações, numa simulação em memória, e valida as duas invariantes
+   antes de devolver; `mock_data/catalogo.json` ganhou a `unit` dos 130 itens.
+
+### O que falta
+
+1. **O rename de `assistido` e `doador`** para `beneficiary` e `donor`, depois
+   que a branch da tela de doador entrar. É o único que falta para o desenho do
+   `future/README.md` fechar.
+2. **Telas do estoque** — `inventory-item`, `item-category`, `donation` e
+   `delivery`. As receitas estão em [`frontend-tabela.md`](frontend-tabela.md) e
+   [`frontend-formulario.md`](frontend-formulario.md), mas as transições de
+   estoque não são CRUD: `receive`, `complete` e `cancel` são botões de ação com
+   a `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
+
 ## Fora do escopo do MVP
 
 - Google Maps / rotas de coleta (exige faturamento Google e cuidados de LGPD)

@@ -43,16 +43,16 @@ O nome do arquivo segue o recurso e o da pasta: `tables/` para lista,
 | Recurso | Situação |
 |---|---|
 | `doador` | **Liberado.** É o `assistido` sem a parte social: só texto e o enum `uf`. Serve de primeiro teste da receita. |
-| `coleta`, `entrega`, `item` | **Modelo decidido, não implementado.** Viram `donation`, `delivery` e `inventory_item`. |
+| `donation`, `delivery`, `inventory-item`, `item-category` | **Implementados** em 01/10/2026. O estoque tem verbo próprio, não CRUD — ver [`frozen/api.md`](frozen/api.md). |
 
-**Não construa tela para `coleta`, `entrega` ou `item`.** O modelo de estoque já
+**Não construa tela para `coleta`, `entrega` ou `item`: saíram do banco.** O modelo de estoque já
 foi decidido — `inventory_item` com dois contadores e uma coluna gerada, `donation`
 com `donation_line`, `delivery` com `delivery_line` como reserva, e ajuste
 registrado. Tela feita contra `coleta`/`entrega`/`item` morre no rename, porque os
 nomes novos são em inglês. O desenho inteiro está em
 [`future/README.md`](future/README.md).
 
-`nome_item` e `categoria_item` **passam a ganhar tela** — o contrário do que este
+`item-category` e `inventory-item` **ganham tela** — o contrário do que este
 documento dizia antes: o catálogo precisa ser aditivo, porque quem registra uma
 doação pode trazer um item que não está nele. É a única exceção ao congelamento
 do backend, e ainda não foi implementada, então perguntar antes de fazer.

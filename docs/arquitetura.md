@@ -75,6 +75,42 @@ Automatizada roda sempre porque custa segundos. Manual é em lote porque custa
 minutos — mas nunca reste a testes automatizados, que são justamente o que
 mantém um lote longo confiável.
 
+### Uma terceira camada, que só roda com banco
+
+`npm test` roda contra um **stub em memória**: o D1 é substituído por um objeto
+que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
+pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma
+requisição anterior fez, e não executa `db.batch()` de verdade.
+
+O modelo de estoque depende justamente do que o stub não tem: `on_hand` e
+`reserved_quantity` só fazem sentido como resultado de uma sequência de operações
+sobre o mesmo banco. Por isso existe uma segunda suíte:
+
+```bash
+npm run local-db-init    # migrations + tipos + seed, tudo local
+npm run test:inventory   # as 7 operações do estoque, contra o D1 local
+```
+
+[`tests/inventory.ts`](../tests/inventory.ts) cria a sessão, as categorias e os
+itens, roda as sete operações na ordem e **verifica as duas invariantes** depois
+de cada passo:
+
+```
+on_hand >= reserved_quantity >= 0
+reserved_quantity == SUM(delivery_line) JOIN delivery WHERE status = 'OPEN'
+```
+
+Ela **não entra no gate de build**, porque precisa de um banco local com as
+migrations aplicadas: quem roda é a pessoa, com `npm run local-db-init` antes.
+Isso é o mesmo arranjo que a verificação por Insomnia, e a razão é a mesma — o
+stub não tem ciclo de vida. As asserções que o stub consegue fazer (código de
+erro, status, mensagem, validação) ficam em `npm test`; a aritmética dos
+contadores fica aqui.
+
+O script é autossanável: as linhas que ele cria são ancoradas em nomes
+(`check-item-%`, `check-categoria-%`, `note = 'check'`) e apagadas no começo e no
+fim, de forma que uma execução interrompida não envenena a seguinte.
+
 ## Dados de demonstração
 
 Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas zod da

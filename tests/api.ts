@@ -102,8 +102,8 @@ type Caso = {
 	dbError?: string;
 	status: number;
 	code?: string;
-	mensagem?: string;
-	semCorpo?: boolean;
+	message?: string;
+	noBody?: boolean;
 };
 
 const DOACAO_RECEBIDA: Row = {
@@ -135,7 +135,7 @@ const casos: Caso[] = [
 		body: {},
 		status: 400,
 		code: "REQUIRED_FIELD",
-		mensagem: "Field 'nome' is required.",
+		message: "Field 'nome' is required.",
 	},
 	{
 		nome: "null conta como ausente",
@@ -144,7 +144,7 @@ const casos: Caso[] = [
 		body: { nome: null },
 		status: 400,
 		code: "REQUIRED_FIELD",
-		mensagem: "Field 'nome' is required.",
+		message: "Field 'nome' is required.",
 	},
 	{
 		nome: "nome em branco",
@@ -153,7 +153,7 @@ const casos: Caso[] = [
 		body: { nome: "   " },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'nome' has an invalid value.",
+		message: "Field 'nome' has an invalid value.",
 	},
 	{
 		nome: "renda negativa",
@@ -162,7 +162,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", renda: -1 },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'renda' has an invalid value.",
+		message: "Field 'renda' has an invalid value.",
 	},
 	{
 		nome: "cep com letra",
@@ -171,7 +171,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", cep: "abc" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'cep' has an invalid value.",
+		message: "Field 'cep' has an invalid value.",
 	},
 	{
 		nome: "booleano como texto",
@@ -180,7 +180,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", aposentado: "sim" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'aposentado' has an invalid value.",
+		message: "Field 'aposentado' has an invalid value.",
 	},
 	{
 		nome: "valorAluguel negativo",
@@ -189,7 +189,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", valorAluguel: -1 },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'valorAluguel' has an invalid value.",
+		message: "Field 'valorAluguel' has an invalid value.",
 	},
 	{
 		nome: "uf que não é sigla",
@@ -198,7 +198,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", uf: "abc" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem:
+		message:
 			"Field 'uf' must be one of: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO.",
 	},
 	{
@@ -208,7 +208,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", uf: "sp" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem:
+		message:
 			"Field 'uf' must be one of: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO.",
 	},
 	{
@@ -218,7 +218,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", email: "abc" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'email' has an invalid value.",
+		message: "Field 'email' has an invalid value.",
 	},
 	{
 		nome: "cep com hifen é recusado",
@@ -227,7 +227,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", cep: "01310-100" },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'cep' has an invalid value.",
+		message: "Field 'cep' has an invalid value.",
 	},
 	{
 		nome: "tipoImovel e valorAluguel podem ser independentes",
@@ -244,7 +244,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", zzz: 1 },
 		status: 400,
 		code: "UNKNOWN_FIELD",
-		mensagem: "Field 'zzz' is not accepted in this resource.",
+		message: "Field 'zzz' is not accepted in this resource.",
 	},
 	{
 		nome: "id é do servidor",
@@ -253,7 +253,7 @@ const casos: Caso[] = [
 		body: { nome: "Ana", id: "x" },
 		status: 400,
 		code: "READ_ONLY_FIELD",
-		mensagem: "Field 'id' is set by the server.",
+		message: "Field 'id' is set by the server.",
 	},
 	{
 		nome: "patch sem nenhum campo",
@@ -263,7 +263,7 @@ const casos: Caso[] = [
 		rows: [ASSISTIDO],
 		status: 400,
 		code: "EMPTY_UPDATE",
-		mensagem: "Send at least one field to update.",
+		message: "Send at least one field to update.",
 	},
 	{
 		nome: "registro inexistente",
@@ -272,7 +272,7 @@ const casos: Caso[] = [
 		rows: [],
 		status: 404,
 		code: "NOT_FOUND",
-		mensagem: "Assistido not found.",
+		message: "Assistido not found.",
 	},
 	{
 		nome: "content-type errado",
@@ -282,7 +282,7 @@ const casos: Caso[] = [
 		contentType: "text/plain",
 		status: 415,
 		code: "UNSUPPORTED_MEDIA_TYPE",
-		mensagem: "Send the body as application/json.",
+		message: "Send the body as application/json.",
 	},
 	{
 		nome: "referência que não existe no POST",
@@ -297,7 +297,7 @@ const casos: Caso[] = [
 			"FOREIGN KEY constraint failed: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_FOREIGNKEY)",
 		status: 400,
 		code: "INVALID_REFERENCE",
-		mensagem: "One of the references sent does not exist.",
+		message: "One of the references sent does not exist.",
 	},
 	{
 		nome: "referência bloqueada no DELETE",
@@ -306,7 +306,7 @@ const casos: Caso[] = [
 		dbError: "FOREIGN KEY constraint failed: SQLITE_CONSTRAINT",
 		status: 409,
 		code: "CONFLICT",
-		mensagem: "The operation conflicts with related records.",
+		message: "The operation conflicts with related records.",
 	},
 	{
 		nome: "valor repetido no catálogo",
@@ -316,7 +316,7 @@ const casos: Caso[] = [
 		dbError: "UNIQUE constraint failed: index 'inventory_item_name_uniq'",
 		status: 409,
 		code: "CONFLICT",
-		mensagem: "A record with that value already exists.",
+		message: "A record with that value already exists.",
 	},
 	{
 		nome: "erro inesperado",
@@ -325,14 +325,14 @@ const casos: Caso[] = [
 		dbError: "D1_ERROR: something else went wrong",
 		status: 500,
 		code: "INTERNAL_ERROR",
-		mensagem: "Could not complete the operation.",
+		message: "Could not complete the operation.",
 	},
 	{
 		nome: "401 sem envelope, como o requireSession faz",
 		method: "GET",
 		path: "/sem-sessao",
 		status: 401,
-		semCorpo: true,
+		noBody: true,
 	},
 	{
 		nome: "doação nasce com as linhas em DRAFT",
@@ -357,7 +357,7 @@ const casos: Caso[] = [
 		},
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'lines' has an invalid value.",
+		message: "Field 'lines' has an invalid value.",
 	},
 	{
 		nome: "doação sem nenhuma linha",
@@ -366,7 +366,7 @@ const casos: Caso[] = [
 		body: { donorId: "dn1", occurredAt: "2026-01-02T03:04:05Z", lines: [] },
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'lines' has an invalid value.",
+		message: "Field 'lines' has an invalid value.",
 	},
 	{
 		nome: "mesmo item duas vezes na mesma doação",
@@ -382,7 +382,7 @@ const casos: Caso[] = [
 		},
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "An item cannot appear twice in the same donation.",
+		message: "An item cannot appear twice in the same donation.",
 	},
 	{
 		nome: "status da doação não é do cliente",
@@ -396,7 +396,7 @@ const casos: Caso[] = [
 		},
 		status: 400,
 		code: "UNKNOWN_FIELD",
-		mensagem: "Field 'status' is not accepted in this resource.",
+		message: "Field 'status' is not accepted in this resource.",
 	},
 	{
 		nome: "receber doação que não é DRAFT",
@@ -405,7 +405,7 @@ const casos: Caso[] = [
 		rows: [DOACAO_RECEBIDA],
 		status: 400,
 		code: "INVALID_TRANSITION",
-		mensagem: "Cannot receive a donation in status RECEIVED.",
+		message: "Cannot receive a donation in status RECEIVED.",
 	},
 	{
 		nome: "entrega sem estoque é conflito, e diz quantos faltam",
@@ -425,7 +425,7 @@ const casos: Caso[] = [
 		],
 		status: 409,
 		code: "INSUFFICIENT_STOCK",
-		mensagem: "One of the items does not have enough stock available.",
+		message: "One of the items does not have enough stock available.",
 	},
 	{
 		nome: "concluir entrega que não está OPEN",
@@ -434,7 +434,7 @@ const casos: Caso[] = [
 		rows: [ENTREGA_CONCLUIDA],
 		status: 400,
 		code: "INVALID_TRANSITION",
-		mensagem: "Cannot complete a delivery in status COMPLETED.",
+		message: "Cannot complete a delivery in status COMPLETED.",
 	},
 	{
 		nome: "contagem abaixo do reservado",
@@ -447,7 +447,7 @@ const casos: Caso[] = [
 		rows: [{ id: "i1", on_hand: 10, reserved_quantity: 5 }],
 		status: 409,
 		code: "INSUFFICIENT_STOCK",
-		mensagem: "One of the items does not have enough stock available.",
+		message: "One of the items does not have enough stock available.",
 	},
 	{
 		nome: "ajuste que deixaria o estoque negativo",
@@ -462,7 +462,7 @@ const casos: Caso[] = [
 		batches: [[1, 0]],
 		status: 409,
 		code: "CONFLICT",
-		mensagem: "The adjustment would leave the stock below zero.",
+		message: "The adjustment would leave the stock below zero.",
 	},
 	{
 		nome: "CORRECTION e STOCKTAKE não são do cliente",
@@ -476,7 +476,7 @@ const casos: Caso[] = [
 		},
 		status: 400,
 		code: "INVALID_VALUE",
-		mensagem: "Field 'reason' must be one of: DONOR_RETURN, LOSS, DAMAGE.",
+		message: "Field 'reason' must be one of: DONOR_RETURN, LOSS, DAMAGE.",
 	},
 	{
 		nome: "o contador do estoque não é do cliente",
@@ -485,12 +485,12 @@ const casos: Caso[] = [
 		body: { name: "Arroz 5kg", categoryId: "c1", unit: "KG", onHand: 500 },
 		status: 400,
 		code: "UNKNOWN_FIELD",
-		mensagem: "Field 'onHand' is not accepted in this resource.",
+		message: "Field 'onHand' is not accepted in this resource.",
 	},
 ];
 
 async function run() {
-	let falhas = 0;
+	let failures = 0;
 
 	// `handleApiError` logs unexpected errors on purpose, and one case is an
 	// unexpected error. The trace is kept for every case that was not supposed
@@ -527,13 +527,13 @@ async function run() {
 		}
 
 		if (
-			!caso.semCorpo &&
+			!caso.noBody &&
 			!res.headers.get("content-type")?.includes("application/json")
 		) {
 			problemas.push(`corpo não é JSON: "${texto.slice(0, 80)}"`);
 		}
 
-		if (caso.semCorpo) {
+		if (caso.noBody) {
 			if (texto !== "") problemas.push(`corpo deveria ser vazio: "${texto}"`);
 		} else {
 			const type = res.headers.get("content-type") ?? "";
@@ -550,10 +550,10 @@ async function run() {
 			}
 		}
 
-		if (caso.mensagem !== undefined) {
+		if (caso.message !== undefined) {
 			const recebido = (JSON.parse(texto) as { error?: { message?: string } })
 				.error?.message;
-			if (recebido !== caso.mensagem) {
+			if (recebido !== caso.message) {
 				problemas.push(`mensagem ${JSON.stringify(recebido)}`);
 			}
 		}
@@ -563,14 +563,14 @@ async function run() {
 			continue;
 		}
 
-		falhas += 1;
+		failures += 1;
 		console.log(`FALHA ${caso.nome}`);
 		for (const problema of problemas) console.log(`       ${problema}`);
 	}
 
 	console.error = logOriginal;
-	console.log(`\n${casos.length - falhas}/${casos.length} passaram`);
-	process.exit(falhas === 0 ? 0 : 1);
+	console.log(`\n${casos.length - failures}/${casos.length} passaram`);
+	process.exit(failures === 0 ? 0 : 1);
 }
 
 void run();

@@ -318,12 +318,12 @@ export function registerStock(app: Hono<ApiBindings>) {
 		).length;
 
 		if (short > 0) {
-			const reservaram = lines.filter(
+			const reservedItems = lines.filter(
 				(_, i) => reserveResults[i].meta.changes !== 0,
 			);
 
 			await raw.batch([
-				...reservaram.map((line) =>
+				...reservedItems.map((line) =>
 					raw
 						.prepare(RELEASE_STOCK)
 						.bind(line.inventoryItemId, line.quantity, id),
@@ -357,14 +357,14 @@ export function registerStock(app: Hono<ApiBindings>) {
 			.from(deliveryLine)
 			.where(eq(deliveryLine.deliveryId, id));
 
-		const reservado = await reservedByItem(
+		const reserved = await reservedByItem(
 			db,
 			lines.map((line) => line.inventoryItemId),
 		);
-		const semReserva = lines.filter(
-			(line) => (reservado.get(line.inventoryItemId) ?? 0) < line.quantity,
+		const withoutReserve = lines.filter(
+			(line) => (reserved.get(line.inventoryItemId) ?? 0) < line.quantity,
 		);
-		if (semReserva.length > 0) {
+		if (withoutReserve.length > 0) {
 			throw drifted();
 		}
 
@@ -380,7 +380,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 		if (results.some((result) => result.meta.changes === 0)) {
 			console.error({
 				deliveryId: id,
-				reserved: [...reservado],
+				reserved: [...reserved],
 				lines: lines.map((line) => ({
 					inventoryItemId: line.inventoryItemId,
 					quantity: line.quantity,
@@ -410,14 +410,14 @@ export function registerStock(app: Hono<ApiBindings>) {
 			.from(deliveryLine)
 			.where(eq(deliveryLine.deliveryId, id));
 
-		const reservado = await reservedByItem(
+		const reserved = await reservedByItem(
 			db,
 			lines.map((line) => line.inventoryItemId),
 		);
-		const semReserva = lines.filter(
-			(line) => (reservado.get(line.inventoryItemId) ?? 0) < line.quantity,
+		const withoutReserve = lines.filter(
+			(line) => (reserved.get(line.inventoryItemId) ?? 0) < line.quantity,
 		);
-		if (semReserva.length > 0) {
+		if (withoutReserve.length > 0) {
 			throw drifted();
 		}
 
@@ -433,7 +433,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 		if (results.some((result) => result.meta.changes === 0)) {
 			console.error({
 				deliveryId: id,
-				reserved: [...reservado],
+				reserved: [...reserved],
 				lines: lines.map((line) => ({
 					inventoryItemId: line.inventoryItemId,
 					quantity: line.quantity,
@@ -459,7 +459,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 			"count",
 		);
 
-		const estoque = new Map(
+		const stock = new Map(
 			(
 				await db
 					.select({
@@ -477,10 +477,10 @@ export function registerStock(app: Hono<ApiBindings>) {
 			).map((row) => [row.id, row]),
 		);
 
-		const desconhecidos = lines.filter(
-			(line) => !estoque.has(line.inventoryItemId),
+		const unknownItems = lines.filter(
+			(line) => !stock.has(line.inventoryItemId),
 		);
-		if (desconhecidos.length > 0) {
+		if (unknownItems.length > 0) {
 			throw apiError(
 				400,
 				"INVALID_REFERENCE",
@@ -488,13 +488,13 @@ export function registerStock(app: Hono<ApiBindings>) {
 			);
 		}
 
-		const abaixoDoReservado = lines.filter(
+		const belowReserved = lines.filter(
 			(line) =>
 				line.countedQuantity <
-				(estoque.get(line.inventoryItemId)?.reservedQuantity ?? 0),
+				(stock.get(line.inventoryItemId)?.reservedQuantity ?? 0),
 		);
-		if (abaixoDoReservado.length > 0) {
-			throw insufficientStock(abaixoDoReservado.length);
+		if (belowReserved.length > 0) {
+			throw insufficientStock(belowReserved.length);
 		}
 
 		const id = crypto.randomUUID();
@@ -516,7 +516,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 						crypto.randomUUID(),
 						line.inventoryItemId,
 						line.countedQuantity -
-							(estoque.get(line.inventoryItemId)?.onHand ?? 0),
+							(stock.get(line.inventoryItemId)?.onHand ?? 0),
 						occurredAt,
 						id,
 					),

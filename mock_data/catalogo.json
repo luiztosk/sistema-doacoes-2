@@ -1,565 +1,565 @@
 [
   {
-    "categoria": "Roupas",
-    "itens": [
+    "category": "Roupas",
+    "items": [
       {
-        "nome": "Blusa infantil M",
+        "name": "Blusa infantil M",
         "unit": "UNIT"
       },
       {
-        "nome": "Blusa infantil G",
+        "name": "Blusa infantil G",
         "unit": "UNIT"
       },
       {
-        "nome": "Calça jeans infantil 36",
+        "name": "Calça jeans infantil 36",
         "unit": "UNIT"
       },
       {
-        "nome": "Vestido festa infantil",
+        "name": "Vestido festa infantil",
         "unit": "UNIT"
       },
       {
-        "nome": "Camisa social branca",
+        "name": "Camisa social branca",
         "unit": "UNIT"
       },
       {
-        "nome": "Casaco inverno adulto P",
+        "name": "Casaco inverno adulto P",
         "unit": "UNIT"
       },
       {
-        "nome": "Saia rodada 40",
+        "name": "Saia rodada 40",
         "unit": "UNIT"
       },
       {
-        "nome": "Macacão bebê recém-nascido",
+        "name": "Macacão bebê recém-nascido",
         "unit": "UNIT"
       },
       {
-        "nome": "Meias algodão pares",
+        "name": "Meias algodão pares",
         "unit": "PACK"
       },
       {
-        "nome": "Jaqueta jeans adulto M",
+        "name": "Jaqueta jeans adulto M",
         "unit": "UNIT"
       },
       {
-        "nome": "Shorts jeans 38",
+        "name": "Shorts jeans 38",
         "unit": "UNIT"
       },
       {
-        "nome": "Blusa manga longa infantil",
+        "name": "Blusa manga longa infantil",
         "unit": "UNIT"
       },
       {
-        "nome": "Calça moletom 42",
+        "name": "Calça moletom 42",
         "unit": "UNIT"
       },
       {
-        "nome": "Vestido verão floral",
+        "name": "Vestido verão floral",
         "unit": "UNIT"
       },
       {
-        "nome": "Casaco infantil 10 anos",
+        "name": "Casaco infantil 10 anos",
         "unit": "UNIT"
       },
       {
-        "nome": "Conjunto lingerie",
+        "name": "Conjunto lingerie",
         "unit": "PACK"
       },
       {
-        "nome": "Cuecas caixa 6 unidades",
+        "name": "Cuecas caixa 6 unidades",
         "unit": "BOX"
       },
       {
-        "nome": "Sutiã numeração 36",
+        "name": "Sutiã numeração 36",
         "unit": "UNIT"
       },
       {
-        "nome": "Camiseta básica preta G",
+        "name": "Camiseta básica preta G",
         "unit": "UNIT"
       },
       {
-        "nome": "Calça social cinza 44",
-        "unit": "UNIT"
-      }
-    ]
-  },
-  {
-    "categoria": "Alimentos",
-    "itens": [
-      {
-        "nome": "Arroz tipo 1 pacote 5kg",
-        "unit": "KG"
-      },
-      {
-        "nome": "Feijão carioca pacote 1kg",
-        "unit": "KG"
-      },
-      {
-        "nome": "Açúcar refinado pacote 1kg",
-        "unit": "KG"
-      },
-      {
-        "nome": "Farinha de trigo pacote 1kg",
-        "unit": "KG"
-      },
-      {
-        "nome": "Sal refinado pacote 1kg",
-        "unit": "KG"
-      },
-      {
-        "nome": "Macarrão parafuso 500g",
-        "unit": "KG"
-      },
-      {
-        "nome": "Café torrado e moído 500g",
-        "unit": "KG"
-      },
-      {
-        "nome": "Achocolatado em pó 400g",
-        "unit": "KG"
-      },
-      {
-        "nome": "Óleo de soja 900ml",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Leite integral caixa 1L",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Suco concentrado de uva 1L",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Azeite de oliva 500ml",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Biscoito integral pacote 200g",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Lata de sardinha 340g",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Chocolate em barra 500g",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Copo térmico 500ml",
+        "name": "Calça social cinza 44",
         "unit": "UNIT"
       }
     ]
   },
   {
-    "categoria": "Sapatos",
-    "itens": [
+    "category": "Alimentos",
+    "items": [
       {
-        "nome": "Tenis casual 38",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sapato social feminino 36",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sandália plataforma 40",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Tênis esportivo 42",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Chinelo borracha 34",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Botina couro 38",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sapato infantil 28",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Tênis corrida 44",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sandália feminina salto 39",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Bota cano longo 40",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Tênis escolar 35",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sapato masculino social 42",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Meia calça preta",
-        "unit": "PACK"
-      }
-    ]
-  },
-  {
-    "categoria": "Móveis",
-    "itens": [
-      {
-        "nome": "Cadeira de jantar madeira",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Mesa de centro vidro",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Guarda-roupa 3 portas",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sofá 3 lugares tecido",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Cama casal 190cm",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Comodê 3 gavetas",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Estante livros 5 prateleiras",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Mesa de escritório branca",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Poltrona conforto bege",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Cama de solteiro 150cm",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Guarda-roupa 2 portas",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Cadeira escritório giratória",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Mesa de jantar 6 lugares",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Armário cozinha 2 portas",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Mesa de cabeceira",
-        "unit": "UNIT"
-      }
-    ]
-  },
-  {
-    "categoria": "Eletrodomésticos",
-    "itens": [
-      {
-        "nome": "Forno microondas 30L",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Liquidificador 500W",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Ferro de passar a vapor",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Batedeira planetária",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Torradeira automática",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Cafeteira elétrica 10 xícaras",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Forno elétrico portátil",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Chaleira elétrica 1.5L",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Aspirador de pó vertical",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Ventilador de teto 3 pás",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Ar condicionado split 9000 BTUs",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Ferro a vapor 1200W",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Batedeira de mão 400W",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Purificador de água",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Panela pressão 4L",
-        "unit": "UNIT"
-      }
-    ]
-  },
-  {
-    "categoria": "Livros",
-    "itens": [
-      {
-        "nome": "Bíblia Sagrada",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Dicionário português",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Coleção completa Harry Potter",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Livro infantil Chapeuzinho Vermelho",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Romance bestseller",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Livro didático matemática",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Enciclopédia infantil 5 volumes",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Coletânea de contos",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Livro receitas tradicionais",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Álbum de fotografias",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Biblioteca portátil Kindle",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Livro autoajuda sucesso",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Revista antiga coleção",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Livro história do Brasil",
-        "unit": "UNIT"
-      }
-    ]
-  },
-  {
-    "categoria": "Brinquedos",
-    "itens": [
-      {
-        "nome": "Boneca boneca de pano",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Jogo de bola de futebol",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Carrinho de controle remoto",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Quebra-cabeça 1000 peças",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Boneco ação super-herói",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Jogo de tabuleiro família",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Bola de gude conjunto 50",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Pipa varal completo",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Escorregador plástico",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Bicicleta infantil 12 polegadas",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Jogo de montar blocos 200 peças",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Fantasia princesa completa",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Patinete dobrável",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Jogo de cartas crianças",
-        "unit": "PACK"
-      }
-    ]
-  },
-  {
-    "categoria": "Utensílios Domésticos",
-    "itens": [
-      {
-        "nome": "Frigideira antiaderente 24cm",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Jogo panela 5 peças",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Tigela vidro conjunto 6",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Talheres aço inox 48 peças",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Prato raso cerâmica 12",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Xícara café porcelana 6",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Servente madeira 3 peças",
-        "unit": "PACK"
-      },
-      {
-        "nome": "Jogo de copos 12 unidades",
-        "unit": "PACK"
-      }
-    ]
-  },
-  {
-    "categoria": "Produtos de Higiene",
-    "itens": [
-      {
-        "nome": "Sabonete artesanal",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Shampoo cabelo longo",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Condicionador nutrição profunda",
-        "unit": "LITER"
-      },
-      {
-        "nome": "Pasta de dente flúor 90g",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Escova dentes macia",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Desodorante roll-on",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Creme hidratante corporal",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Sabão em pó 1kg",
+        "name": "Arroz tipo 1 pacote 5kg",
         "unit": "KG"
       },
       {
-        "nome": "Amaciante tecido 500ml",
+        "name": "Feijão carioca pacote 1kg",
+        "unit": "KG"
+      },
+      {
+        "name": "Açúcar refinado pacote 1kg",
+        "unit": "KG"
+      },
+      {
+        "name": "Farinha de trigo pacote 1kg",
+        "unit": "KG"
+      },
+      {
+        "name": "Sal refinado pacote 1kg",
+        "unit": "KG"
+      },
+      {
+        "name": "Macarrão parafuso 500g",
+        "unit": "KG"
+      },
+      {
+        "name": "Café torrado e moído 500g",
+        "unit": "KG"
+      },
+      {
+        "name": "Achocolatado em pó 400g",
+        "unit": "KG"
+      },
+      {
+        "name": "Óleo de soja 900ml",
         "unit": "LITER"
       },
       {
-        "nome": "Detergente líquido 500ml",
+        "name": "Leite integral caixa 1L",
         "unit": "LITER"
       },
       {
-        "nome": "Esponja cozinha 10 unidades",
+        "name": "Suco concentrado de uva 1L",
+        "unit": "LITER"
+      },
+      {
+        "name": "Azeite de oliva 500ml",
+        "unit": "LITER"
+      },
+      {
+        "name": "Biscoito integral pacote 200g",
         "unit": "PACK"
       },
       {
-        "nome": "Pano limpeza microfibra",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Escova banheiro completa",
-        "unit": "UNIT"
-      },
-      {
-        "nome": "Papel higiênico 12 rolos",
+        "name": "Lata de sardinha 340g",
         "unit": "PACK"
       },
       {
-        "nome": "Absorvente íntimo 36 unidades",
+        "name": "Chocolate em barra 500g",
+        "unit": "PACK"
+      },
+      {
+        "name": "Copo térmico 500ml",
+        "unit": "UNIT"
+      }
+    ]
+  },
+  {
+    "category": "Sapatos",
+    "items": [
+      {
+        "name": "Tenis casual 38",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sapato social feminino 36",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sandália plataforma 40",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Tênis esportivo 42",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Chinelo borracha 34",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Botina couro 38",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sapato infantil 28",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Tênis corrida 44",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sandália feminina salto 39",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Bota cano longo 40",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Tênis escolar 35",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sapato masculino social 42",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Meia calça preta",
+        "unit": "PACK"
+      }
+    ]
+  },
+  {
+    "category": "Móveis",
+    "items": [
+      {
+        "name": "Cadeira de jantar madeira",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Mesa de centro vidro",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Guarda-roupa 3 portas",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sofá 3 lugares tecido",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Cama casal 190cm",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Comodê 3 gavetas",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Estante livros 5 prateleiras",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Mesa de escritório branca",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Poltrona conforto bege",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Cama de solteiro 150cm",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Guarda-roupa 2 portas",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Cadeira escritório giratória",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Mesa de jantar 6 lugares",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Armário cozinha 2 portas",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Mesa de cabeceira",
+        "unit": "UNIT"
+      }
+    ]
+  },
+  {
+    "category": "Eletrodomésticos",
+    "items": [
+      {
+        "name": "Forno microondas 30L",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Liquidificador 500W",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Ferro de passar a vapor",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Batedeira planetária",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Torradeira automática",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Cafeteira elétrica 10 xícaras",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Forno elétrico portátil",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Chaleira elétrica 1.5L",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Aspirador de pó vertical",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Ventilador de teto 3 pás",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Ar condicionado split 9000 BTUs",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Ferro a vapor 1200W",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Batedeira de mão 400W",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Purificador de água",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Panela pressão 4L",
+        "unit": "UNIT"
+      }
+    ]
+  },
+  {
+    "category": "Livros",
+    "items": [
+      {
+        "name": "Bíblia Sagrada",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Dicionário português",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Coleção completa Harry Potter",
+        "unit": "PACK"
+      },
+      {
+        "name": "Livro infantil Chapeuzinho Vermelho",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Romance bestseller",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Livro didático matemática",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Enciclopédia infantil 5 volumes",
+        "unit": "PACK"
+      },
+      {
+        "name": "Coletânea de contos",
+        "unit": "PACK"
+      },
+      {
+        "name": "Livro receitas tradicionais",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Álbum de fotografias",
+        "unit": "PACK"
+      },
+      {
+        "name": "Biblioteca portátil Kindle",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Livro autoajuda sucesso",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Revista antiga coleção",
+        "unit": "PACK"
+      },
+      {
+        "name": "Livro história do Brasil",
+        "unit": "UNIT"
+      }
+    ]
+  },
+  {
+    "category": "Brinquedos",
+    "items": [
+      {
+        "name": "Boneca boneca de pano",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Jogo de bola de futebol",
+        "unit": "PACK"
+      },
+      {
+        "name": "Carrinho de controle remoto",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Quebra-cabeça 1000 peças",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Boneco ação super-herói",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Jogo de tabuleiro família",
+        "unit": "PACK"
+      },
+      {
+        "name": "Bola de gude conjunto 50",
+        "unit": "PACK"
+      },
+      {
+        "name": "Pipa varal completo",
+        "unit": "PACK"
+      },
+      {
+        "name": "Escorregador plástico",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Bicicleta infantil 12 polegadas",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Jogo de montar blocos 200 peças",
+        "unit": "PACK"
+      },
+      {
+        "name": "Fantasia princesa completa",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Patinete dobrável",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Jogo de cartas crianças",
+        "unit": "PACK"
+      }
+    ]
+  },
+  {
+    "category": "Utensílios Domésticos",
+    "items": [
+      {
+        "name": "Frigideira antiaderente 24cm",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Jogo panela 5 peças",
+        "unit": "PACK"
+      },
+      {
+        "name": "Tigela vidro conjunto 6",
+        "unit": "PACK"
+      },
+      {
+        "name": "Talheres aço inox 48 peças",
+        "unit": "PACK"
+      },
+      {
+        "name": "Prato raso cerâmica 12",
+        "unit": "PACK"
+      },
+      {
+        "name": "Xícara café porcelana 6",
+        "unit": "PACK"
+      },
+      {
+        "name": "Servente madeira 3 peças",
+        "unit": "PACK"
+      },
+      {
+        "name": "Jogo de copos 12 unidades",
+        "unit": "PACK"
+      }
+    ]
+  },
+  {
+    "category": "Produtos de Higiene",
+    "items": [
+      {
+        "name": "Sabonete artesanal",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Shampoo cabelo longo",
+        "unit": "LITER"
+      },
+      {
+        "name": "Condicionador nutrição profunda",
+        "unit": "LITER"
+      },
+      {
+        "name": "Pasta de dente flúor 90g",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Escova dentes macia",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Desodorante roll-on",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Creme hidratante corporal",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Sabão em pó 1kg",
+        "unit": "KG"
+      },
+      {
+        "name": "Amaciante tecido 500ml",
+        "unit": "LITER"
+      },
+      {
+        "name": "Detergente líquido 500ml",
+        "unit": "LITER"
+      },
+      {
+        "name": "Esponja cozinha 10 unidades",
+        "unit": "PACK"
+      },
+      {
+        "name": "Pano limpeza microfibra",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Escova banheiro completa",
+        "unit": "UNIT"
+      },
+      {
+        "name": "Papel higiênico 12 rolos",
+        "unit": "PACK"
+      },
+      {
+        "name": "Absorvente íntimo 36 unidades",
         "unit": "BOX"
       }
     ]

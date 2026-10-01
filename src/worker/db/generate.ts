@@ -78,7 +78,7 @@ const OBSERVACAO = [
 
 const TITULO = /^(Sr|Sra|Srta|Srto|Dona|Dono)\.?\s+/i;
 
-const JANELA = {
+const WINDOW = {
 	donation: { de: Date.UTC(2026, 0, 5), ate: Date.UTC(2026, 2, 31) },
 	delivery: { de: Date.UTC(2026, 3, 5), ate: Date.UTC(2026, 5, 30) },
 	count: { de: Date.UTC(2026, 6, 1), ate: Date.UTC(2026, 6, 20) },
@@ -86,7 +86,7 @@ const JANELA = {
 } as const;
 
 type Municipio = { cidade: string; uf: string };
-type Catalogo = { categoria: string; itens: { nome: string; unit: string }[] };
+type Catalog = { category: string; items: { name: string; unit: string }[] };
 
 type AssistidoRow = z.infer<typeof assistidoSelectSchema>;
 type DoadorRow = z.infer<typeof doadorSelectSchema>;
@@ -120,15 +120,15 @@ function lerJson<T>(arquivo: string): T {
 	) as T;
 }
 
-function validar<T>(schema: z.ZodType, tabela: string, linha: unknown): T {
-	const resultado = schema.safeParse(linha);
+function validar<T>(schema: z.ZodType, tableName: string, row: unknown): T {
+	const resultado = schema.safeParse(row);
 	if (resultado.success) return resultado.data as T;
 
-	const detalhe = resultado.error.issues
+	const detail = resultado.error.issues
 		.map((issue) => `${issue.path.join(".") || "(linha)"}: ${issue.message}`)
 		.join("; ");
 
-	throw new Error(`${tabela} gerada fora do schema — ${detalhe}`);
+	throw new Error(`${tableName} gerada fora do schema — ${detail}`);
 }
 
 function nomeDePessoa(): string {
@@ -156,7 +156,7 @@ function endereco(municipios: Municipio[]) {
 	};
 }
 
-function instante(janela: { de: number; ate: number }): Date {
+function instant(janela: { de: number; ate: number }): Date {
 	return new Date(faker.number.int({ min: janela.de, max: janela.ate }));
 }
 
@@ -171,7 +171,7 @@ function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
 		const adolescentes = fake(z.int().min(0).max(3));
 		const tipoImovel = fake(z.enum(ENUM_VALUES.tipoImovel));
 
-		const linha = {
+		const row = {
 			id: fake(z.uuidv4()),
 			nome: nomeDePessoa(),
 			telefone: telefoneBrasileiro(),
@@ -196,13 +196,13 @@ function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
 			observacoes: faker.helpers.arrayElement(OBSERVACAO),
 		};
 
-		return validar(assistidoSelectSchema, "assistido", linha);
+		return validar(assistidoSelectSchema, "assistido", row);
 	});
 }
 
 function criarDoadores(municipios: Municipio[]): DoadorRow[] {
 	return Array.from({ length: ROWS_PER_TABLE.doador }, () => {
-		const linha = {
+		const row = {
 			id: fake(z.uuidv4()),
 			nome: nomeDePessoa(),
 			telefone: telefoneBrasileiro(),
@@ -210,28 +210,28 @@ function criarDoadores(municipios: Municipio[]): DoadorRow[] {
 			...endereco(municipios),
 		};
 
-		return validar(doadorSelectSchema, "doador", linha);
+		return validar(doadorSelectSchema, "doador", row);
 	});
 }
 
-function criarCatalogo(catalogo: Catalogo[]) {
-	const categorias: ItemCategoryRow[] = [];
-	const itens = new Map<string, InventoryItemRow>();
+function createCatalog(catalog: Catalog[]) {
+	const categories: ItemCategoryRow[] = [];
+	const items = new Map<string, InventoryItemRow>();
 
-	for (const grupo of catalogo) {
+	for (const grupo of catalog) {
 		const id = fake(z.uuidv4());
-		categorias.push(
+		categories.push(
 			validar(itemCategorySelectSchema, "item_category", {
 				id,
-				name: grupo.categoria,
+				name: grupo.category,
 			}),
 		);
 
-		for (const item of grupo.itens) {
+		for (const item of grupo.items) {
 			const itemId = fake(z.uuidv4());
-			itens.set(itemId, {
+			items.set(itemId, {
 				id: itemId,
-				name: item.nome,
+				name: item.name,
 				categoryId: id,
 				unit: item.unit as InventoryItemRow["unit"],
 				onHand: 0,
@@ -241,21 +241,21 @@ function criarCatalogo(catalogo: Catalogo[]) {
 		}
 	}
 
-	return { categorias, itens };
+	return { categories, items };
 }
 
 type Estado = { onHand: number; reserved: number };
 
-function disponivel(estado: Estado): number {
+function available(estado: Estado): number {
 	return estado.onHand - estado.reserved;
 }
 
-function escolherItens<T>(itens: Map<string, T>, quantidade: number): T[] {
-	const todos = [...itens.values()];
+function pickItems<T>(items: Map<string, T>, quantity: number): T[] {
+	const todos = [...items.values()];
 	const escolhidos: T[] = [];
 	const usados = new Set<T>();
 
-	while (escolhidos.length < quantidade && usados.size < todos.length) {
+	while (escolhidos.length < quantity && usados.size < todos.length) {
 		const item = faker.helpers.arrayElement(todos);
 		if (usados.has(item)) continue;
 		usados.add(item);
@@ -265,9 +265,9 @@ function escolherItens<T>(itens: Map<string, T>, quantidade: number): T[] {
 	return escolhidos;
 }
 
-function criarDoacoes(
+function createDonations(
 	doadores: DoadorRow[],
-	itens: Map<string, InventoryItemRow>,
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
 	const donations: DonationRow[] = [];
@@ -282,13 +282,13 @@ function criarDoacoes(
 			validar(donationSelectSchema, "donation", {
 				id,
 				donorId,
-				occurredAt: instante(JANELA.donation),
+				occurredAt: instant(WINDOW.donation),
 				status,
 				note: faker.datatype.boolean(0.3) ? "Doação de campanha" : null,
 			}),
 		);
 
-		for (const item of escolherItens(itens, fake(z.int().min(1).max(3)))) {
+		for (const item of pickItems(items, fake(z.int().min(1).max(3)))) {
 			const quantity = fake(z.int().min(1).max(20));
 			donationLines.push(
 				validar(donationLineSelectSchema, "donation_line", {
@@ -307,53 +307,52 @@ function criarDoacoes(
 	return { donations, donationLines };
 }
 
-function comDisponibilidade(
-	itens: Map<string, InventoryItemRow>,
+function withAvailability(
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
 	return new Map(
-		[...itens.entries()].filter(([id]) => disponivel(estado.get(id)!) > 0),
+		[...items.entries()].filter(([id]) => available(estado.get(id)!) > 0),
 	);
 }
 
-function criarEntregas(
+function createDeliveries(
 	beneficiaries: AssistidoRow[],
-	itens: Map<string, InventoryItemRow>,
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
 	const deliveries: DeliveryRow[] = [];
 	const deliveryLines: DeliveryLineRow[] = [];
 
 	for (let i = 0; i < ROWS_PER_TABLE.delivery; i += 1) {
-		const sorteio = faker.number.float({ min: 0, max: 1 });
-		const status =
-			sorteio < 0.3 ? "OPEN" : sorteio < 0.7 ? "COMPLETED" : "CANCELLED";
+		const roll = faker.number.float({ min: 0, max: 1 });
+		const status = roll < 0.3 ? "OPEN" : roll < 0.7 ? "COMPLETED" : "CANCELLED";
 		const id = fake(z.uuidv4());
 
-		const disponiveis = comDisponibilidade(itens, estado);
-		const linhas = [];
-		for (const item of escolherItens(disponiveis, fake(z.int().min(1).max(3)))) {
+		const availableItems = withAvailability(items, estado);
+		const rows = [];
+		for (const item of pickItems(availableItems, fake(z.int().min(1).max(3)))) {
 			const quantity = Math.min(
 				fake(z.int().min(1).max(20)),
-				disponivel(estado.get(item.id)!),
+				available(estado.get(item.id)!),
 			);
 			if (quantity < 1) continue;
-			linhas.push({ item, quantity });
+			rows.push({ item, quantity });
 		}
 
-		if (linhas.length === 0) continue;
+		if (rows.length === 0) continue;
 
 		deliveries.push(
 			validar(deliverySelectSchema, "delivery", {
 				id,
 				beneficiaryId: faker.helpers.arrayElement(beneficiaries).id,
-				occurredAt: instante(JANELA.delivery),
+				occurredAt: instant(WINDOW.delivery),
 				status,
 				note: faker.datatype.boolean(0.25) ? "Entrega programada" : null,
 			}),
 		);
 
-		for (const { item, quantity } of linhas) {
+		for (const { item, quantity } of rows) {
 			deliveryLines.push(
 				validar(deliveryLineSelectSchema, "delivery_line", {
 					deliveryId: id,
@@ -374,8 +373,8 @@ function criarEntregas(
 	return { deliveries, deliveryLines };
 }
 
-function criarContagens(
-	itens: Map<string, InventoryItemRow>,
+function createCounts(
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
 	const counts: InventoryCountRow[] = [];
@@ -384,7 +383,7 @@ function criarContagens(
 
 	for (let i = 0; i < ROWS_PER_TABLE.inventoryCount; i += 1) {
 		const id = fake(z.uuidv4());
-		const occurredAt = instante(JANELA.count);
+		const occurredAt = instant(WINDOW.count);
 
 		counts.push(
 			validar(inventoryCountSelectSchema, "inventory_count", {
@@ -395,7 +394,7 @@ function criarContagens(
 			}),
 		);
 
-		for (const item of escolherItens(itens, 6)) {
+		for (const item of pickItems(items, 6)) {
 			const atual = estado.get(item.id)!;
 			const counted = Math.max(
 				atual.reserved,
@@ -428,14 +427,14 @@ function criarContagens(
 	return { counts, countLines, adjustments };
 }
 
-function criarAjustes(
-	itens: Map<string, InventoryItemRow>,
+function createAdjustments(
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ): InventoryAdjustmentRow[] {
 	const adjustments: InventoryAdjustmentRow[] = [];
 
 	for (let i = 0; i < ROWS_PER_TABLE.adjustment; i += 1) {
-		const item = faker.helpers.arrayElement([...itens.values()]);
+		const item = faker.helpers.arrayElement([...items.values()]);
 		const atual = estado.get(item.id)!;
 		const delta = -fake(z.int().min(1).max(3));
 		if (atual.onHand + delta < 0) continue;
@@ -446,7 +445,7 @@ function criarAjustes(
 				inventoryItemId: item.id,
 				delta,
 				reason: fake(z.enum(ADJUSTMENT_REASONS)),
-				occurredAt: instante(JANELA.adjustment),
+				occurredAt: instant(WINDOW.adjustment),
 				countId: null,
 			}),
 		);
@@ -458,10 +457,10 @@ function criarAjustes(
 }
 
 function conferirInvariantes(
-	itens: Map<string, InventoryItemRow>,
+	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
-	for (const [id, item] of itens) {
+	for (const [id, item] of items) {
 		const atual = estado.get(id)!;
 		if (atual.reserved < 0 || atual.onHand < atual.reserved) {
 			throw new Error(
@@ -473,48 +472,56 @@ function conferirInvariantes(
 
 export function gerarSeed(): SeedData {
 	const municipios = lerJson<Municipio[]>("municipios.json");
-	const catalogo = lerJson<Catalogo[]>("catalogo.json");
-	const { categorias, itens } = criarCatalogo(catalogo);
+	const catalog = lerJson<Catalog[]>("catalogo.json");
+	const { categories, items } = createCatalog(catalog);
 
 	const estado = new Map<string, Estado>();
-	for (const id of itens.keys()) {
+	for (const id of items.keys()) {
 		estado.set(id, { onHand: 0, reserved: 0 });
 	}
 
 	const assistidos = criarAssistidos(municipios);
 	const doadores = criarDoadores(municipios);
-	const { donations, donationLines } = criarDoacoes(doadores, itens, estado);
-	const { deliveries, deliveryLines } = criarEntregas(
+	const { donations, donationLines } = createDonations(doadores, items, estado);
+	const { deliveries, deliveryLines } = createDeliveries(
 		assistidos,
-		itens,
+		items,
 		estado,
 	);
-	const { counts, countLines, adjustments } = criarContagens(itens, estado);
-	const ajustes = criarAjustes(itens, estado);
+	const {
+		counts,
+		countLines,
+		adjustments: stocktakeAdjustments,
+	} = createCounts(items, estado);
+	const otherAdjustments = createAdjustments(items, estado);
 
-	for (const [id, item] of itens) {
+	for (const [id, item] of items) {
 		const atual = estado.get(id)!;
 		item.onHand = atual.onHand;
 		item.reservedQuantity = atual.reserved;
 		item.available = atual.onHand - atual.reserved;
 	}
 
-	const inventoryItems = [...itens.values()].map((item) =>
-		validar<InventoryItemRow>(inventoryItemSelectSchema, "inventory_item", item),
+	const inventoryItems = [...items.values()].map((item) =>
+		validar<InventoryItemRow>(
+			inventoryItemSelectSchema,
+			"inventory_item",
+			item,
+		),
 	);
 
-	conferirInvariantes(itens, estado);
+	conferirInvariantes(items, estado);
 
 	const total = inventoryItems.reduce((soma, i) => soma + i.onHand, 0);
-	const reservado = inventoryItems.reduce((s, i) => s + i.reservedQuantity, 0);
+	const reserved = inventoryItems.reduce((s, i) => s + i.reservedQuantity, 0);
 	console.log(
-		`  estoque: ${total} unidades em ${inventoryItems.length} itens, ${reservado} reservadas`,
+		`  estoque: ${total} unidades em ${inventoryItems.length} itens, ${reserved} reservadas`,
 	);
 
 	return {
 		assistido: assistidos,
 		doador: doadores,
-		itemCategory: categorias,
+		itemCategory: categories,
 		inventoryItem: inventoryItems,
 		donation: donations,
 		donationLine: donationLines,
@@ -522,6 +529,6 @@ export function gerarSeed(): SeedData {
 		deliveryLine: deliveryLines,
 		inventoryCount: counts,
 		inventoryCountLine: countLines,
-		inventoryAdjustment: [...adjustments, ...ajustes],
+		inventoryAdjustment: [...stocktakeAdjustments, ...otherAdjustments],
 	};
 }

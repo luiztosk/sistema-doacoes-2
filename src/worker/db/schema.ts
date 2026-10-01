@@ -84,7 +84,7 @@ const inteiroNaoNegativo = () =>
 
 const inteiro = () => z.number().int({ error: "Informe um número inteiro." });
 
-const quantidadePositiva = (schema: z.ZodNumber) =>
+const positiveQuantity = (schema: z.ZodNumber) =>
 	schema.positive({ error: "A quantidade tem que ser maior que zero." });
 
 const occurredAt = z.coerce.date();
@@ -319,7 +319,7 @@ export const donationLine = sqliteTable(
 	],
 );
 
-const donationLineRefinements = { quantity: quantidadePositiva };
+const donationLineRefinements = { quantity: positiveQuantity };
 
 export const donationLineInsertSchema = createInsertSchema(
 	donationLine,
@@ -391,7 +391,7 @@ export const deliveryLine = sqliteTable(
 	],
 );
 
-const deliveryLineRefinements = { quantity: quantidadePositiva };
+const deliveryLineRefinements = { quantity: positiveQuantity };
 
 export const deliveryLineInsertSchema = createInsertSchema(
 	deliveryLine,

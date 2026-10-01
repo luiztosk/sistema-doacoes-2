@@ -16,15 +16,15 @@ const { env, dispose } = await getPlatformProxy<{
 
 const db = env.prod_sistema_doacoes_2;
 
-let falhas = 0;
+let failures = 0;
 
-function check(nome: string, ok: boolean, detalhe = "") {
+function check(nome: string, ok: boolean, detail = "") {
 	if (ok) {
 		console.log(`ok   ${nome}`);
 		return;
 	}
-	falhas += 1;
-	console.log(`FALHA ${nome}${detalhe ? ` — ${detalhe}` : ""}`);
+	failures += 1;
+	console.log(`FALHA ${nome}${detail ? ` — ${detail}` : ""}`);
 }
 
 function igual(nome: string, esperado: unknown, recebido: unknown) {
@@ -75,8 +75,8 @@ async function consultar<T = Record<string, unknown>>(
 	return result.results;
 }
 
-async function estoque(itemId: string) {
-	const linhas = await consultar<{
+async function stock(itemId: string) {
+	const rows = await consultar<{
 		on_hand: number;
 		reserved_quantity: number;
 		available: number;
@@ -84,7 +84,7 @@ async function estoque(itemId: string) {
 		`SELECT on_hand, reserved_quantity, available FROM inventory_item WHERE id = ?1`,
 		[itemId],
 	);
-	return linhas[0];
+	return rows[0];
 }
 
 async function invariantes(rotulo: string) {
@@ -124,7 +124,7 @@ const ANCHORS = {
 
 async function limpar() {
 	const idsDe = async (sql: string) =>
-		(await consultar<{ id: string }>(sql)).map((linha) => linha.id);
+		(await consultar<{ id: string }>(sql)).map((row) => row.id);
 
 	const items = await idsDe(
 		`SELECT id FROM inventory_item WHERE ${ANCHORS.items}`,
@@ -148,21 +148,21 @@ async function limpar() {
 		           WHERE inventory_item_id IN (SELECT id FROM inventory_item WHERE ${ANCHORS.items}))`,
 	);
 
-	const apagar = async (tabela: string, ids: string[]) => {
+	const apagar = async (tableName: string, ids: string[]) => {
 		for (const id of ids) {
-			await db.prepare(`DELETE FROM ${tabela} WHERE id = ?1`).bind(id).run();
+			await db.prepare(`DELETE FROM ${tableName} WHERE id = ?1`).bind(id).run();
 		}
 	};
 
 	const apagarFilhos = async (
-		tabela: string,
-		coluna: string,
+		tableName: string,
+		column: string,
 		ids: string[],
 	) => {
 		if (ids.length === 0) return;
-		const lista = ids.map(() => "?").join(", ");
+		const list = ids.map(() => "?").join(", ");
 		await db
-			.prepare(`DELETE FROM ${tabela} WHERE ${coluna} IN (${lista})`)
+			.prepare(`DELETE FROM ${tableName} WHERE ${column} IN (${list})`)
 			.bind(...ids)
 			.run();
 	};
@@ -190,17 +190,17 @@ async function limpar() {
 async function main() {
 	await limpar();
 
-	const agora = new Date("2026-10-01T12:00:00Z").toISOString();
+	const now = new Date("2026-10-01T12:00:00Z").toISOString();
 
-	const categoria = await chamar("POST", "/api/v1/item-categories", {
+	const category = await chamar("POST", "/api/v1/item-categories", {
 		name: `check-categoria-${Date.now()}`,
 	});
 	check(
 		"categoria criada",
-		categoria.status === 201,
-		JSON.stringify(categoria.body),
+		category.status === 201,
+		JSON.stringify(category.body),
 	);
-	const categoryId = categoria.body?.data?.id ?? "";
+	const categoryId = category.body?.data?.id ?? "";
 
 	const doador = await chamar("POST", "/api/v1/doadores", {
 		nome: "Doador de teste",
@@ -228,19 +228,19 @@ async function main() {
 	}
 
 	const [arroz, feijao, oleo] = itemIds;
-	igual("item novo nasce com estoque zero", 0, (await estoque(arroz)).on_hand);
+	igual("item novo nasce com estoque zero", 0, (await stock(arroz)).on_hand);
 
-	const contadorRecusado = await chamar("POST", "/api/v1/inventory-items", {
+	const rejectedCounter = await chamar("POST", "/api/v1/inventory-items", {
 		name: `check-contador-${Date.now()}`,
 		categoryId,
 		unit: "KG",
 		onHand: 500,
 	});
-	igual("POST de item com onHand é recusado", 400, contadorRecusado.status);
+	igual("POST de item com onHand é recusado", 400, rejectedCounter.status);
 
-	const doacao = await chamar("POST", "/api/v1/donations", {
+	const donation = await chamar("POST", "/api/v1/donations", {
 		donorId: doadorId,
-		occurredAt: agora,
+		occurredAt: now,
 		note: "check",
 		lines: [
 			{ inventoryItemId: arroz, quantity: 10 },
@@ -249,20 +249,16 @@ async function main() {
 	});
 	check(
 		"doação criada em DRAFT",
-		doacao.status === 201 && doacao.body?.data?.status === "DRAFT",
-		JSON.stringify(doacao.body),
+		donation.status === 201 && donation.body?.data?.status === "DRAFT",
+		JSON.stringify(donation.body),
 	);
-	const doacaoId = doacao.body?.data?.id ?? "";
+	const donationId = donation.body?.data?.id ?? "";
 
-	igual(
-		"doação em DRAFT não mexe no estoque",
-		0,
-		(await estoque(arroz)).on_hand,
-	);
+	igual("doação em DRAFT não mexe no estoque", 0, (await stock(arroz)).on_hand);
 
 	const recebida = await chamar(
 		"POST",
-		`/api/v1/donations/${doacaoId}/receive`,
+		`/api/v1/donations/${donationId}/receive`,
 	);
 	check(
 		"doação recebida",
@@ -270,143 +266,139 @@ async function main() {
 		JSON.stringify(recebida.body),
 	);
 
-	const depoisArroz = await estoque(arroz);
-	const depoisFeijao = await estoque(feijao);
-	igual("receber soma a quantidade no on_hand", 10, depoisArroz.on_hand);
-	igual("available da coluna gerada", 10, depoisArroz.available);
-	igual("segundo item creditado", 20, depoisFeijao.on_hand);
+	const afterRice = await stock(arroz);
+	const afterBeans = await stock(feijao);
+	igual("receber soma a quantidade no on_hand", 10, afterRice.on_hand);
+	igual("available da column gerada", 10, afterRice.available);
+	igual("segundo item creditado", 20, afterBeans.on_hand);
 
 	const receberDuasVezes = await chamar(
 		"POST",
-		`/api/v1/donations/${doacaoId}/receive`,
+		`/api/v1/donations/${donationId}/receive`,
 	);
 	igual(
 		"receber duas vezes é transição inválida",
 		400,
 		receberDuasVezes.status,
 	);
-	igual("e não credita de novo", 10, (await estoque(arroz)).on_hand);
+	igual("e não credita de novo", 10, (await stock(arroz)).on_hand);
 	await invariantes("após receber");
 
-	const entrega = await chamar("POST", "/api/v1/deliveries", {
+	const delivery = await chamar("POST", "/api/v1/deliveries", {
 		beneficiaryId: assistidoId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [{ inventoryItemId: arroz, quantity: 4 }],
 	});
 	check(
-		"entrega criada e reservada",
-		entrega.status === 201,
-		JSON.stringify(entrega.body),
+		"delivery criada e reservada",
+		delivery.status === 201,
+		JSON.stringify(delivery.body),
 	);
-	const entregaId = entrega.body?.data?.id ?? "";
+	const deliveryId = delivery.body?.data?.id ?? "";
 
-	const reservado = await estoque(arroz);
-	igual("reservar mexe só em reserved_quantity", 10, reservado.on_hand);
-	igual("reserved_quantity subiu", 4, reservado.reserved_quantity);
-	igual("available caiu sem o físico mudar", 6, reservado.available);
-	const contagemAbaixo = await chamar("POST", "/api/v1/inventory-counts", {
-		occurredAt: agora,
+	const reserved = await stock(arroz);
+	igual("reservar mexe só em reserved_quantity", 10, reserved.on_hand);
+	igual("reserved_quantity subiu", 4, reserved.reserved_quantity);
+	igual("available caiu sem o físico mudar", 6, reserved.available);
+	const countBelowReserved = await chamar("POST", "/api/v1/inventory-counts", {
+		occurredAt: now,
 		lines: [{ inventoryItemId: arroz, countedQuantity: 1 }],
 	});
-	igual("contagem abaixo do reservado é 409", 409, contagemAbaixo.status);
+	igual("contagem abaixo do reservado é 409", 409, countBelowReserved.status);
 	igual(
 		"com o código de estoque",
 		"INSUFFICIENT_STOCK",
-		contagemAbaixo.body?.error?.code,
+		countBelowReserved.body?.error?.code,
 	);
 	igual(
 		"e a contagem recusada não mexeu no físico",
 		10,
-		(await estoque(arroz)).on_hand,
+		(await stock(arroz)).on_hand,
 	);
 
 	await invariantes("após reservar");
 
-	const semEstoque = await chamar("POST", "/api/v1/deliveries", {
+	const withoutStock = await chamar("POST", "/api/v1/deliveries", {
 		beneficiaryId: assistidoId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [
 			{ inventoryItemId: arroz, quantity: 3 },
 			{ inventoryItemId: oleo, quantity: 5 },
 		],
 	});
-	igual("entrega sem estoque é 409", 409, semEstoque.status);
+	igual("delivery sem estoque é 409", 409, withoutStock.status);
 	igual(
 		"com o código certo",
 		"INSUFFICIENT_STOCK",
-		semEstoque.body?.error?.code,
+		withoutStock.body?.error?.code,
 	);
 	check(
 		"a mensagem diz quantos itens faltam",
-		semEstoque.body?.error?.message ===
+		withoutStock.body?.error?.message ===
 			"One of the items does not have enough stock available.",
-		JSON.stringify(semEstoque.body),
+		JSON.stringify(withoutStock.body),
 	);
 
-	const depoisDoErro = await estoque(arroz);
-	igual(
-		"a reserva que passou foi compensada",
-		4,
-		depoisDoErro.reserved_quantity,
-	);
-	igual("o available voltou ao valor anterior", 6, depoisDoErro.available);
-	const orfas = await consultar(
+	const afterError = await stock(arroz);
+	igual("a reserva que passou foi compensada", 4, afterError.reserved_quantity);
+	igual("o available voltou ao valor anterior", 6, afterError.available);
+	const orphans = await consultar(
 		`SELECT id FROM delivery WHERE beneficiary_id = ?1`,
 		[assistidoId],
 	);
 	check(
-		"a entrega recusada não sobrou no banco",
-		orfas.length === 1,
-		`esperava so a entrega criada antes, veio ${orfas.length}`,
+		"a delivery recusada não sobrou no banco",
+		orphans.length === 1,
+		`esperava so a delivery criada antes, veio ${orphans.length}`,
 	);
 	await invariantes("após a 409 de estoque");
 
 	const concluida = await chamar(
 		"POST",
-		`/api/v1/deliveries/${entregaId}/complete`,
+		`/api/v1/deliveries/${deliveryId}/complete`,
 	);
 	check(
-		"entrega concluída",
+		"delivery concluída",
 		concluida.status === 200 && concluida.body?.data?.status === "COMPLETED",
 		JSON.stringify(concluida.body),
 	);
 
-	const depoisConcluir = await estoque(arroz);
-	igual("concluir baixa o físico", 6, depoisConcluir.on_hand);
-	igual("concluir consome a reserva", 0, depoisConcluir.reserved_quantity);
-	igual("o available não muda ao concluir", 6, depoisConcluir.available);
+	const afterComplete = await stock(arroz);
+	igual("concluir baixa o físico", 6, afterComplete.on_hand);
+	igual("concluir consome a reserva", 0, afterComplete.reserved_quantity);
+	igual("o available não muda ao concluir", 6, afterComplete.available);
 	await invariantes("após concluir");
 
 	const outra = await chamar("POST", "/api/v1/deliveries", {
 		beneficiaryId: assistidoId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [{ inventoryItemId: feijao, quantity: 5 }],
 	});
-	const outraId = outra.body?.data?.id ?? "";
+	const otherId = outra.body?.data?.id ?? "";
 	igual(
-		"segunda entrega reservou",
+		"segunda delivery reservou",
 		5,
-		(await estoque(feijao)).reserved_quantity,
+		(await stock(feijao)).reserved_quantity,
 	);
 
 	const cancelada = await chamar(
 		"POST",
-		`/api/v1/deliveries/${outraId}/cancel`,
+		`/api/v1/deliveries/${otherId}/cancel`,
 	);
 	check(
-		"entrega cancelada",
+		"delivery cancelada",
 		cancelada.status === 200 && cancelada.body?.data?.status === "CANCELLED",
 		JSON.stringify(cancelada.body),
 	);
 
-	const depoisCancelar = await estoque(feijao);
-	igual("cancelar libera a reserva", 0, depoisCancelar.reserved_quantity);
-	igual("cancelar não mexe no físico", 20, depoisCancelar.on_hand);
-	igual("o available volta ao total", 20, depoisCancelar.available);
+	const afterCancel = await stock(feijao);
+	igual("cancelar libera a reserva", 0, afterCancel.reserved_quantity);
+	igual("cancelar não mexe no físico", 20, afterCancel.on_hand);
+	igual("o available volta ao total", 20, afterCancel.available);
 	await invariantes("após cancelar");
 
-	const contagem = await chamar("POST", "/api/v1/inventory-counts", {
-		occurredAt: agora,
+	const count = await chamar("POST", "/api/v1/inventory-counts", {
+		occurredAt: now,
 		countedBy: "check",
 		lines: [
 			{ inventoryItemId: arroz, countedQuantity: 5 },
@@ -415,21 +407,21 @@ async function main() {
 	});
 	check(
 		"contagem registrada",
-		contagem.status === 201,
-		JSON.stringify(contagem.body),
+		count.status === 201,
+		JSON.stringify(count.body),
 	);
-	const contagemId = contagem.body?.data?.id ?? "";
+	const countId = count.body?.data?.id ?? "";
 
-	const depoisArrozContado = await estoque(arroz);
-	igual("contagem também mexe no primeiro item", 5, depoisArrozContado.on_hand);
-	const depoisContagem = await estoque(feijao);
-	igual("contagem sobrescreve o físico", 25, depoisContagem.on_hand);
-	igual("contagem não mexe na reserva", 0, depoisContagem.reserved_quantity);
-	igual("disponível recalculado", 25, depoisContagem.available);
+	const afterRiceCounted = await stock(arroz);
+	igual("contagem também mexe no primeiro item", 5, afterRiceCounted.on_hand);
+	const afterCount = await stock(feijao);
+	igual("contagem sobrescreve o físico", 25, afterCount.on_hand);
+	igual("contagem não mexe na reserva", 0, afterCount.reserved_quantity);
+	igual("disponível recalculado", 25, afterCount.available);
 
-	const ajustes = await consultar(
+	const adjustments = await consultar(
 		`SELECT reason, delta FROM inventory_adjustment WHERE count_id = ?1 ORDER BY delta`,
-		[contagemId],
+		[countId],
 	);
 	igual(
 		"a contagem gravou um STOCKTAKE por item",
@@ -437,75 +429,79 @@ async function main() {
 			{ reason: "STOCKTAKE", delta: -1 },
 			{ reason: "STOCKTAKE", delta: 5 },
 		],
-		ajustes,
+		adjustments,
 	);
 
 	await invariantes("após a contagem");
 
-	const ajuste = await chamar("POST", "/api/v1/inventory-adjustments", {
+	const adjustment = await chamar("POST", "/api/v1/inventory-adjustments", {
 		inventoryItemId: arroz,
 		delta: -2,
 		reason: "DAMAGE",
-		occurredAt: agora,
+		occurredAt: now,
 	});
 	check(
 		"ajuste registrado",
-		ajuste.status === 201,
-		JSON.stringify(ajuste.body),
+		adjustment.status === 201,
+		JSON.stringify(adjustment.body),
 	);
-	igual("ajuste moveu o físico", 3, (await estoque(arroz)).on_hand);
+	igual("ajuste moveu o físico", 3, (await stock(arroz)).on_hand);
 
 	const motivoProibido = await chamar("POST", "/api/v1/inventory-adjustments", {
 		inventoryItemId: arroz,
 		delta: 1,
 		reason: "CORRECTION",
-		occurredAt: agora,
+		occurredAt: now,
 	});
 	igual("CORRECTION pelo cliente é recusado", 400, motivoProibido.status);
 
-	const abaixoDeZero = await chamar("POST", "/api/v1/inventory-adjustments", {
+	const belowZero = await chamar("POST", "/api/v1/inventory-adjustments", {
 		inventoryItemId: arroz,
 		delta: -99,
 		reason: "LOSS",
-		occurredAt: agora,
+		occurredAt: now,
 	});
-	igual("ajuste abaixo de zero é 409", 409, abaixoDeZero.status);
-	igual("e o físico não mudou", 3, (await estoque(arroz)).on_hand);
+	igual("ajuste abaixo de zero é 409", 409, belowZero.status);
+	igual("e o físico não mudou", 3, (await stock(arroz)).on_hand);
 
-	const ajusteOrfao = await consultar(
+	const orphanAdjustments = await consultar(
 		`SELECT count(*) AS total FROM inventory_adjustment WHERE inventory_item_id = ?1`,
 		[arroz],
 	);
-	igual("o ajuste recusado não ficou registrado", 2, ajusteOrfao[0].total);
+	igual(
+		"o ajuste recusado não ficou registrado",
+		2,
+		orphanAdjustments[0].total,
+	);
 	await invariantes("final");
 
-	const linhaRepetida = await chamar("POST", "/api/v1/deliveries", {
+	const repeatedLine = await chamar("POST", "/api/v1/deliveries", {
 		beneficiaryId: assistidoId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [
 			{ inventoryItemId: arroz, quantity: 1 },
 			{ inventoryItemId: arroz, quantity: 2 },
 		],
 	});
-	igual("item repetido na mesma entrega é 400", 400, linhaRepetida.status);
+	igual("item repetido na mesma delivery é 400", 400, repeatedLine.status);
 
-	const quantidadeZero = await chamar("POST", "/api/v1/donations", {
+	const zeroQuantity = await chamar("POST", "/api/v1/donations", {
 		donorId: doadorId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [{ inventoryItemId: arroz, quantity: 0 }],
 	});
-	igual("quantidade zero é 400", 400, quantidadeZero.status);
+	igual("quantidade zero é 400", 400, zeroQuantity.status);
 
-	const semLinhas = await chamar("POST", "/api/v1/donations", {
+	const withoutLines = await chamar("POST", "/api/v1/donations", {
 		donorId: doadorId,
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [],
 	});
-	igual("doação sem linhas é 400", 400, semLinhas.status);
+	igual("doação sem linhas é 400", 400, withoutLines.status);
 
 	const doadorFantasma = await chamar("POST", "/api/v1/donations", {
 		donorId: "nao-existe",
-		occurredAt: agora,
+		occurredAt: now,
 		lines: [{ inventoryItemId: arroz, quantity: 1 }],
 	});
 	igual("doador inexistente é 400", 400, doadorFantasma.status);
@@ -524,6 +520,8 @@ try {
 }
 
 console.log(
-	falhas === 0 ? "\nTODAS AS VERIFICACOES PASSARAM" : `\n${falhas} FALHARAM`,
+	failures === 0
+		? "\nTODAS AS VERIFICACOES PASSARAM"
+		: `\n${failures} FALHARAM`,
 );
-process.exit(falhas === 0 ? 0 : 1);
+process.exit(failures === 0 ? 0 : 1);

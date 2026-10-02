@@ -74,6 +74,14 @@ export type AssistidoFormValues = RequiredNullable<
   rota que está saindo. O único `beforeLoad` é o `ensureQueryData(sessionOptions)`
   de `_authenticated.tsx`, e a sessão tem `staleTime` de 5 minutos, então nunca
   busca. Os dados da tabela vivem no cache de query, não em loader de rota.
+- **Devolva a pessoa para a página de onde ela saiu.** A lista mora na
+  `?page`/`?sort`, então o formulário lê o contexto do `state` da navegação com
+  `useListView()` e o usa como `search` tanto no **Voltar para a lista** quanto no
+  `navigate` do `onSubmit`. Sem isso, voltar cai na primeira página — e o
+  componente desmonta ao navegar, então nada na tela sobrevive para recuperar.
+- **Voltar para a lista é `<a>`, não `<button>`.** Sai de um `Button` com
+  `nativeButton={false}` e `render={<Link />}`, então quem procura o botão por
+  seletor `button` no teste não acha — e é o que a navegação por teclado precisa.
 - Três modos num componente só: `assistido` ausente cria, presente visualiza, e
   `isEditing` interno libera a edição. `Cancelar` faz `form.reset()` antes de
   voltar, senão a tela mostraria alteração não salva.

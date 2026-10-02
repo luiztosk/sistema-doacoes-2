@@ -14,6 +14,7 @@ import {
 	TextField,
 } from "@/react-app/components/forms/fields";
 import type { SelectOption } from "@/react-app/components/forms/fields";
+import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
 import { Button } from "@/react-app/components/ui/button";
 import {
 	FieldGroup,
@@ -100,6 +101,7 @@ function errorFor(values: AssistidoFormValues, field: string) {
 export function AssistidoForm({ assistido }: AssistidoFormProps) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!assistido);
 
 	const create = useMutation(createAssistidoOptions);
@@ -126,7 +128,10 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 				queryKey: assistidoKeys.all,
 			});
 
-			await router.navigate({ to: "/assistidos" });
+			await router.navigate({
+				to: "/assistidos",
+				search: lista ? viewForUrl(lista) : {},
+			});
 		},
 	});
 
@@ -148,7 +153,12 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 						variant="outline"
 						size="sm"
 						nativeButton={false}
-						render={<Link to="/assistidos" />}
+						render={
+							<Link
+								to="/assistidos"
+								search={lista ? viewForUrl(lista) : {}}
+							/>
+						}
 					>
 						Voltar para a lista
 					</Button>

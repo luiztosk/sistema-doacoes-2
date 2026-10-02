@@ -19,9 +19,9 @@ O nome do arquivo segue o recurso e o da pasta: `tables/` para lista,
 
 `components/tables/` também tem os arquivos **genéricos**, que não são de um
 recurso e não se copiam: `table-features.ts`, `table-sortable-header.tsx`,
-`table-toolbar.tsx` e `table-pagination.tsx`. É a mesma separação de
-`components/ui/`: o que é do recurso fica no arquivo do recurso, o que é de
-tabela fica num arquivo com o nome da tabela.
+`table-toolbar.tsx`, `table-pagination.tsx` e `table-view-state.ts`. É a mesma
+separação de `components/ui/`: o que é do recurso fica no arquivo do recurso, o
+que é de tabela fica num arquivo com o nome da tabela.
 
 ## Ordenação, filtro e paginação são do cliente
 
@@ -40,16 +40,74 @@ Para virar a decisão: paginação no servidor só compensa se `donation` e
 alguns MB por resposta. Aí são duas queries por página (a página e a contagem),
 e vale o custo de mexer no contrato.
 
+## Página e ordenação moram na URL
+
+`page`, `pageSize` e `sort` são search params de
+`routes/_authenticated/<recurso>/index.tsx`, com o schema em
+`table-view-state.ts`. Não é decoração: a tabela **desmonta** ao navegar para o
+detalhe, e um `useTable` novo nasce do zero, então sem a URL a página morreria a
+cada ida e volta. De quebra, back e forward do navegador, F5 e "copiar link"
+passam a funcionar.
+
+`sort` viaja junto com `page` porque `?page=3` sozinho quer dizer "página 3 da
+ordem padrão". Se a pessoa ordenou por `Nome`, voltou de um detalhe e cai na
+página 3 da ordem padrão, é o mesmo problema da ordenação, um nível acima.
+
+A URL é a dona, então as duas slices são **controladas** no `useTable`:
+
+```tsx
+state: {
+	pagination: paginationFromView(view),
+	sorting: sortingFromView(view.sort),
+},
+onPaginationChange: (updater) => { /* escreve a URL */ },
+onSortingChange: (updater) => { /* escreve a URL, com page: 0 */ },
+```
+
+`functionalUpdate` nos dois, porque callback controlado recebe valor **ou**
+função do estado anterior. `state` é `Partial<TableState>`, então `globalFilter`
+e `columnFilters` continuam internos e não vão para a URL — busca e filtro se
+perdem ao navegar, que é o comportamento de antes.
+
+**Ordenar volta para a página 1.** Cai de graça: o `onSortingChange` é o único
+lugar que sabe que ordenar muda o conjunto de linhas, e escreve `page: 0` junto
+do novo `sort`. `TableColumnFilter` e a busca fazem o mesmo chamando
+`setPageIndex(0)`.
+
+A rota do registro **não** tem `validateSearch` — e é por isso que ela é
+`routes/.../<recurso>/id/$id.tsx` e não `<recurso>/$id.tsx`: assim o drill-down
+não precisa carregar `tableViewSchema` só para devolver a página de onde a
+pessoa veio. O contexto de volta viaja no `state` da navegação
+(`state: { lista: view }`), que é estado de histórico e não vai para a URL. A
+rota do registro fica sem nenhum search param, e `page`/`sort` só aparecem na URL
+da lista.
+
+Duas consequências honestas desse desenho:
+
+- `viewForUrl` remove o que é o padrão, então `/assistidos` sem param é a visão
+  padrão e `?page=2` é a terceira página. O param é **índice**, não número.
+- Cada escrita usa `replace: true`, porque página e ordenação são estado de
+  visualização e não navegação. Back do navegador volta da tela de registro para
+  a página de onde saiu, mas não "desfaz" um clique de página.
+
+Um efeito corrige `?page=99` — e `page=3` depois de um filtro que estreitou o
+resultado — voltando para a primeira página. Ele só pode rodar **depois** que os
+dados chegaram: antes disso o total é zero, toda página parece fora do alcance,
+e o `?page=2` da URL é apagado no primeiro render. Ver a armadilha 6.
+
 ## Reutilizar, não reescrever
 
 - `assistidoOptions` e o tipo `Assistido` de `lib/api/assistidos.ts`. `Assistido`
   é um `Pick` de propósito, para a tela não carregar as ~25 colunas: para
   mostrar mais um campo, acrescente o nome na lista do `Pick`.
-- `features` e `DataTableFeatures` de `table-features.ts`. Columna de display
+- `features` e `DataTableFeatures` de `table-features.ts`. Coluna de display
   não é feature, então nenhuma coluna nova exige mexer nisso.
-- `SortableHeader`, `TableToolbar`, `TableColumnFilter` e `TablePagination`. Todos
-  genéricos: só a coluna, o rótulo e as opções mudam por recurso.
+- `SortableHeader`, `TableToolbar`, `TableColumnFilter`, `TablePagination`,
+  `tableViewSchema`, `paginationFromView`, `sortingFromView`, `sortingToView`,
+  `viewForUrl` e `useListView`. Todos genéricos: só a coluna, o rótulo, as
+  opções e a rota mudam por recurso.
 - `cn`, `Table*` e `buttonVariants` de `components/ui/`.
+
 
 
 ## Pontos que precisam espelhar
@@ -68,7 +126,7 @@ e vale o custo de mexer no contrato.
   renderizam `<TableCell colSpan={columns.length}>`, senão a tabela fica um
   `<tbody>` vazio sem explicação.
 
-## Quatro armadilhas que só aparecem em execução
+## Seis armadilhas que só aparecem em execução
 
 Nenhuma delas quebra o `tsc`, e nenhuma aparece na API.
 
@@ -86,21 +144,36 @@ Nenhuma delas quebra o `tsc`, e nenhuma aparece na API.
 4. **Zerar a página quando o filtro muda.** `createPaginatedRowModel` faz
    `slice` sem antes: na página 3, um filtro que sobra em 4 linhas mostra uma
    tabela vazia com resultados existentes. Por isso `TableToolbar` e
-   `TableColumnFilter` chamam `setPageIndex(0)` junto do filtro, e a paginação
-   faz o mesmo no `setPageSize`.
+   `TableColumnFilter` chamam `setPageIndex(0)` junto do filtro.
+5. **`sortUndefined: "last"` só olha `undefined`, nunca `null`.** O teste é
+   `aValue === void 0`, e a API devolve `null` para coluna anulável — então a
+   flag nunca dispara e o nulo entra como zero, no topo da ordem crescente. A
+   correção é o accessor de função, com `?? undefined`:
+   `accessor((row) => row.renda ?? undefined, { id: "renda", sortUndefined: "last" })`.
+   Vale para toda coluna anulável que é ordenável, não só para `renda`.
+6. **O clamp de página não pode rodar antes dos dados.** Com `isPending`, o total
+   é zero e qualquer `page` parece fora do alcance, então `?page=2` é apagado no
+   primeiro render. Carga direta em `?page=2` abria na página 1.
 
-E um que é da arquitetura, não da biblioteca: **`AssistidosTable` desmonta ao
-navegar para o detalhe, e um `useTable` novo nasce com `initialState`.** Página,
-ordenação e busca não sobrevivem a um ida e volta pela tela de detalhe — nem
-deveriam por acidente, porque nada as guarda. Para preservá-las entre uma
-listagem e o detalhe, o estado da visualização precisa morar na URL, em search
-params da rota. Ainda não foi feito.
+Uma que não é da biblioteca, e sim do fato de a ordenação padrão ser `nome.asc`:
+**renomear um registro o move.** Salvar com o nome trocado muda a chave de
+ordenação, então a linha pode sair da página em que a pessoa está — o mesmo
+limite do registro recém-criado, que pode não cair na página 1 porque a rota de
+lista não tem `ORDER BY`. Nenhuma das duas é defeito; são consequências de
+ordenar no cliente, e vale saber antes de prometer "a linha que você editou está
+ali".
 
 `aria-sort` não existe no TanStack Table v9: quem escreve é o `TableHead` do
 cabeçalho, com o `ariaSort` de `table-features.ts`. E `table-sortable-header.tsx`
 exporta **só componente**, porque `react-refresh/only-export-components` avisa
 quando um arquivo de componente exporta função — por isso o `ariaSort` mora em
 `table-features.ts`.
+
+E uma de controlled state: **não chame `setPageSize` e `setPageIndex` em
+sequência.** Com paginação controlada as duas chamadas disparam
+`onPaginationChange` com o mesmo estado anterior, e a segunda sobrescreve a
+primeira — o `pageSize` novo se perde. `TablePagination` faz
+`table.setPagination({ pageIndex: 0, pageSize })`, que é uma escrita só.
 
 
 ## O que vem depois
@@ -136,6 +209,10 @@ do backend, e ainda não foi implementada, então perguntar antes de fazer.
   que só faz sentido com estado de página na URL. O guia de data table do
   shadcn para Base UI monta o paginador com `Button` e `Select`, que é o que
   `TablePagination` faz.
+- **Não ponha `tableViewSchema` na rota do registro.** É tentador, para devolver
+  a página de onde a pessoa veio, mas aí dois assuntos sem relação dividem o
+  mesmo `validateSearch` e a URL do registro passa a descrever uma lista que não
+  está na tela. O contexto de volta vai no `state` da navegação.
 
 Depois de criar a tabela, siga
 [`frontend-formulario.md`](frontend-formulario.md) para a tela de detalhe.

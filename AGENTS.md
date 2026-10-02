@@ -210,11 +210,15 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 8. **As features da tabela estão em `components/tables/table-features.ts`, e não
    são mais vazias.** Ordenação, filtro global, filtro por coluna e paginação
    saem de lá, junto do `DataTableFeatures` que é o primeiro genérico de
-   `createColumnHelper`. Dois detalhes que o TypeScript não pega: `globalFilterFn`
+   `createColumnHelper`. Quatro detalhes que o TypeScript não pega: `globalFilterFn`
    tem que ser a **string** `"includesString"`, porque `"auto"` devolve o
-   `filterFn_includesString` embutido da lib e desliga a variante sem acento; e
+   `filterFn_includesString` embutido da lib e desliga a variante sem acento;
    `autoResetPageIndex` e `autoResetSorting` precisam ser `false`, porque o core
-   row model dispara os dois resets a cada mudança de referência de `data`.
+   row model dispara os dois resets a cada mudança de referência de `data`;
+   `sortUndefined: "last"` só compara com `undefined`, então coluna anulável
+   precisa de accessor de função com `?? undefined`, senão o `null` da API entra
+   como zero; e o clamp de página só roda depois que os dados chegaram, senão o
+   total zero apaga o `?page=2` da URL no primeiro render.
    As armadilhas completas estão em
    [`docs/frontend-tabela.md`](docs/frontend-tabela.md).
 9. **`aria-sort` é nosso.** A v9 não tem o atributo: quem escreve é o `TableHead`,
@@ -222,7 +226,16 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
    **só componente**, porque `react-refresh/only-export-components` avisa quando
    um arquivo de componente exporta função — por isso o `ariaSort` mora no
    módulo das features, e não junto do header.
-10. **O tipo `Assistido` em `lib/api/assistidos.ts` é um `Pick`, não a linha
+10. **Página e ordenação moram na URL, e só na rota da lista.** `page`, `pageSize`
+    e `sort` são search params de `routes/_authenticated/<recurso>/index.tsx`, com
+    o schema em `table-view-state.ts`, e as duas slices são controladas no
+    `useTable`. A rota do registro é `<recurso>/id/$id.tsx` e **não** tem
+    `validateSearch`: o contexto de volta viaja no `state` da navegação
+    (`state: { lista: view }`), lido por `useListView()`. Ordenar escreve
+    `page: 0` junto do `sort`. E como a paginação é controlada, `setPageSize`
+    seguido de `setPageIndex(0)` perde a escrita — use
+    `setPagination({ pageIndex: 0, pageSize })`, uma chamada só.
+11. **O tipo `Assistido` em `lib/api/assistidos.ts` é um `Pick`, não a linha
     inteira.** Ele vem do `assistidoSelectSchema`, então não é escrito à mão, e o
     `Pick` existe para a tela não carregar as ~25 colunas. Para a tabela mostrar
     mais um campo, acrescente o nome na lista do `Pick` — o endpoint continua
@@ -230,23 +243,23 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `AssistidoCompleto`, que é o `ZodInfer` do mesmo schema, e a query
     `assistidoDetailOptions(id)`: o `Pick` não serve para o formulário porque
     faltam `logradouro`, `observacoes` e os 7 booleanos.
-11. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
+12. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
     checa isso *antes* do zod, então nem um `id` válido escapa. É por isso que
     `updateAssistidoOptions` recebe o id como **argumento separado** do payload,
     e que o estado do formulário não tem `id`. O mesmo `id` volta no corpo do
     `GET`, nunca no do `PATCH`.
-12. **O formulário manda os 25 campos sempre, nos dois modos.** A API aceita
+13. **O formulário manda os 25 campos sempre, nos dois modos.** A API aceita
     `PATCH` parcial, mas um corpo vazio é `400 EMPTY_UPDATE`, então enviar tudo
     satisfaz a regra sem lógica de dirty field. Não "melhore" isso com diff sem
     revisar esse item.
-13. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
+14. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
     `errorMap` por campo para falha de servidor: o `MutationCache` em
     `lib/query-client.ts` joga no `console` e pronto. As mensagens do zod em
     `schema.ts` estão em português e servem à validação de campo do formulário,
     mas a API responde em inglês via `errors.ts` — são públicos distintos, e não
     se traduz o mesmo texto. Ver o item 5 de
     [`docs/backlog-pi2.md`](docs/backlog-pi2.md).
-14. **No `onSubmit`, a ordem é `mutateAsync` → `invalidate` → `navigate`.** Com
+15. **No `onSubmit`, a ordem é `mutateAsync` → `invalidate` → `navigate`.** Com
     `mutate` sem `await`, a invalidação dispara enquanto o `PATCH` ainda está no
     ar; o `GET` da lista corre contra ele, grava a linha velha no cache com
     `dataUpdatedAt` novo, e o `staleTime` segura os 5 segundos seguintes — a
@@ -254,11 +267,12 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     engolia, então o `try`/`catch` é obrigatório e segura a navegação em caso de
     erro. A receita está em
     [`docs/frontend-formulario.md`](docs/frontend-formulario.md).
-15. **Estado de tabela não entra no `queryKey`.** `assistidoKeys.all` continua
+16. **Estado de tabela não entra no `queryKey`.** `assistidoKeys.all` continua
     `["assistidos"]`: a API devolve a tabela inteira e filtra e pagina no cliente,
     então busca, ordenação e página custam **zero** requisição. Se `page` ou `q`
     fossem para a chave, cada tecla abriria uma entrada de cache e dispararia um
-    `GET` — o oposto do objetivo.
+    `GET` — o oposto do objetivo. Isso não impede o estado de vivre na URL: são
+    coisas diferentes, e o item 10 é sobre a URL.
 
 ## Branches e commits
 

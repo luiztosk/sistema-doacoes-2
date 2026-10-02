@@ -44,8 +44,10 @@ export function TablePagination<TData extends RowData>({
 					<Select
 						value={`${pageSize}`}
 						onValueChange={(value) => {
-							table.setPageSize(Number(value));
-							table.setPageIndex(0);
+							table.setPagination({
+								pageIndex: 0,
+								pageSize: Number(value),
+							});
 						}}
 					>
 						<SelectTrigger id="table-page-size" className="w-20">

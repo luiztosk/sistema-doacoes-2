@@ -1,6 +1,12 @@
+import { useCallback, useEffect } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { createColumnHelper, useTable } from "@tanstack/react-table";
+import {
+	createColumnHelper,
+	functionalUpdate,
+	useTable,
+} from "@tanstack/react-table";
 
 import type { Assistido } from "@/react-app/lib/api/assistidos";
 import { assistidoOptions } from "@/react-app/lib/api/assistidos";
@@ -12,6 +18,14 @@ import {
 	TableColumnFilter,
 	TableToolbar,
 } from "@/react-app/components/tables/table-toolbar";
+import type { TableViewState } from "@/react-app/components/tables/table-view-state";
+import {
+	paginationFromView,
+	sortingFromView,
+	sortingToView,
+	useListView,
+	viewForUrl,
+} from "@/react-app/components/tables/table-view-state";
 import { Button } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -50,6 +64,29 @@ const cestaBasicaOptions = [
 
 const columnHelper = createColumnHelper<DataTableFeatures, Assistido>();
 
+function DetalhesLink({ id }: { id: string }) {
+	const lista = useListView();
+
+	return (
+		<Button
+			size="xs"
+			variant="outline"
+			nativeButton={false}
+			onClick={(event) => event.stopPropagation()}
+			render={
+				<Link
+					to="/assistidos/id/$id"
+					params={{ id }}
+					state={{ lista }}
+					onClick={(event) => event.stopPropagation()}
+				/>
+			}
+		>
+			Mais detalhes
+		</Button>
+	);
+}
+
 const columns = columnHelper.columns([
 	columnHelper.accessor("nome", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
@@ -63,19 +100,24 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor("telefone", {
+	columnHelper.accessor((row) => row.telefone ?? undefined, {
+		id: "telefone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
 		cell: ({ getValue }) => getValue() ?? empty,
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
+		sortUndefined: "last",
 	}),
-	columnHelper.accessor("email", {
+	columnHelper.accessor((row) => row.email ?? undefined, {
+		id: "email",
 		header: ({ column }) => <SortableHeader column={column} label="E-mail" />,
 		cell: ({ getValue }) => getValue() ?? empty,
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
+		sortUndefined: "last",
 	}),
-	columnHelper.accessor("renda", {
+	columnHelper.accessor((row) => row.renda ?? undefined, {
+		id: "renda",
 		header: ({ column }) => <SortableHeader column={column} label="Renda" />,
 		cell: ({ getValue }) => {
 			const value = getValue();
@@ -84,14 +126,16 @@ const columns = columnHelper.columns([
 		sortFn: "basic",
 		sortUndefined: "last",
 	}),
-	columnHelper.accessor("tipoImovel", {
+	columnHelper.accessor((row) => row.tipoImovel ?? undefined, {
+		id: "tipoImovel",
 		header: ({ column }) => <SortableHeader column={column} label="Tipo de imóvel" />,
 		cell: ({ getValue }) => getValue() ?? empty,
 		filterFn: "equalsString",
 		sortFn: "alphanumeric",
 		sortUndefined: "last",
 	}),
-	columnHelper.accessor("cestaBasica", {
+	columnHelper.accessor((row) => row.cestaBasica ?? undefined, {
+		id: "cestaBasica",
 		header: ({ column }) => (
 			<SortableHeader column={column} label="Cesta básica" />
 		),
@@ -106,41 +150,73 @@ const columns = columnHelper.columns([
 	columnHelper.display({
 		id: "details",
 		header: "Detalhes",
-		cell: ({ row }) => (
-			<Button
-				size="xs"
-				variant="outline"
-				nativeButton={false}
-				onClick={(event) => event.stopPropagation()}
-				render={
-					<Link
-						to="/assistidos/id/$id"
-						params={{ id: row.id }}
-						onClick={(event) => event.stopPropagation()}
-					/>
-				}
-			>
-				Mais detalhes
-			</Button>
-		),
+		cell: ({ row }) => <DetalhesLink id={row.id} />,
 	}),
 ]);
 
-export function AssistidosTable() {
-	const { data } = useQuery(assistidoOptions);
+type AssistidosTableProps = {
+	view: TableViewState;
+};
+
+export function AssistidosTable({ view }: AssistidosTableProps) {
+	const { data, isPending } = useQuery(assistidoOptions);
 	const navigate = useNavigate();
+
+	const irPara = useCallback(
+		(next: TableViewState) =>
+			navigate({ to: "/assistidos", search: viewForUrl(next), replace: true }),
+		[navigate],
+	);
 
 	const table = useTable({
 		features,
 		columns,
 		data: data ?? emptyRows,
 		getRowId: (row) => row.id,
-		initialState: { pagination: { pageIndex: 0, pageSize: 20 } },
+		state: {
+			pagination: paginationFromView(view),
+			sorting: sortingFromView(view.sort),
+		},
+		onPaginationChange: (updater) => {
+			const next = functionalUpdate(updater, paginationFromView(view));
+			irPara({
+				page: next.pageIndex,
+				pageSize: next.pageSize,
+				sort: view.sort,
+			});
+		},
+		onSortingChange: (updater) => {
+			const next = functionalUpdate(updater, sortingFromView(view.sort));
+			irPara({
+				page: 0,
+				pageSize: view.pageSize,
+				sort: sortingToView(next),
+			});
+		},
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
+
+	const { pageIndex, pageSize } = table.state.pagination;
+	const total = table.getFilteredRowModel().rows.length;
+
+	useEffect(() => {
+		if (isPending) {
+			return;
+		}
+		if (pageIndex > 0 && pageIndex * pageSize >= total) {
+			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
+		}
+	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+
+	const abrir = (id: string) =>
+		navigate({
+			to: "/assistidos/id/$id",
+			params: { id },
+			state: { lista: view },
+		});
 
 	const rows = table.getRowModel().rows;
 
@@ -183,9 +259,7 @@ export function AssistidosTable() {
 							<TableRow
 								key={row.id}
 								className="cursor-pointer"
-								onClick={() =>
-									navigate({ to: "/assistidos/id/$id", params: { id: row.id } })
-								}
+								onClick={() => abrir(row.id)}
 							>
 								{row.getAllCells().map((cell) => (
 									<TableCell key={cell.id}>

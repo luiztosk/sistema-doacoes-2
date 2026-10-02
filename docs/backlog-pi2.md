@@ -37,13 +37,14 @@ Estado conferido em 30/09/2026.
    paginação já estão na tabela de `assistido`, e os arquivos
    `components/tables/table-*.ts(x)` são genéricos, então `doador` nasce com
    elas.
-4. ⏳ **Preservar o estado da tabela entre a lista e o detalhe** — ordenação,
-   busca, filtro e página vivem no componente, que desmonta ao navegar para
-   `/assistidos/id/$id`. Um `useTable` novo nasce com `initialState`, então voltar
-   de um save cai na primeira página e sem ordenação. A correção é o estado da
-   visualização nos search params da rota, com a rota de detalhe repassando os
-   parâmetros no `navigate` de volta. A alternativa — `sessionStorage` por
-   recurso — esconde estado e não é compartilhável, então não é a escolhida.
+4. ⛔ **Coluna "cadastrado em"** — `assistido` não tem nenhuma coluna de data,
+   nenhuma das 26. Ordenar por mais recentes e mostrar quando a pessoa foi
+   cadastrada depende de uma coluna que o backend congelado não tem, então não
+   foi inventada e a ordenação padrão ficou em `nome.asc`. Quando o backend for
+   destravado: coluna com default no banco, migration, e `generate.ts`
+   produzindo datas em ordem — senão "mais recentes primeiro" sobre o seed
+   ordena linhas que nasceram no mesmo instante. A troca na tela é uma linha, o
+   `initialSort` de `table-view-state.ts`.
 5. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem
    `errorMap` por campo para falha de servidor. As mensagens do zod em
@@ -58,6 +59,12 @@ Estado conferido em 30/09/2026.
    [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não
    existir, a API não deve receber dados reais. Não implementado nesta rodada:
    ver [`future/`](future/README.md).
+8. ⏳ **`db-seed` e o caminho do `getPlatformProxy()`** — `wrangler d1 migrations
+   apply --local` e o `getPlatformProxy()` do seed não compartilharam o estado
+   numa execução limpa: com o diretório de estado apagado, `apply` não criou as
+   tabelas e o seed morreu com `no such table`. O contorno foi rodar a migration
+   versionada com `wrangler d1 execute --local --file=`. Vale descobrir por que os
+   dois não conversam, porque o sintoma é `db-seed` quebrado sem aviso.
 
 ## Fora do escopo do MVP
 

@@ -107,6 +107,11 @@ stub não tem ciclo de vida. As asserções que o stub consegue fazer (código d
 erro, status, mensagem, validação) ficam em `npm test`; a aritmética dos
 contadores fica aqui.
 
+Ele também confere que todo id gravado no banco está em minúsculo, nas onze
+tabelas, porque `crypto.randomUUID()` devolve minúsculo e `fake(z.uuidv4())`
+devolve maiúsculo — e o `.uuid()` do zod aceita os dois, então essa diferença
+ficaria invisível até alguém colar um id do seed numa chamada.
+
 O script é autossanável: as linhas que ele cria são ancoradas em nomes
 (`check-item-%`, `check-categoria-%`, `note = 'check'`) e apagadas no começo e no
 fim, de forma que uma execução interrompida não envenena a seguinte.

@@ -30,6 +30,10 @@ type ResourceDescriptor<TTable extends TableWithId> = {
 		existing?: InferSelectModel<TTable>,
 	) => void | Promise<void>;
 	create?: boolean;
+	detail?: (
+		db: DrizzleD1Database,
+		record: InferSelectModel<TTable>,
+	) => Promise<Record<string, unknown>> | Record<string, unknown>;
 };
 
 export const dbOf = (c: Context<ApiBindings>) =>
@@ -60,7 +64,15 @@ export function registerResource<TTable extends TableWithId>(
 	app: Hono<ApiBindings>,
 	resource: ResourceDescriptor<TTable>,
 ) {
-	const { table, path, name, schemas, validate, create = true } = resource;
+	const {
+		table,
+		path,
+		name,
+		schemas,
+		validate,
+		create = true,
+		detail,
+	} = resource;
 	const base = `/${path}`;
 	const updateSchema = schemas.update ?? schemas.insert;
 
@@ -78,7 +90,10 @@ export function registerResource<TTable extends TableWithId>(
 	});
 
 	app.get(`${base}/:id`, async (c) => {
-		const data = await findById(dbOf(c), table, c.req.param("id"), name);
+		const db = dbOf(c);
+		const record = await findById(db, table, c.req.param("id"), name);
+		const data = detail ? await detail(db, record) : record;
+
 		return c.json({ data });
 	});
 

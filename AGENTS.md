@@ -288,7 +288,16 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `delivery` são criados com as linhas no mesmo batch, então eles passam
     `create: false` e registram o `POST` à mão em `stock.ts`. A fábrica
     genérica ficou em [`src/worker/api/resource.ts`](src/worker/api/resource.ts),
-    e `v1.ts` só compõe.
+    e `v1.ts` só compõe. O `GET/:id` dos dois usa o gancho `detail`, que anexa as
+    linhas no mesmo formato que o `POST` aceita — **só no detalhe**: a lista não
+    leva linhas, e é assim que a lista de entrega continua sendo uma linha da
+    tabela e não um documento.
+17. **Filtro de tabela é do frontend, não query param.** Não há paginação nem
+    filtro no servidor, de propósito: o cliente busca a tabela inteira, filtra com
+    a TanStack Table e cacheia, e a mutação invalida a chave e refaz uma busca só.
+    O `donation` e o `delivery` são os dois recursos que crescem sem limite no
+    tempo; se algum dia `GET /deliveries` passar de alguns MB, paginação vira
+    otimização — não antes.
 17. **Todo id gravado é minúsculo, e a diferença ninguém vê.** `crypto.randomUUID()`
     devolve minúsculo, mas `fake(z.uuidv4())` devolve **maiúsculo** — e o `.uuid()`
     do zod aceita os dois, então o seed escrevia 100% das linhas em maiúsculas

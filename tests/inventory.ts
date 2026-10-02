@@ -38,8 +38,15 @@ function igual(nome: string, esperado: unknown, recebido: unknown) {
 	);
 }
 
+type Linha = { inventoryItemId?: string; quantity?: number };
+
 type CorpoResposta = {
-	data?: { id?: string; status?: string; [chave: string]: unknown };
+	data?: {
+		id?: string;
+		status?: string;
+		lines?: Linha[];
+		[chave: string]: unknown;
+	};
 	error?: { code?: string; message?: string };
 };
 
@@ -282,6 +289,29 @@ async function main() {
 		donation.status === 201 && donation.body?.data?.status === "DRAFT",
 		JSON.stringify(donation.body),
 	);
+
+	const donationLista = await chamar("GET", "/api/v1/donations");
+	check(
+		"a lista não carrega linha, só o detalhe",
+		Array.isArray(donationLista.body?.data) &&
+			donationLista.body.data.every(
+				(row: Record<string, unknown>) => row.lines === undefined,
+			),
+		"a lista veio com lines",
+	);
+
+	const donationDetalhe = await chamar(
+		"GET",
+		`/api/v1/donations/${donation.body?.data?.id}`,
+	);
+	igual(
+		"detalhe da doação devolve as duas linhas",
+		[
+			{ inventoryItemId: arroz, quantity: 10 },
+			{ inventoryItemId: feijao, quantity: 20 },
+		],
+		donationDetalhe.body?.data?.lines,
+	);
 	const donationId = donation.body?.data?.id ?? "";
 
 	igual("doação em DRAFT não mexe no estoque", 0, (await stock(arroz)).on_hand);
@@ -319,6 +349,15 @@ async function main() {
 		occurredAt: now,
 		lines: [{ inventoryItemId: arroz, quantity: 4 }],
 	});
+	const deliveryDetalhe = await chamar(
+		"GET",
+		`/api/v1/deliveries/${delivery.body?.data?.id}`,
+	);
+	igual(
+		"detalhe da entrega devolve a linha com a quantidade",
+		[{ inventoryItemId: arroz, quantity: 4 }],
+		deliveryDetalhe.body?.data?.lines,
+	);
 	check(
 		"delivery criada e reservada",
 		delivery.status === 201,

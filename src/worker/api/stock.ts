@@ -5,6 +5,7 @@ import {
 	delivery,
 	deliveryInsertSchema,
 	deliveryLine,
+	donationLine,
 	deliveryUpdateSchema,
 	donation,
 	donationInsertSchema,
@@ -23,6 +24,8 @@ import {
 	itemCategoryUpdateSchema,
 } from "../db/schema";
 import { apiError, parseBody, readJsonObject } from "./errors";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
+import type { InferSelectModel } from "drizzle-orm";
 import {
 	type ApiBindings,
 	dbOf,
@@ -131,6 +134,36 @@ const adjustmentCreateSchema = inventoryAdjustmentInsertSchema
 	.omit({ countId: true })
 	.extend({ reason: z.enum(ADJUSTMENT_REASONS) });
 
+async function withDonationLines(
+	db: DrizzleD1Database,
+	record: InferSelectModel<typeof donation>,
+) {
+	const lines = await db
+		.select({
+			inventoryItemId: donationLine.inventoryItemId,
+			quantity: donationLine.quantity,
+		})
+		.from(donationLine)
+		.where(eq(donationLine.donationId, record.id));
+
+	return { ...record, lines };
+}
+
+async function withDeliveryLines(
+	db: DrizzleD1Database,
+	record: InferSelectModel<typeof delivery>,
+) {
+	const lines = await db
+		.select({
+			inventoryItemId: deliveryLine.inventoryItemId,
+			quantity: deliveryLine.quantity,
+		})
+		.from(deliveryLine)
+		.where(eq(deliveryLine.deliveryId, record.id));
+
+	return { ...record, lines };
+}
+
 function seconds(date: Date): number {
 	return Math.floor(date.getTime() / 1000);
 }
@@ -211,6 +244,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 			update: donationUpdateSchema,
 		},
 		create: false,
+		detail: withDonationLines,
 	});
 
 	app.post("/donations", async (c) => {
@@ -277,6 +311,7 @@ export function registerStock(app: Hono<ApiBindings>) {
 			update: deliveryUpdateSchema,
 		},
 		create: false,
+		detail: withDeliveryLines,
 	});
 
 	app.post("/deliveries", async (c) => {

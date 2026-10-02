@@ -72,6 +72,37 @@ Os dois catálogos têm CRUD próprio: `/api/v1/item-categories` e
 `PATCH` e `DELETE` pela fábrica genérica, mas **não** `POST` — a criação é sempre
 com as linhas.
 
+### `GET` de detalhe devolve as linhas; a lista não
+
+`GET /donations/:id` e `GET /deliveries/:id` devolvem o registro **com as linhas
+embutidas**, no mesmo formato que o `POST` aceita:
+
+```json
+{
+  "data": {
+    "id": "…",
+    "beneficiaryId": "…",
+    "occurredAt": "2026-05-19T10:32:35.000Z",
+    "status": "OPEN",
+    "note": null,
+    "lines": [{ "inventoryItemId": "…", "quantity": 4 }]
+  }
+}
+```
+
+É o formato de nota fiscal: o cabeçalho em cima, a tabela embaixo. A linha leva
+`inventoryItemId` e não o nome do item, porque o cliente já tem o catálogo de
+`inventory-items` em cache e faz a junção — a mesma decisão que vale para o
+filtro das tabelas.
+
+`GET /donations` e `GET /deliveries` **não** trazem linhas: são listas, e a lista
+de uma entrega é uma linha na tabela, não um documento. A distinção é fixa e
+`tests/inventory.ts` verifica os dois lados, para que a lista não comece a crescer
+linha por linha.
+
+`donation_line` e `delivery_line` não são recursos e não têm endpoint próprio: só
+existem dentro do pai que as criou.
+
 ### O corpo de uma operação com linhas
 
 ```json

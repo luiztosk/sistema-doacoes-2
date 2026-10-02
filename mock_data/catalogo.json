@@ -121,19 +121,19 @@
       },
       {
         "name": "Óleo de soja 900ml",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Leite integral caixa 1L",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Suco concentrado de uva 1L",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Azeite de oliva 500ml",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Biscoito integral pacote 200g",
@@ -508,11 +508,11 @@
       },
       {
         "name": "Shampoo cabelo longo",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Condicionador nutrição profunda",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Pasta de dente flúor 90g",
@@ -536,11 +536,11 @@
       },
       {
         "name": "Amaciante tecido 500ml",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Detergente líquido 500ml",
-        "unit": "LITER"
+        "unit": "L"
       },
       {
         "name": "Esponja cozinha 10 unidades",

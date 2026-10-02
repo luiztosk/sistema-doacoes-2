@@ -52,7 +52,7 @@ ficam em português.
 | `item.status` | **some** | é derivado dos dois contadores |
 | `data_hora` | `occurred_at` | |
 | `quantidade` | `quantity` | |
-| `unidade` | `unit` | `KG`, `UNIT`, `LITER`, `PACK`, `BOX` |
+| `unidade` | `unit` | `KG`, `L`, `UNIT`, `PACK`, `BOX` |
 
 Funde-se `nome_item` em `inventory_item` porque a linha da doação **é** o item,
 e `inventory_item.name` é `UNIQUE` — a deduplicação de nome acontece na camada

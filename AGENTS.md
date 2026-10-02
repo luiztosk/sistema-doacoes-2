@@ -36,6 +36,17 @@ em produção.
 - **Interface visível em português do Brasil.** Títulos, rótulos de coluna, botões,
   mensagens de erro e valores de menu. Um cabeçalho de coluna é interface e vai
   em português; o `accessorKey` da mesma coluna é identificador e vai em inglês.
+- **O valor de um enum é inglês; a string que o mostra é português.** Os enums do
+  modelo de estoque são `KG`, `L`, `UNIT`, `PACK`, `BOX`, `DRAFT`, `RECEIVED`,
+  `OPEN`, `COMPLETED`, `CANCELLED`, `STOCKTAKE`, `DONOR_RETURN`, `LOSS`, `DAMAGE`
+  e `CORRECTION` — é o que vai no banco e no contrato da API. **Exibi-lo cru está
+  errado**: `PACK` e `OPEN` são inglês, e a interface é português. A tela carrega um
+  mapa de rótulo e mostra "Pacote" e "Em aberto".
+  Isso vale ao contrário do que a tela de `assistido` faz, e o motivo é que ali o
+  valor **é** a interface: `uf` é "SP" e `tipoImovel` é "ALUGADO", que em português
+  já são o que o usuário lê. `cityLabel` mostra `cidade / uf` cru e está certo. Enum
+  com valor em português dispensa mapa; enum com valor em inglês exige um, e é um
+  arquivo só, no `react-app`, porque é onde a tradução vive.
 - **Zero comentário de código.** Nem linha, nem bloco, nem JSDoc. Quem lê raciocina
   no código em vez de varrer comentário, e um comentário desatualizado é pior do
   que nenhum. Comentário só existe apontando uma issue **aberta** ou marcando um

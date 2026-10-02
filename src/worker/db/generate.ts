@@ -18,6 +18,7 @@ import {
 	inventoryItem,
 	inventoryItemSelectSchema,
 	itemCategorySelectSchema,
+	UNITS,
 } from "./schema";
 
 setFaker(fakerPTBR);
@@ -86,7 +87,8 @@ const WINDOW = {
 } as const;
 
 type Municipio = { cidade: string; uf: string };
-type Catalog = { category: string; items: { name: string; unit: string }[] };
+
+type Unit = (typeof UNITS)[number];
 
 type AssistidoRow = z.infer<typeof assistidoSelectSchema>;
 type DoadorRow = z.infer<typeof doadorSelectSchema>;
@@ -99,6 +101,17 @@ type DeliveryLineRow = z.infer<typeof deliveryLineSelectSchema>;
 type InventoryCountRow = z.infer<typeof inventoryCountSelectSchema>;
 type InventoryCountLineRow = z.infer<typeof inventoryCountLineSelectSchema>;
 type InventoryAdjustmentRow = z.infer<typeof inventoryAdjustmentSelectSchema>;
+
+type Catalog = { category: string; items: { name: string; unit: Unit }[] };
+
+const catalogSchema: z.ZodType<Catalog[]> = z.array(
+	z.object({
+		category: z.string().min(1),
+		items: z
+			.array(z.object({ name: z.string().min(1), unit: z.enum(UNITS) }))
+			.min(1),
+	}),
+);
 
 export type SeedData = {
 	assistido: AssistidoRow[];
@@ -118,6 +131,20 @@ function lerJson<T>(arquivo: string): T {
 	return JSON.parse(
 		fs.readFileSync(path.join(BASE_DIR, arquivo), "utf-8"),
 	) as T;
+}
+
+function lerCatalogo(): Catalog[] {
+	const cru = lerJson<unknown>("catalogo.json");
+	const resultado = catalogSchema.safeParse(cru);
+
+	if (!resultado.success) {
+		const detalhe = resultado.error.issues
+			.map((issue) => `${issue.path.join(".") || "(item)"}: ${issue.message}`)
+			.join("; ");
+		throw new Error(`catalogo.json fora do formato — ${detalhe}`);
+	}
+
+	return resultado.data;
 }
 
 function validar<T>(schema: z.ZodType, tableName: string, row: unknown): T {
@@ -233,7 +260,7 @@ function createCatalog(catalog: Catalog[]) {
 				id: itemId,
 				name: item.name,
 				categoryId: id,
-				unit: item.unit as InventoryItemRow["unit"],
+				unit: item.unit,
 				onHand: 0,
 				reservedQuantity: 0,
 				available: 0,
@@ -472,7 +499,7 @@ function conferirInvariantes(
 
 export function gerarSeed(): SeedData {
 	const municipios = lerJson<Municipio[]>("municipios.json");
-	const catalog = lerJson<Catalog[]>("catalogo.json");
+	const catalog = lerCatalogo();
 	const { categories, items } = createCatalog(catalog);
 
 	const estado = new Map<string, Estado>();

@@ -56,7 +56,7 @@ export const ESTADOS_CIVIS = [
 	"UNIAO_ESTAVEL",
 ] as const;
 
-export const UNITS = ["KG", "UNIT", "LITER", "PACK", "BOX"] as const;
+export const UNITS = ["KG", "L", "UNIT", "PACK", "BOX"] as const;
 
 export const STATUS_DONATION = ["DRAFT", "RECEIVED"] as const;
 

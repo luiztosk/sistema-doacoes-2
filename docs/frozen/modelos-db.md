@@ -117,7 +117,8 @@ sete operações e a regra de idempotência, está em
 | `inventory_count_line` | PK (`count_id`, `inventory_item_id`), `counted_quantity` integer |
 | `inventory_adjustment` | `id` text PK, `inventory_item_id` FK, `delta` integer, `reason` text enum, `occurred_at` integer, `count_id` FK |
 
-`unit` ∈ `KG`, `UNIT`, `LITER`, `PACK`, `BOX`. `status` de `donation` ∈ `DRAFT`,
+`unit` ∈ `KG`, `L`, `UNIT`, `PACK`, `BOX`. É o SI quando existe
+(`KG`, `L`) e o termo em inglês quando não (`UNIT`, `PACK`, `BOX`); a tela traduz. `status` de `donation` ∈ `DRAFT`,
 `RECEIVED`. `status` de `delivery` ∈ `OPEN`, `COMPLETED`, `CANCELLED`. `reason` ∈
 `STOCKTAKE`, `DONOR_RETURN`, `LOSS`, `DAMAGE`, `CORRECTION` — e o cliente só
 envia os três do meio.
@@ -167,7 +168,7 @@ duas invariantes antes de devolver**, então um seed que produzisse drift falhar
 em vez de escrever.
 
 `mock_data/catalogo.json` lista os 130 itens com a `unit` de cada um. A categoria
-`Alimentos` tem 16 itens com `KG` e `LITER` de verdade — sem ela o modelo de
+`Alimentos` tem 16 itens com `KG` e `L` de verdade — sem ela o modelo de
 quantidade não teria o que somar, porque as outras 8 categorias são quase tudo
 `UNIT`.
 

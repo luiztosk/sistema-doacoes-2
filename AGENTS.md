@@ -289,6 +289,15 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `create: false` e registram o `POST` à mão em `stock.ts`. A fábrica
     genérica ficou em [`src/worker/api/resource.ts`](src/worker/api/resource.ts),
     e `v1.ts` só compõe.
+17. **Todo id gravado é minúsculo, e a diferença ninguém vê.** `crypto.randomUUID()`
+    devolve minúsculo, mas `fake(z.uuidv4())` devolve **maiúsculo** — e o `.uuid()`
+    do zod aceita os dois, então o seed escrevia 100% das linhas em maiúsculas
+    misturadas enquanto a API escrevia minúsculas, no mesmo banco. Não quebrava
+    nada, porque id só é comparado com ele mesmo, até alguém colar um id de saída
+    do seed numa chamada. Use `novoId()` em `generate.ts`, e
+    `tests/inventory.ts` falha se alguma coluna `id`/`*_id` divergir de
+    `lower()`. Não é preference: é padronização, e o custo de descobrir isso
+    depois é uma migration de dados.
 
 ## Branches e commits
 

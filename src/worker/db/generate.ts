@@ -127,6 +127,10 @@ export type SeedData = {
 	inventoryAdjustment: InventoryAdjustmentRow[];
 };
 
+function novoId(): string {
+	return fake(z.uuidv4()).toLowerCase();
+}
+
 function lerJson<T>(arquivo: string): T {
 	return JSON.parse(
 		fs.readFileSync(path.join(BASE_DIR, arquivo), "utf-8"),
@@ -199,7 +203,7 @@ function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
 		const tipoImovel = fake(z.enum(ENUM_VALUES.tipoImovel));
 
 		const row = {
-			id: fake(z.uuidv4()),
+			id: novoId(),
 			nome: nomeDePessoa(),
 			telefone: telefoneBrasileiro(),
 			email: faker.internet.email(),
@@ -230,7 +234,7 @@ function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
 function criarDoadores(municipios: Municipio[]): DoadorRow[] {
 	return Array.from({ length: ROWS_PER_TABLE.doador }, () => {
 		const row = {
-			id: fake(z.uuidv4()),
+			id: novoId(),
 			nome: nomeDePessoa(),
 			telefone: telefoneBrasileiro(),
 			email: faker.internet.email(),
@@ -246,7 +250,7 @@ function createCatalog(catalog: Catalog[]) {
 	const items = new Map<string, InventoryItemRow>();
 
 	for (const grupo of catalog) {
-		const id = fake(z.uuidv4());
+		const id = novoId();
 		categories.push(
 			validar(itemCategorySelectSchema, "item_category", {
 				id,
@@ -255,7 +259,7 @@ function createCatalog(catalog: Catalog[]) {
 		);
 
 		for (const item of grupo.items) {
-			const itemId = fake(z.uuidv4());
+			const itemId = novoId();
 			items.set(itemId, {
 				id: itemId,
 				name: item.name,
@@ -301,7 +305,7 @@ function createDonations(
 	const donationLines: DonationLineRow[] = [];
 
 	for (let i = 0; i < ROWS_PER_TABLE.donation; i += 1) {
-		const id = fake(z.uuidv4());
+		const id = novoId();
 		const donorId = faker.helpers.arrayElement(doadores).id;
 		const status = faker.datatype.boolean(0.75) ? "RECEIVED" : "DRAFT";
 
@@ -354,7 +358,7 @@ function createDeliveries(
 	for (let i = 0; i < ROWS_PER_TABLE.delivery; i += 1) {
 		const roll = faker.number.float({ min: 0, max: 1 });
 		const status = roll < 0.3 ? "OPEN" : roll < 0.7 ? "COMPLETED" : "CANCELLED";
-		const id = fake(z.uuidv4());
+		const id = novoId();
 
 		const availableItems = withAvailability(items, estado);
 		const rows = [];
@@ -409,7 +413,7 @@ function createCounts(
 	const adjustments: InventoryAdjustmentRow[] = [];
 
 	for (let i = 0; i < ROWS_PER_TABLE.inventoryCount; i += 1) {
-		const id = fake(z.uuidv4());
+		const id = novoId();
 		const occurredAt = instant(WINDOW.count);
 
 		counts.push(
@@ -438,7 +442,7 @@ function createCounts(
 
 			adjustments.push(
 				validar(inventoryAdjustmentSelectSchema, "inventory_adjustment", {
-					id: fake(z.uuidv4()),
+					id: novoId(),
 					inventoryItemId: item.id,
 					delta: counted - atual.onHand,
 					reason: "STOCKTAKE",
@@ -468,7 +472,7 @@ function createAdjustments(
 
 		adjustments.push(
 			validar(inventoryAdjustmentSelectSchema, "inventory_adjustment", {
-				id: fake(z.uuidv4()),
+				id: novoId(),
 				inventoryItemId: item.id,
 				delta,
 				reason: fake(z.enum(ADJUSTMENT_REASONS)),

@@ -87,6 +87,35 @@ async function stock(itemId: string) {
 	return rows[0];
 }
 
+async function conferirMinusculo() {
+	const tabelas: [string, string[]][] = [
+		["assistido", ["id"]],
+		["doador", ["id"]],
+		["item_category", ["id"]],
+		["inventory_item", ["id"]],
+		["donation", ["id"]],
+		["donation_line", ["donation_id", "inventory_item_id"]],
+		["delivery", ["id"]],
+		["delivery_line", ["delivery_id", "inventory_item_id"]],
+		["inventory_count", ["id"]],
+		["inventory_count_line", ["count_id", "inventory_item_id"]],
+		["inventory_adjustment", ["id", "inventory_item_id", "count_id"]],
+	];
+
+	for (const [tabela, colunas] of tabelas) {
+		for (const coluna of colunas) {
+			const fora = await consultar<Record<string, string>>(
+				`SELECT ${coluna} AS valor FROM ${tabela} WHERE ${coluna} <> lower(${coluna}) LIMIT 5`,
+			);
+			check(
+				`${tabela}.${coluna} em minuscula`,
+				fora.length === 0,
+				fora.map((row) => row.valor).join(", "),
+			);
+		}
+	}
+}
+
 async function invariantes(rotulo: string) {
 	const fora = await consultar(
 		`SELECT id FROM inventory_item
@@ -189,6 +218,7 @@ async function limpar() {
 
 async function main() {
 	await limpar();
+	await conferirMinusculo();
 
 	const now = new Date("2026-10-01T12:00:00Z").toISOString();
 

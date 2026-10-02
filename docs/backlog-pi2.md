@@ -33,15 +33,26 @@ Estado conferido em 30/09/2026.
    decidido (`inventory_item`, `donation`, `delivery`, reserva e ajuste) e ainda
    não foi implementado, em [`future/README.md`](future/README.md). As receitas
    estão em [`frontend-tabela.md`](frontend-tabela.md) e
-   [`frontend-formulario.md`](frontend-formulario.md).
-4. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
+   [`frontend-formulario.md`](frontend-formulario.md). Busca, ordenação e
+   paginação já estão na tabela de `assistido`, e os arquivos
+   `components/tables/table-*.ts(x)` são genéricos, então `doador` nasce com
+   elas.
+4. ⏳ **Preservar o estado da tabela entre a lista e o detalhe** — ordenação,
+   busca, filtro e página vivem no componente, que desmonta ao navegar para
+   `/assistidos/$id`. Um `useTable` novo nasce com `initialState`, então voltar
+   de um save cai na primeira página e sem ordenação. A correção é o estado da
+   visualização nos search params da rota, com a rota de detalhe repassando os
+   parâmetros no `navigate` de volta. A alternativa — `sessionStorage` por
+   recurso — esconde estado e não é compartilhável, então não é a escolhida.
+5. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem
    `errorMap` por campo para falha de servidor. As mensagens do zod em
    `schema.ts` cobrem validação de campo, mas a API responde em inglês via
-   `errors.ts`.
-5. ⏳ **Fluxo de convite por link** — admin convida, usuário aceita e entra na
-   organização. Depende do item 6.
-6. ❌ **Multi-tenancy** — **é o buraco mais importante.** Falta a coluna
+   `errors.ts`. O `catch` do `onSubmit` já segura a navegação; falta mostrar a
+   mensagem.
+6. ⏳ **Fluxo de convite por link** — admin convita, usuário aceita e entra na
+   organização. Depende do item 7.
+7. ❌ **Multi-tenancy** — **é o buraco mais importante.** Falta a coluna
    `organization_id` nas tabelas de domínio e o middleware que filtra as
    queries. Rastreado pela
    [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não

@@ -11,7 +11,7 @@ e escreve em um arquivo só. Aqui é só a metade que escreve.
 | `lib/api/<recurso>.ts` | `lib/api/assistidos.ts` (as 3 mutations que faltam) |
 | `components/forms/<recurso>.tsx` | `components/forms/assistido.tsx` |
 | `routes/_authenticated/<recurso>/novo.tsx` | `.../assistidos/novo.tsx` |
-| `routes/_authenticated/<recurso>/$id.tsx` | `.../assistidos/$id.tsx` |
+| `routes/_authenticated/<recurso>/id/$id.tsx` | `.../assistidos/id/$id.tsx` |
 
 Comece por [`frontend-tabela.md`](frontend-tabela.md): a lista é o que dá de
 acesso ao registro, e `lib/api/<recurso>.ts` já existe quando você chegar aqui.
@@ -84,8 +84,11 @@ export type AssistidoFormValues = RequiredNullable<
   `UPPER_SNAKE` é o contrato com o servidor.
 - `Button` com `render={<Link />}` precisa de `nativeButton={false}`, senão o
   Base UI reclama que espera um `<button>` nativo.
-- Rota estática vence dinâmica: `/assistidos/novo` não cai em `/assistidos/$id`.
-  Não edite `route-tree.tsx`, ele é gerado.
+- A rota do registro tem um segmento `id` antes do parâmetro, então
+  `/assistidos/novo` e `/assistidos/id/<uuid>` são duas rotas estáticas irmãs e
+  não competem pelo mesmo segmento. Sem ele, `novo` só não caía em `$id` porque
+  o roteador ranqueia estática acima de dinâmica.
+- Não edite `route-tree.tsx`, ele é gerado.
 
 ## O que vem depois
 

@@ -114,7 +114,7 @@ const columns = columnHelper.columns([
 				onClick={(event) => event.stopPropagation()}
 				render={
 					<Link
-						to="/assistidos/$id"
+						to="/assistidos/id/$id"
 						params={{ id: row.id }}
 						onClick={(event) => event.stopPropagation()}
 					/>
@@ -184,7 +184,7 @@ export function AssistidosTable() {
 								key={row.id}
 								className="cursor-pointer"
 								onClick={() =>
-									navigate({ to: "/assistidos/$id", params: { id: row.id } })
+									navigate({ to: "/assistidos/id/$id", params: { id: row.id } })
 								}
 							>
 								{row.getAllCells().map((cell) => (

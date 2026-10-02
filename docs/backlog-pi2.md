@@ -27,7 +27,7 @@ Estado conferido em 30/09/2026.
 2. ✅ **Autenticação** — Better Auth com plugin Organization, login e cadastro
    funcionando.
 3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
-   três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/$id`).
+   três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/id/$id`).
    `doador` está **liberado** e é o próximo: é o `assistido` sem a parte social.
    `coleta`, `entrega` e `item` **não ganham tela**: o modelo de estoque já foi
    decidido (`inventory_item`, `donation`, `delivery`, reserva e ajuste) e ainda
@@ -39,7 +39,7 @@ Estado conferido em 30/09/2026.
    elas.
 4. ⏳ **Preservar o estado da tabela entre a lista e o detalhe** — ordenação,
    busca, filtro e página vivem no componente, que desmonta ao navegar para
-   `/assistidos/$id`. Um `useTable` novo nasce com `initialState`, então voltar
+   `/assistidos/id/$id`. Um `useTable` novo nasce com `initialState`, então voltar
    de um save cai na primeira página e sem ordenação. A correção é o estado da
    visualização nos search params da rota, com a rota de detalhe repassando os
    parâmetros no `navigate` de volta. A alternativa — `sessionStorage` por

@@ -112,18 +112,21 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 				return;
 			}
 
-			if (assistido) {
-				update.mutate(value);
-			} else {
-				create.mutate(value);
+			try {
+				if (assistido) {
+					await update.mutateAsync(value);
+				} else {
+					await create.mutateAsync(value);
+				}
+			} catch {
+				return;
 			}
 
 			await queryClient.invalidateQueries({
 				queryKey: assistidoKeys.all,
 			});
 
-			await router.invalidate();
-			router.navigate({ to: "/assistidos" });
+			await router.navigate({ to: "/assistidos" });
 		},
 	});
 

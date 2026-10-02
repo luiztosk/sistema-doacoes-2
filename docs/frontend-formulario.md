@@ -52,6 +52,28 @@ export type AssistidoFormValues = RequiredNullable<
   `default` e viram `Field 'x' has an invalid value.`.
 - `updateAssistidoOptions` recebe o `id` como **argumento separado** do payload.
   `parseBody` rejeita `id` no corpo com `READ_ONLY_FIELD` antes mesmo do zod.
+- **`mutateAsync` com `await`, e só depois o `invalidateQueries`.** A ordem é
+  load-bearing. Com `mutate` (sem `await`), o `PATCH` sai e a invalidação marca a
+  lista como stale na mesma hora: como a query da lista não tem observador na tela
+  do detalhe, `invalidateQueries` não busca nada ali — o `GET` só acontece quando
+  a tabela monta de novo, e aí corre contra o `PATCH`, que faz três queries no D1
+  contra uma do `GET`. Quando o `GET` chega primeiro, ele grava no cache a linha
+  antiga com `dataUpdatedAt` novo, o `staleTime` segura os 5 segundos seguintes e
+  nada revalida: a lista volta velha e só um F5 conserta. Com `mutateAsync` o
+  `await` garante que a escrita está committed antes de invalidar.
+- **`try`/`catch` em volta do `mutateAsync`, e `return` no `catch`.** `mutateAsync`
+  lança onde `mutate` engolia. O `catch` evita a rejeição solta e, de brinde,
+  segura a navegação: em erro de servidor o formulário fica no lugar com o
+  preenchimento intacto, em vez de navegar e descartar o que a pessoa digitou. O
+  erro continua indo para o `console` pelo `MutationCache` global — a exibição
+  na tela é o item 5 de [`backlog-pi2.md`](backlog-pi2.md), e é no `catch` que
+  ela vai entrar.
+- **Invalide antes de navegar, nunca depois.** Na ordem inversa a tabela monta e
+  busca com dado velho, e só então invalida: dois `GET` por save.
+- **Não use `router.invalidate()` para isto.** Ele reexecuta o `beforeLoad` da
+  rota que está saindo. O único `beforeLoad` é o `ensureQueryData(sessionOptions)`
+  de `_authenticated.tsx`, e a sessão tem `staleTime` de 5 minutos, então nunca
+  busca. Os dados da tabela vivem no cache de query, não em loader de rota.
 - Três modos num componente só: `assistido` ausente cria, presente visualiza, e
   `isEditing` interno libera a edição. `Cancelar` faz `form.reset()` antes de
   voltar, senão a tela mostraria alteração não salva.

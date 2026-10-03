@@ -25,7 +25,7 @@ import {
 	sortingToView,
 	viewForUrl,
 } from "@/react-app/components/tables/table-view-state";
-import { Button } from "@/react-app/components/ui/button";
+import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -68,22 +68,15 @@ function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 
 	return (
-		<Button
-			size="xs"
-			variant="outline"
-			nativeButton={false}
+		<Link
+			to="/assistidos/id/$id"
+			params={{ id }}
+			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
-			render={
-				<Link
-					to="/assistidos/id/$id"
-					params={{ id }}
-					state={{ lista: view }}
-					onClick={(event) => event.stopPropagation()}
-				/>
-			}
+			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
 			Mais detalhes
-		</Button>
+		</Link>
 	);
 }
 

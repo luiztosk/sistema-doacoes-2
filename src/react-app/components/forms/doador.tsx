@@ -15,7 +15,7 @@ import {
 	useListView,
 	viewForUrl,
 } from "@/react-app/components/tables/table-view-state";
-import { Button } from "@/react-app/components/ui/button";
+import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import {
 	FieldGroup,
 	FieldLegend,
@@ -108,19 +108,13 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 							Editar
 						</Button>
 					) : null}
-					<Button
-						variant="outline"
-						size="sm"
-						nativeButton={false}
-						render={
-							<Link
-								to="/doadores"
-								search={doador && listView ? viewForUrl(listView) : {}}
-							/>
-						}
+					<Link
+						to="/doadores"
+						search={doador && listView ? viewForUrl(listView) : {}}
+						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
 						Voltar para a lista
-					</Button>
+					</Link>
 				</div>
 			</div>
 			<form

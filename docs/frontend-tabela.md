@@ -119,10 +119,22 @@ e o `?page=2` da URL é apagado no primeiro render. Ver a armadilha 6.
   é identificador e o `header` é interface. Com `SortableHeader` o rótulo vai
   por prop, e é o rótulo que é português.
 - Linha inteira clicável e botão **Mais detalhes** para o mesmo destino, com
-  `stopPropagation` nos dois: sem isso o clique dispara a navegação duas vezes.
-- No botão de detalhes de `doadores`, a visão vem do estado atual da tabela e
-  é enviada em `state.lista`. `useListView()` lê a visão recebida pela rota de
-  destino; na lista aberta diretamente ele não contém a página atual.
+  `stopPropagation` no botão: sem isso o clique sobe para o `<tr>` e dispara a
+  navegação duas vezes.
+- Os dois mandam a mesma visão em `state.lista`, e ela vem da prop `view`, nunca
+  de `useListView()`: dentro da lista esse hook lê o `state` da rota da lista,
+  que é `{}` porque nenhuma navegação para a rota da lista passa `state`.
+  `useListView()` é o hook do **formulário**, que roda na rota do registro.
+- Os dois chegam na visão por caminhos diferentes, e é por isso que um closure
+  não basta para os dois. `abrir`/`openDonor` são definidos no corpo do
+  componente, então fecham sobre a prop `view` e não precisam de nada. O `cell`
+  do botão é de escopo de módulo e só recebe `row`, então a visão chega por um
+  `ListViewContext` criado no arquivo da tabela.
+- O botão é um `<Link>` com `className={buttonVariants(...)}`, e **não**
+  `<Button nativeButton={false} render={<Link/>}>`: o Base UI põe
+  `role="button"` em todo elemento não nativo, e um `<a role="button">` perde
+  a semântica de link justamente da parte que serve para ctrl/click e abrir em
+  nova aba. `Button` fica para `Editar` e para os submits.
 - `getRowId: (row) => row.id`.
 - Nulo vira `—` (`empty = "—"`), booleano vira `Sim`/`Não`, dinheiro vira
   `R$ ${valor.toFixed(2)}`.
@@ -206,8 +218,13 @@ do backend, e ainda não foi implementada, então perguntar antes de fazer.
   congelados nesta rodada. Se a tela precisa de um campo que não existe, pare e
   pergunte. Ordenação, filtro e paginação são justamente o caso em que a
   resposta é "no cliente", e não "crie o endpoint".
-- Não crie a linha inteira como `<a>`. Use `onClick` com `useNavigate`, para o
-  teclado continuar funcionando com o botão.
+- **Não crie a linha inteira como `<a>`, e não "conserte" o desenho depois.**
+  Motivo duplo: `<a>` não envolve `<td>`, o parser de HTML tira o elemento para
+  fora da tabela, então a linha não pode ser âncora; e o link interno é o que dá
+  o caminho de teclado e leitor de tela. A linha fica em `onClick` com
+  `useNavigate`, como está. Vale saber que abrir em nova aba **perde a visão** em
+  qualquer das duas formas: `state.lista` é estado de sessão da aba, e a aba nova
+  não o recebe.
 - Não crie teste automatizado de tela. O runner é de API e não cobre React.
 - Não mova `components/tables/` para perto do recurso: agrupamento é por tipo.
 - Não use o componente `Pagination` do shadcn aqui. Ele renderiza `<a href>`, o

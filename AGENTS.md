@@ -51,6 +51,11 @@ em produção.
   "remove unused import".
 - **`src/worker/db/seed.ts` é a exceção**: usa 4 espaços e aspas simples. Não
   reformate junto com uma mudança sem relação.
+- **Espaço em vez de tab ainda existe em três arquivos** e nenhum foi arrumado:
+  `worker/auth.ts`, `worker/db/schema.ts` (188 linhas de espaço, e as 9 linhas de
+  tab são as continuações dos `import`) e `hooks/use-mobile.ts`, que é cópia do
+  shadcn. Não há linha que misture tab e espaço, então um reformate é mecânico e
+  vira diff de arquivo inteiro: só vale em mudança que já é sobre o arquivo.
 
 ## Layout
 
@@ -65,6 +70,7 @@ em produção.
 | `src/react-app/routes/` | Arquivo = rota. É o TanStack Router que gera o `route-tree.tsx` |
 | `src/react-app/lib/api/` | Um arquivo por recurso, mais `session.ts`. `queryOptions` e `mutationOptions` |
 | `src/react-app/components/ui/` | **Gerado** pelo shadcn. Não editar à mão |
+| `src/react-app/hooks/use-mobile.ts` | **Gerado** pelo shadcn. Não editar à mão |
 | `src/react-app/components/` | Agrupado por **tipo**: `ui/`, `layout/`, `auth/`, `tables/`, `forms/` |
 | `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
 

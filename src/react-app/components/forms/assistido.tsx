@@ -15,7 +15,7 @@ import {
 } from "@/react-app/components/forms/fields";
 import type { SelectOption } from "@/react-app/components/forms/fields";
 import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
-import { Button } from "@/react-app/components/ui/button";
+import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import {
 	FieldGroup,
 	FieldLegend,
@@ -149,19 +149,13 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							Editar
 						</Button>
 					) : null}
-					<Button
-						variant="outline"
-						size="sm"
-						nativeButton={false}
-						render={
-							<Link
-								to="/assistidos"
-								search={lista ? viewForUrl(lista) : {}}
-							/>
-						}
+					<Link
+						to="/assistidos"
+						search={lista ? viewForUrl(lista) : {}}
+						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
 						Voltar para a lista
-					</Button>
+					</Link>
 				</div>
 			</div>
 

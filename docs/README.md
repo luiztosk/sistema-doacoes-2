@@ -7,6 +7,7 @@ descrição do código.
 |---|---|---|
 | [`frontend-tabela.md`](frontend-tabela.md) | **ativo** | Como criar a lista de um recurso, espelhando `components/tables/assistidos.tsx` |
 | [`frontend-formulario.md`](frontend-formulario.md) | **ativo** | Como criar o formulário de um recurso, nos três modos |
+| [`validacao-doadores.md`](validacao-doadores.md) | **ativo** | Escopo e verificação local das telas de doador (#60 e #62) |
 | [`arquitetura.md`](arquitetura.md) | **ativo** | Stack, o gate de build e o fluxo de branch |
 | [`backlog-pi2.md`](backlog-pi2.md) | **ativo** | O que falta, só deste trimestre |
 | [`frozen/`](frozen/README.md) | **congelado** | Contrato da API e modelo do banco. Leitura obrigatória, **não mexa** |

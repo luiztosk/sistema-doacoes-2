@@ -14,6 +14,11 @@ export const resources: readonly Resource[] = [
 		label: "Assistidos",
 		description: "Cadastro das famílias e pessoas atendidas.",
 	},
+	{
+		path: "/doadores",
+		label: "Doadores",
+		description: "Cadastro de quem faz as doações.",
+	},
 ];
 
 export const homePath: Path = "/painel";

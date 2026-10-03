@@ -14,7 +14,8 @@ import {
 	TextField,
 } from "@/react-app/components/forms/fields";
 import type { SelectOption } from "@/react-app/components/forms/fields";
-import { Button } from "@/react-app/components/ui/button";
+import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
+import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import {
 	FieldGroup,
 	FieldLegend,
@@ -100,6 +101,7 @@ function errorFor(values: AssistidoFormValues, field: string) {
 export function AssistidoForm({ assistido }: AssistidoFormProps) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!assistido);
 
 	const create = useMutation(createAssistidoOptions);
@@ -112,18 +114,24 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 				return;
 			}
 
-			if (assistido) {
-				update.mutate(value);
-			} else {
-				create.mutate(value);
+			try {
+				if (assistido) {
+					await update.mutateAsync(value);
+				} else {
+					await create.mutateAsync(value);
+				}
+			} catch {
+				return;
 			}
 
 			await queryClient.invalidateQueries({
 				queryKey: assistidoKeys.all,
 			});
 
-			await router.invalidate();
-			router.navigate({ to: "/assistidos" });
+			await router.navigate({
+				to: "/assistidos",
+				search: lista ? viewForUrl(lista) : {},
+			});
 		},
 	});
 
@@ -141,14 +149,13 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							Editar
 						</Button>
 					) : null}
-					<Button
-						variant="outline"
-						size="sm"
-						nativeButton={false}
-						render={<Link to="/assistidos" />}
+					<Link
+						to="/assistidos"
+						search={lista ? viewForUrl(lista) : {}}
+						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
 						Voltar para a lista
-					</Button>
+					</Link>
 				</div>
 			</div>
 

@@ -74,6 +74,7 @@ export function TableColumnFilter<TData extends RowData>({
 
 	return (
 		<Select
+			items={[{ value: every, label: "Todos" }, ...options]}
 			value={(column.getFilterValue() as string | undefined) ?? every}
 			onValueChange={(value) => {
 				column.setFilterValue(value === every ? undefined : value);

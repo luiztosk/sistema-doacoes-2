@@ -100,8 +100,9 @@ export type AssistidoFormValues = RequiredNullable<
 
 ## O que vem depois
 
-`doador` é o próximo e está **liberado**: é o `assistido` sem a parte social, só
-texto e o enum `uf`. Comece por ele.
+`doador` já aplica esta receita: os 10 campos de identificação e endereço,
+com texto e o enum `uf`, nos modos de criação, visualização e edição. O retorno
+do detalhe preserva página e ordenação; após criar, a lista abre na página 1.
 
 `coleta`, `entrega` e `item` **não ganham tela**: o modelo já foi decidido e vira
 `donation`, `delivery` e `inventory_item`, com `donation_line` e `delivery_line`
@@ -125,7 +126,7 @@ redesenho for implementado:
 
 `SelectField` **alimentado por outra lista** não tem exemplo, e não vai ter até o
 redesenho de coleta e entrega: os únicos recursos com chave estrangeira são os que
-não ganharam tela. `doador`, que é o próximo, só tem texto e o enum `uf`.
+não ganharam tela. `doador`, já implementado, só tem texto e o enum `uf`.
 
 Quando o caso aparecer, a query da tabela de origem já existe e as opções são o
 array dela (`{ value: linha.id, label: linha.nome }` — o `value` é o que vai no

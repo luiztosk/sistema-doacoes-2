@@ -4,7 +4,7 @@ O que falta **neste trimestre**, e o que já está resolvido. Os itens que não
 dependem deste trimestre estão em [`future/`](future/README.md) e
 [`frozen/`](frozen/README.md).
 
-Estado conferido em 30/09/2026.
+Estado conferido em 03/10/2026.
 
 ## Cobertura dos requisitos do tema
 
@@ -28,15 +28,16 @@ Estado conferido em 30/09/2026.
    funcionando.
 3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
    três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/id/$id`).
-   `doador` está **liberado** e é o próximo: é o `assistido` sem a parte social.
+   `doador` também está nos três modos (`/doadores`, `/doadores/novo`,
+   `/doadores/id/$id`), com os 10 campos de identificação e endereço.
    `coleta`, `entrega` e `item` **não ganham tela**: o modelo de estoque já foi
    decidido (`inventory_item`, `donation`, `delivery`, reserva e ajuste) e ainda
    não foi implementado, em [`future/README.md`](future/README.md). As receitas
    estão em [`frontend-tabela.md`](frontend-tabela.md) e
    [`frontend-formulario.md`](frontend-formulario.md). Busca, ordenação e
-   paginação já estão na tabela de `assistido`, e os arquivos
-   `components/tables/table-*.ts(x)` são genéricos, então `doador` nasce com
-   elas.
+   paginação já estão nas tabelas de `assistido` e `doador`, reutilizando
+   `components/tables/table-*.ts(x)`. Doadores também têm filtro por UF;
+   página e ordenação ficam na URL e são preservadas ao voltar do detalhe.
 4. ⛔ **Coluna "cadastrado em"** — `assistido` não tem nenhuma coluna de data,
    nenhuma das 26. Ordenar por mais recentes e mostrar quando a pessoa foi
    cadastrada depende de uma coluna que o backend congelado não tem, então não

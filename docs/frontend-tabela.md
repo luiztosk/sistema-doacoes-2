@@ -2,6 +2,9 @@
 
 `assistidos` é a referência: ela já está com a linha clicável, o botão de
 detalhe e o `Pick` que a tela carrega, e é o que o build e o PR validam.
+`doadores` aplica a mesma receita com Nome, Cidade, Telefone, E-mail e Detalhes.
+O accessor auxiliar `uf` alimenta o filtro exato por estado e não é renderizado:
+a sigla continua aparecendo junto da cidade, sem uma coluna visível adicional.
 
 `lib/api/<recurso>.ts` é o **mesmo arquivo** que o formulário vai completar —
 um recurso lê e escreve em um arquivo só. A tabela precisa dele antes de
@@ -117,6 +120,9 @@ e o `?page=2` da URL é apagado no primeiro render. Ver a armadilha 6.
   por prop, e é o rótulo que é português.
 - Linha inteira clicável e botão **Mais detalhes** para o mesmo destino, com
   `stopPropagation` nos dois: sem isso o clique dispara a navegação duas vezes.
+- No botão de detalhes de `doadores`, a visão vem do estado atual da tabela e
+  é enviada em `state.lista`. `useListView()` lê a visão recebida pela rota de
+  destino; na lista aberta diretamente ele não contém a página atual.
 - `getRowId: (row) => row.id`.
 - Nulo vira `—` (`empty = "—"`), booleano vira `Sim`/`Não`, dinheiro vira
   `R$ ${valor.toFixed(2)}`.
@@ -180,7 +186,6 @@ primeira — o `pageSize` novo se perde. `TablePagination` faz
 
 | Recurso | Situação |
 |---|---|
-| `doador` | **Liberado.** É o `assistido` sem a parte social: só texto e o enum `uf`. Serve de primeiro teste da receita. |
 | `coleta`, `entrega`, `item` | **Modelo decidido, não implementado.** Viram `donation`, `delivery` e `inventory_item`. |
 
 **Não construa tela para `coleta`, `entrega` ou `item`.** O modelo de estoque já

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { createContext, useCallback, useContext, useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -23,7 +23,6 @@ import {
 	paginationFromView,
 	sortingFromView,
 	sortingToView,
-	useListView,
 	viewForUrl,
 } from "@/react-app/components/tables/table-view-state";
 import { Button } from "@/react-app/components/ui/button";
@@ -63,9 +62,10 @@ const cestaBasicaOptions = [
 ];
 
 const columnHelper = createColumnHelper<DataTableFeatures, Assistido>();
+const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
-	const lista = useListView();
+	const view = useContext(ListViewContext);
 
 	return (
 		<Button
@@ -77,7 +77,7 @@ function DetalhesLink({ id }: { id: string }) {
 				<Link
 					to="/assistidos/id/$id"
 					params={{ id }}
-					state={{ lista }}
+					state={{ lista: view }}
 					onClick={(event) => event.stopPropagation()}
 				/>
 			}
@@ -221,63 +221,65 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 	const rows = table.getRowModel().rows;
 
 	return (
-		<div className="space-y-4">
-			<TableToolbar table={table} searchLabel="Buscar assistido">
-				<TableColumnFilter
-					table={table}
-					columnId="tipoImovel"
-					label="Tipo de imóvel"
-					options={tipoImovelOptions}
-				/>
-				<TableColumnFilter
-					table={table}
-					columnId="cestaBasica"
-					label="Cesta básica"
-					options={cestaBasicaOptions}
-				/>
-			</TableToolbar>
-			<Table>
-				<TableHeader>
-					{table.getHeaderGroups().map((group) => (
-						<TableRow key={group.id}>
-							{group.headers.map((header) => (
-								<TableHead
-									key={header.id}
-									aria-sort={ariaSort(header.column.getIsSorted())}
-								>
-									{header.isPlaceholder ? null : (
-										<table.FlexRender header={header} />
-									)}
-								</TableHead>
-							))}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{rows.length ? (
-						rows.map((row) => (
-							<TableRow
-								key={row.id}
-								className="cursor-pointer"
-								onClick={() => abrir(row.id)}
-							>
-								{row.getAllCells().map((cell) => (
-									<TableCell key={cell.id}>
-										<table.FlexRender cell={cell} />
-									</TableCell>
+		<ListViewContext value={view}>
+			<div className="space-y-4">
+				<TableToolbar table={table} searchLabel="Buscar assistido">
+					<TableColumnFilter
+						table={table}
+						columnId="tipoImovel"
+						label="Tipo de imóvel"
+						options={tipoImovelOptions}
+					/>
+					<TableColumnFilter
+						table={table}
+						columnId="cestaBasica"
+						label="Cesta básica"
+						options={cestaBasicaOptions}
+					/>
+				</TableToolbar>
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((group) => (
+							<TableRow key={group.id}>
+								{group.headers.map((header) => (
+									<TableHead
+										key={header.id}
+										aria-sort={ariaSort(header.column.getIsSorted())}
+									>
+										{header.isPlaceholder ? null : (
+											<table.FlexRender header={header} />
+										)}
+									</TableHead>
 								))}
 							</TableRow>
-						))
-					) : (
-						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
-								Nenhum assistido encontrado.
-							</TableCell>
-						</TableRow>
-					)}
-				</TableBody>
-			</Table>
-			<TablePagination table={table} totalLabel="assistido" />
-		</div>
+						))}
+					</TableHeader>
+					<TableBody>
+						{rows.length ? (
+							rows.map((row) => (
+								<TableRow
+									key={row.id}
+									className="cursor-pointer"
+									onClick={() => abrir(row.id)}
+								>
+									{row.getAllCells().map((cell) => (
+										<TableCell key={cell.id}>
+											<table.FlexRender cell={cell} />
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						) : (
+							<TableRow>
+								<TableCell colSpan={columns.length} className="h-24 text-center">
+									Nenhum assistido encontrado.
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+				<TablePagination table={table} totalLabel="assistido" />
+			</div>
+		</ListViewContext>
 	);
 }

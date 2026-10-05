@@ -47,18 +47,16 @@ inventoryItems.get("/", async (c: Context<ApiBindings>) => {
     .select({
       id: inventoryItem.id,
       name: inventoryItem.name,
-      // description: inventoryItem.description,
       categoryName: itemCategory.name,
       unit: inventoryItem.unit,
       onHand: inventoryItem.onHand,
       reservedQuantity: inventoryItem.reservedQuantity,
+      available: inventoryItem.available,
     })
     .from(inventoryItem)
-    .leftJoin(itemCategory, eq(inventoryItem.categoryId, itemCategory.id));
+    .leftJoin(itemCategory, eq(inventoryItem.categoryId, itemCategory.id))
   
-  // Validate response matches expected schema
-  inventoryItemTableViewSchema.safeParse(data);
-  
+  inventoryItemTableViewSchema.array().parse(data);
   return c.json({ data });
 });
 

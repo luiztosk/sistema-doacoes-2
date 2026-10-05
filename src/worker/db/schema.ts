@@ -14,6 +14,7 @@ import {
 	createUpdateSchema,
 } from "drizzle-orm/zod";
 import { z } from "zod";
+import type { infer as ZodInfer } from "zod";
 export * from "./auth-schema";
 
 export const UFS = [
@@ -262,9 +263,19 @@ export const inventoryItemSelectSchema = createSelectSchema(
 	inventoryItemRefinements,
 );
 
-export const inventoryItemTableViewSchema = inventoryItemSelectSchema.omit({ categoryId: true }).extend({
-  categoryName: itemCategorySelectSchema.shape.name.nullable(),
-});
+export const inventoryItemTableViewSchema = inventoryItemSelectSchema
+	.omit({ categoryId: true })
+	.extend({
+		categoryName: itemCategorySelectSchema.shape.name.nullable(),
+	});
+
+export type InventoryItemSelect = ZodInfer<typeof inventoryItemSelectSchema>;
+export type InventoryItemInsert = ZodInfer<typeof inventoryItemInsertSchema>;
+export type InventoryItemTableView = Pick<
+	ZodInfer<typeof inventoryItemTableViewSchema>,
+	"id" | "name" | "categoryName" | "unit" | "onHand" | "reservedQuantity" | "available"
+>;
+
 
 export const donation = sqliteTable(
 	"donation",

@@ -8,7 +8,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { InventoryItemTableView } from "@/react-app/lib/api/inventory-items";
+import type { InventoryItemTableView } from "@/worker/db/schema";
 import { inventoryItemOptions } from "@/react-app/lib/api/inventory-items";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";

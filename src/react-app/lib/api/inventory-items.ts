@@ -1,28 +1,10 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import type { infer as ZodInfer } from "zod";
 
 import type {
-	inventoryItemInsertSchema,
-	inventoryItemSelectSchema,
-	inventoryItemTableViewSchema,
+	InventoryItemInsert,
+	InventoryItemSelect,
+	InventoryItemTableView,
 } from "@/worker/db/schema";
-
-export type InventoryItemCompleto = ZodInfer<typeof inventoryItemSelectSchema>;
-
-type InventoryItemTableViewSchema = ZodInfer<typeof inventoryItemTableViewSchema>;
-export type InventoryItemTableView = Pick<
-	InventoryItemTableViewSchema,
-	"id" | "name" | "categoryName" | "unit" | "onHand" | "reservedQuantity" | "available"
->;
-
-
-type RequiredNullable<TForm> = {
-	[K in keyof TForm]-?: Exclude<TForm[K], undefined> | null;
-};
-
-export type InventoryItemFormValues = RequiredNullable<
-	ZodInfer<typeof inventoryItemInsertSchema>
->;
 
 export const inventoryItemKeys = {
 	all: ["inventory-items"] as const,
@@ -70,8 +52,8 @@ export const inventoryItemOptions = queryOptions({
 export const inventoryItemDetailOptions = (id: string) =>
 	queryOptions({
 		queryKey: inventoryItemKeys.detail(id),
-		queryFn: async (): Promise<InventoryItemCompleto> => {
-			const { data } = await request<InventoryItemCompleto>(
+		queryFn: async (): Promise<InventoryItemSelect> => {
+			const { data } = await request<InventoryItemSelect>(
 				`${endpoint}/${id}`,
 				{ method: "GET" },
 			);
@@ -82,9 +64,9 @@ export const inventoryItemDetailOptions = (id: string) =>
 export const createInventoryItemOptions = mutationOptions({
 	mutationKey: [...inventoryItemKeys.all, "create"],
 	mutationFn: async (
-		payload: InventoryItemFormValues,
-	): Promise<InventoryItemCompleto> => {
-		const { data } = await request<InventoryItemCompleto>(endpoint, {
+		payload: InventoryItemInsert,
+	): Promise<InventoryItemSelect> => {
+		const { data } = await request<InventoryItemSelect>(endpoint, {
 			method: "POST",
 			body: JSON.stringify(payload),
 		});
@@ -96,9 +78,9 @@ export const updateInventoryItemOptions = (id: string) =>
 	mutationOptions({
 		mutationKey: [...inventoryItemKeys.all, "update"],
 		mutationFn: async (
-			payload: InventoryItemFormValues,
-		): Promise<InventoryItemCompleto> => {
-			const { data } = await request<InventoryItemCompleto>(
+			payload: InventoryItemInsert,
+		): Promise<InventoryItemSelect> => {
+			const { data } = await request<InventoryItemSelect>(
 				`${endpoint}/${id}`,
 				{
 					method: "PATCH",

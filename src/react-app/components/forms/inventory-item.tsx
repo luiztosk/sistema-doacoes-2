@@ -11,9 +11,9 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
-	InventoryItemCompleto,
-	InventoryItemFormValues,
-} from "@/react-app/lib/api/inventory-items";
+	InventoryItemSelect,
+	InventoryItemInsert,
+} from "@/worker/db/schema";
 import {
 	inventoryItemKeys,
 	createInventoryItemOptions,
@@ -22,7 +22,7 @@ import {
 import { UNITS, inventoryItemInsertSchema } from "@/worker/db/schema";
 
 type InventoryItemFormProps = {
-	inventoryItem?: InventoryItemCompleto;
+	inventoryItem?: InventoryItemSelect;
 };
 
 const unitOptions: SelectOption[] = UNITS.map((value) => ({
@@ -35,15 +35,15 @@ const unitOptions: SelectOption[] = UNITS.map((value) => ({
 		"Caixa",
 }));
 
-function initialValues(record?: InventoryItemCompleto): InventoryItemFormValues {
+function initialValues(record?: InventoryItemSelect): InventoryItemInsert {
 	return {
 		name: record?.name ?? "",
-		categoryId: record?.categoryId ?? null,
-		unit: record?.unit ?? null,
+		categoryId: record?.categoryId ?? "",
+		unit: record?.unit ?? "UNIT",
 	};
 }
 
-function errorFor(values: InventoryItemFormValues, field: string) {
+function errorFor(values: InventoryItemInsert, field: string) {
 	const parsed = inventoryItemInsertSchema.safeParse(values);
 	if (parsed.success) {
 		return undefined;

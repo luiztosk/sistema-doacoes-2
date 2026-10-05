@@ -123,6 +123,22 @@ Estado conferido em 05/10/2026.
 6. **Seed reescrito** — `generate.ts` deriva `on_hand` e `reserved_quantity`
    das movimentações, numa simulação em memória, e valida as duas invariantes
    antes de devolver; `mock_data/catalogo.json` ganhou a `unit` dos 130 itens.
+7. **Esquema Zod compartilhado** — criado `inventoryItemTableViewSchema` em
+   `src/worker/db/schema.ts` que substitui `categoryId` por `categoryName` e é
+   usado tanto no backend (para validação de resposta) quanto no frontend
+   (para validação de dados recebidos), garantindo consistência entre camadas.
+8. **Migrado para Hono Groups** — as rotas de `inventory-items` foram movidas
+   para `src/worker/routes/inventory-items.ts` usando instâncias explícitas de
+   `Hono()` em vez do padrão `registerResource`, permitindo maior flexibilidade
+   para personalizar queries (como o join com `itemCategory` para obter
+   `categoryName`) e seguindo as melhores práticas do Hono para agrupamento de
+   rotas.
+9. **Corrigidos imports de utilitários de tabela** — movidos os componentes de
+   tabela (`table-features.ts`, `table-pagination.tsx`, `table-sortable-header.tsx`,
+   `table-toolbar.tsx`, `table-view-state.ts`) de `src/react-app/components/tables/`
+   para `src/react-app/components/tables/utils/` e atualizados todos os imports
+   correspondentes em componentes de tabela e formulários para refletir a nova
+   estrutura, eliminando erros de "Cannot find module".
 
 ### O que falta
 

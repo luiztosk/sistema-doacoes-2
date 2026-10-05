@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { infer as ZodInfer } from "zod";
 
 import type {
@@ -80,6 +80,36 @@ export const donationDetailOptions = (id: string) =>
 			const { data } = await request<DonationCompleto>(
 				`${endpoint}/${id}`,
 				{ method: "GET" },
+			);
+			return data;
+		},
+	});
+
+export const createDonationOptions = mutationOptions({
+	mutationKey: [...donationKeys.all, "create"],
+	mutationFn: async (
+		payload: DonationFormValues,
+	): Promise<DonationCompleto> => {
+		const { data } = await request<DonationCompleto>(endpoint, {
+			method: "POST",
+			body: JSON.stringify(payload),
+		});
+		return data;
+	},
+});
+
+export const updateDonationOptions = (id: string) =>
+	mutationOptions({
+		mutationKey: [...donationKeys.all, "update"],
+		mutationFn: async (
+			payload: DonationFormValues,
+		): Promise<DonationCompleto> => {
+			const { data } = await request<DonationCompleto>(
+				`${endpoint}/${id}`,
+				{
+					method: "PATCH",
+					body: JSON.stringify(payload),
+				},
 			);
 			return data;
 		},

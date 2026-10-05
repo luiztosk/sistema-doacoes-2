@@ -22,9 +22,15 @@ type DeliveryFormProps = { delivery?: DeliveryCompleto };
 function initialValues(record?: DeliveryCompleto): DeliveryFormValues {
 	return {
 		beneficiaryId: record?.beneficiaryId ?? null,
-		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000).toISOString() : null,
+		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000) : null,
 		note: record?.note ?? null,
 	};
+}
+
+function errorFor(values: DeliveryFormValues, field: string) {
+	const parsed = deliveryInsertSchema.safeParse(values);
+	if (parsed.success) return undefined;
+	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
 }
 
 export function DeliveryForm({ delivery }: DeliveryFormProps) {
@@ -65,7 +71,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="beneficiaryId" children={(field) => <TextField field={field} label="Beneficiario" />} />
+							<form.Field name="beneficiaryId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "beneficiaryId") }} children={(field) => <TextField field={field} label="Beneficiario" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

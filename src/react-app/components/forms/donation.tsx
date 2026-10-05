@@ -17,12 +17,18 @@ import {
 } from "@/react-app/lib/api/donations";
 import { donationInsertSchema } from "@/worker/db/schema";
 
+function errorFor(values: DonationFormValues, field: string) {
+	const parsed = donationInsertSchema.safeParse(values);
+	if (parsed.success) return undefined;
+	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+}
+
 type DonationFormProps = { donation?: DonationCompleto };
 
 function initialValues(record?: DonationCompleto): DonationFormValues {
 	return {
 		donorId: record?.donorId ?? null,
-		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000).toISOString() : null,
+		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000) : null,
 		note: record?.note ?? null,
 	};
 }
@@ -65,7 +71,7 @@ export function DonationForm({ donation }: DonationFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="donorId" children={(field) => <TextField field={field} label="Doador" />} />
+							<form.Field name="donorId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "donorId") }} children={(field) => <TextField field={field} label="Doador" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

@@ -62,6 +62,11 @@ em produção.
   "remove unused import".
 - **`src/worker/db/seed.ts` é a exceção**: usa 4 espaços e aspas simples. Não
   reformate junto com uma mudança sem relação.
+- **Espaço em vez de tab ainda existe em três arquivos** e nenhum foi arrumado:
+  `worker/auth.ts`, `worker/db/schema.ts` (188 linhas de espaço, e as 9 linhas de
+  tab são as continuações dos `import`) e `hooks/use-mobile.ts`, que é cópia do
+  shadcn. Não há linha que misture tab e espaço, então um reformate é mecânico e
+  vira diff de arquivo inteiro: só vale em mudança que já é sobre o arquivo.
 
 ## Layout
 
@@ -76,6 +81,7 @@ em produção.
 | `src/react-app/routes/` | Arquivo = rota. É o TanStack Router que gera o `route-tree.tsx` |
 | `src/react-app/lib/api/` | Um arquivo por recurso, mais `session.ts`. `queryOptions` e `mutationOptions` |
 | `src/react-app/components/ui/` | **Gerado** pelo shadcn. Não editar à mão |
+| `src/react-app/hooks/use-mobile.ts` | **Gerado** pelo shadcn. Não editar à mão |
 | `src/react-app/components/` | Agrupado por **tipo**: `ui/`, `layout/`, `auth/`, `tables/`, `forms/` |
 | `src/worker/db/generate.ts` | Gerador de dados do seed (faker + zod) |
 
@@ -236,55 +242,90 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
    montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
    encontrar nada e vira no-op, então o sign-in não busca a sessão nova. Zerar o
    valor mantém a entrada saudável e dá o mesmo efeito na tela.
-8. **`tableFeatures({})` em `components/tables/assistidos.tsx` é vazio de
-   propósito**, porque a tabela só lê. Na primeira vez que entrar ordenação ou
-   filtro, vira algo como
-   `tableFeatures({ rowSortingFeature, sortedRowModel: createSortedRowModel(), sortFns })`
-   e nada mais abaixo muda: o `columnHelper`, as colunas e o `useTable`
-   continuam iguais. Vale citar os nomes das features para o TypeScript passar a
-   conhecer `sorting` e `columnFilters`.
-9. **O tipo `Assistido` em `lib/api/assistidos.ts` é um `Pick`, não a linha
-   inteira.** Ele vem do `assistidoSelectSchema`, então não é escrito à mão, e o
-   `Pick` existe para a tela não carregar as ~25 colunas. Para a tabela mostrar
-   mais um campo, acrescente o nome na lista do `Pick` — o endpoint continua
-   devolvendo a linha completa. Quem precisa da linha inteira usa o
-   `AssistidoCompleto`, que é o `ZodInfer` do mesmo schema, e a query
-   `assistidoDetailOptions(id)`: o `Pick` não serve para o formulário porque
-   faltam `logradouro`, `observacoes` e os 7 booleanos.
-10. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
+8. **As features da tabela estão em `components/tables/table-features.ts`, e não
+   são mais vazias.** Ordenação, filtro global, filtro por coluna e paginação
+   saem de lá, junto do `DataTableFeatures` que é o primeiro genérico de
+   `createColumnHelper`. Quatro detalhes que o TypeScript não pega: `globalFilterFn`
+   tem que ser a **string** `"includesString"`, porque `"auto"` devolve o
+   `filterFn_includesString` embutido da lib e desliga a variante sem acento;
+   `autoResetPageIndex` e `autoResetSorting` precisam ser `false`, porque o core
+   row model dispara os dois resets a cada mudança de referência de `data`;
+   `sortUndefined: "last"` só compara com `undefined`, então coluna anulável
+   precisa de accessor de função com `?? undefined`, senão o `null` da API entra
+   como zero; e o clamp de página só roda depois que os dados chegaram, senão o
+   total zero apaga o `?page=2` da URL no primeiro render.
+   As armadilhas completas estão em
+   [`docs/frontend-tabela.md`](docs/frontend-tabela.md).
+9. **`aria-sort` é nosso.** A v9 não tem o atributo: quem escreve é o `TableHead`,
+   com o `ariaSort` de `table-features.ts`. E `table-sortable-header.tsx` exporta
+   **só componente**, porque `react-refresh/only-export-components` avisa quando
+   um arquivo de componente exporta função — por isso o `ariaSort` mora no
+   módulo das features, e não junto do header.
+10. **Página e ordenação moram na URL, e só na rota da lista.** `page`, `pageSize`
+    e `sort` são search params de `routes/_authenticated/<recurso>/index.tsx`, com
+    o schema em `table-view-state.ts`, e as duas slices são controladas no
+    `useTable`. A rota do registro é `<recurso>/id/$id.tsx` e **não** tem
+    `validateSearch`: o contexto de volta viaja no `state` da navegação
+    (`state: { lista: view }`), lido por `useListView()`. Ordenar escreve
+    `page: 0` junto do `sort`. E como a paginação é controlada, `setPageSize`
+    seguido de `setPageIndex(0)` perde a escrita — use
+    `setPagination({ pageIndex: 0, pageSize })`, uma chamada só.
+11. **O tipo `Assistido` em `lib/api/assistidos.ts` é um `Pick`, não a linha
+    inteira.** Ele vem do `assistidoSelectSchema`, então não é escrito à mão, e o
+    `Pick` existe para a tela não carregar as ~25 colunas. Para a tabela mostrar
+    mais um campo, acrescente o nome na lista do `Pick` — o endpoint continua
+    devolvendo a linha completa. Quem precisa da linha inteira usa o
+    `AssistidoCompleto`, que é o `ZodInfer` do mesmo schema, e a query
+    `assistidoDetailOptions(id)`: o `Pick` não serve para o formulário porque
+    faltam `logradouro`, `observacoes` e os 7 booleanos.
+12. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
     checa isso *antes* do zod, então nem um `id` válido escapa. É por isso que
     `updateAssistidoOptions` recebe o id como **argumento separado** do payload,
     e que o estado do formulário não tem `id`. O mesmo `id` volta no corpo do
     `GET`, nunca no do `PATCH`.
-11. **O formulário manda os 25 campos sempre, nos dois modos.** A API aceita
+13. **O formulário manda os 25 campos sempre, nos dois modos.** A API aceita
     `PATCH` parcial, mas um corpo vazio é `400 EMPTY_UPDATE`, então enviar tudo
     satisfaz a regra sem lógica de dirty field. Não "melhore" isso com diff sem
     revisar esse item.
-12. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
+14. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
     `errorMap` por campo para falha de servidor: o `MutationCache` em
     `lib/query-client.ts` joga no `console` e pronto. As mensagens do zod em
     `schema.ts` estão em português e servem à validação de campo do formulário,
     mas a API responde em inglês via `errors.ts` — são públicos distintos, e não
     se traduz o mesmo texto. Ver o item 5 de
     [`docs/backlog-pi2.md`](docs/backlog-pi2.md).
-13. **`.refine()` num schema que a API valida vaza português.** A resposta da API
+15. **No `onSubmit`, a ordem é `mutateAsync` → `invalidate` → `navigate`.** Com
+    `mutate` sem `await`, a invalidação dispara enquanto o `PATCH` ainda está no
+    ar; o `GET` da lista corre contra ele, grava a linha velha no cache com
+    `dataUpdatedAt` novo, e o `staleTime` segura os 5 segundos seguintes — a
+    lista volta velha e só um F5 conserta. `mutateAsync` lança onde `mutate`
+    engolia, então o `try`/`catch` é obrigatório e segura a navegação em caso de
+    erro. A receita está em
+    [`docs/frontend-formulario.md`](docs/frontend-formulario.md).
+16. **Estado de tabela não entra no `queryKey`.** `assistidoKeys.all` continua
+    `["assistidos"]`: a API devolve a tabela inteira e filtra e pagina no cliente,
+    então busca, ordenação e página custam **zero** requisição. Se `page` ou `q`
+    fossem para a chave, cada tecla abriria uma entrada de cache e dispararia um
+    `GET` — o oposto do objetivo. Isso não impede o estado de viver na URL: são
+    coisas diferentes, e o item 10 é sobre a URL.
+17. **`.refine()` num schema que a API valida vaza português.** A resposta da API
     tem que ser em inglês, e ela só é porque `errorFromIssue` reconstrói a frase a
     partir de `issue.code` e ignora `issue.message` — **menos** no ramo
     `"custom"`, que é o que `.refine()` produz. Regra que atravessa dois campos
     vai no handler, com `apiError(...)` e frase em inglês.
-14. **`await db.prepare(sql)` não executa nada no D1.** Uma prepared statement só
+18. **`await db.prepare(sql)` não executa nada no D1.** Uma prepared statement só
     roda com `.run()`, `.all()` ou `.raw()`, e o `await` em cima de uma delas não
     faz nada: ela só vai virar promise. Isso apareceu como um rollback que não
     desfez nada — o registro recusado continuava na tabela. No `stock.ts`, as
     compensações que precisam ser transacionais usam `db.batch()`, e as de uma
     linha só, `.run()`.
-15. **`db.batch()` é transação contra erro, não contra zero linhas.** A guarda da
+19. **`db.batch()` é transação contra erro, não contra zero linhas.** A guarda da
     reserva não dá erro, ela só não casa. Por isso toda operação guardada é
     "escreve, confere, compensa", e a compensação tem que **desfazer o contador**,
     não só apagar a linha: apagar é idempotente, mas o `reserved_quantity` que
     subiu continua lá e vira drift. É a armadilha que a invariante do
     [`tests/inventory.ts`](tests/inventory.ts) pegou.
-16. **`registerResource` não serve para quem nasce com linhas.** `donation` e
+20. **`registerResource` não serve para quem nasce com linhas.** `donation` e
     `delivery` são criados com as linhas no mesmo batch, então eles passam
     `create: false` e registram o `POST` à mão em `stock.ts`. A fábrica
     genérica ficou em [`src/worker/api/resource.ts`](src/worker/api/resource.ts),
@@ -292,13 +333,13 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     linhas no mesmo formato que o `POST` aceita — **só no detalhe**: a lista não
     leva linhas, e é assim que a lista de entrega continua sendo uma linha da
     tabela e não um documento.
-17. **Filtro de tabela é do frontend, não query param.** Não há paginação nem
+21. **Filtro de tabela é do frontend, não query param.** Não há paginação nem
     filtro no servidor, de propósito: o cliente busca a tabela inteira, filtra com
     a TanStack Table e cacheia, e a mutação invalida a chave e refaz uma busca só.
     O `donation` e o `delivery` são os dois recursos que crescem sem limite no
     tempo; se algum dia `GET /deliveries` passar de alguns MB, paginação vira
     otimização — não antes.
-17. **Todo id gravado é minúsculo, e a diferença ninguém vê.** `crypto.randomUUID()`
+22. **Todo id gravado é minúsculo, e a diferença ninguém vê.** `crypto.randomUUID()`
     devolve minúsculo, mas `fake(z.uuidv4())` devolve **maiúsculo** — e o `.uuid()`
     do zod aceita os dois, então o seed escrevia 100% das linhas em maiúsculas
     misturadas enquanto a API escrevia minúsculas, no mesmo banco. Não quebrava

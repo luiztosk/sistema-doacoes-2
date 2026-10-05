@@ -17,8 +17,11 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthLogoutRouteImport } from './routes/auth/logout'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthenticatedAssistidosIndexRouteImport } from './routes/_authenticated/assistidos/index'
-import { Route as AuthenticatedAssistidosIdRouteImport } from './routes/_authenticated/assistidos/$id'
 import { Route as AuthenticatedAssistidosNovoRouteImport } from './routes/_authenticated/assistidos/novo'
+import { Route as AuthenticatedDoadoresIndexRouteImport } from './routes/_authenticated/doadores/index'
+import { Route as AuthenticatedDoadoresNovoRouteImport } from './routes/_authenticated/doadores/novo'
+import { Route as AuthenticatedAssistidosIdIdRouteImport } from './routes/_authenticated/assistidos/id/$id'
+import { Route as AuthenticatedDoadoresIdIdRouteImport } from './routes/_authenticated/doadores/id/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -60,16 +63,34 @@ const AuthenticatedAssistidosIndexRoute =
     path: '/assistidos/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAssistidosIdRoute =
-  AuthenticatedAssistidosIdRouteImport.update({
-    id: '/assistidos/$id',
-    path: '/assistidos/$id',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAssistidosNovoRoute =
   AuthenticatedAssistidosNovoRouteImport.update({
     id: '/assistidos/novo',
     path: '/assistidos/novo',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDoadoresIndexRoute =
+  AuthenticatedDoadoresIndexRouteImport.update({
+    id: '/doadores/',
+    path: '/doadores/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDoadoresNovoRoute =
+  AuthenticatedDoadoresNovoRouteImport.update({
+    id: '/doadores/novo',
+    path: '/doadores/novo',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAssistidosIdIdRoute =
+  AuthenticatedAssistidosIdIdRouteImport.update({
+    id: '/assistidos/id/$id',
+    path: '/assistidos/id/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDoadoresIdIdRoute =
+  AuthenticatedDoadoresIdIdRouteImport.update({
+    id: '/doadores/id/$id',
+    path: '/doadores/id/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
@@ -80,9 +101,12 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
   '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
+  '/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
   '/assistidos/': typeof AuthenticatedAssistidosIndexRoute
+  '/doadores/': typeof AuthenticatedDoadoresIndexRoute
+  '/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,9 +115,12 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
   '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
+  '/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
   '/assistidos': typeof AuthenticatedAssistidosIndexRoute
+  '/doadores': typeof AuthenticatedDoadoresIndexRoute
+  '/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,9 +131,12 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/_authenticated/assistidos/$id': typeof AuthenticatedAssistidosIdRoute
   '/_authenticated/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
+  '/_authenticated/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
   '/_authenticated/assistidos/': typeof AuthenticatedAssistidosIndexRoute
+  '/_authenticated/doadores/': typeof AuthenticatedDoadoresIndexRoute
+  '/_authenticated/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/_authenticated/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,9 +147,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/assistidos/$id'
     | '/assistidos/novo'
+    | '/doadores/novo'
     | '/assistidos/'
+    | '/doadores/'
+    | '/assistidos/id/$id'
+    | '/doadores/id/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,9 +161,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/assistidos/$id'
     | '/assistidos/novo'
+    | '/doadores/novo'
     | '/assistidos'
+    | '/doadores'
+    | '/assistidos/id/$id'
+    | '/doadores/id/$id'
   id:
     | '__root__'
     | '/'
@@ -140,9 +176,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/_authenticated/assistidos/$id'
     | '/_authenticated/assistidos/novo'
+    | '/_authenticated/doadores/novo'
     | '/_authenticated/assistidos/'
+    | '/_authenticated/doadores/'
+    | '/_authenticated/assistidos/id/$id'
+    | '/_authenticated/doadores/id/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,13 +251,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistidosIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/assistidos/$id': {
-      id: '/_authenticated/assistidos/$id'
-      path: '/assistidos/$id'
-      fullPath: '/assistidos/$id'
-      preLoaderRoute: typeof AuthenticatedAssistidosIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/assistidos/novo': {
       id: '/_authenticated/assistidos/novo'
       path: '/assistidos/novo'
@@ -226,21 +258,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistidosNovoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/doadores/': {
+      id: '/_authenticated/doadores/'
+      path: '/doadores'
+      fullPath: '/doadores/'
+      preLoaderRoute: typeof AuthenticatedDoadoresIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/doadores/novo': {
+      id: '/_authenticated/doadores/novo'
+      path: '/doadores/novo'
+      fullPath: '/doadores/novo'
+      preLoaderRoute: typeof AuthenticatedDoadoresNovoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/assistidos/id/$id': {
+      id: '/_authenticated/assistidos/id/$id'
+      path: '/assistidos/id/$id'
+      fullPath: '/assistidos/id/$id'
+      preLoaderRoute: typeof AuthenticatedAssistidosIdIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/doadores/id/$id': {
+      id: '/_authenticated/doadores/id/$id'
+      path: '/doadores/id/$id'
+      fullPath: '/doadores/id/$id'
+      preLoaderRoute: typeof AuthenticatedDoadoresIdIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
-  AuthenticatedAssistidosIdRoute: typeof AuthenticatedAssistidosIdRoute
   AuthenticatedAssistidosNovoRoute: typeof AuthenticatedAssistidosNovoRoute
+  AuthenticatedDoadoresNovoRoute: typeof AuthenticatedDoadoresNovoRoute
   AuthenticatedAssistidosIndexRoute: typeof AuthenticatedAssistidosIndexRoute
+  AuthenticatedDoadoresIndexRoute: typeof AuthenticatedDoadoresIndexRoute
+  AuthenticatedAssistidosIdIdRoute: typeof AuthenticatedAssistidosIdIdRoute
+  AuthenticatedDoadoresIdIdRoute: typeof AuthenticatedDoadoresIdIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
-  AuthenticatedAssistidosIdRoute: AuthenticatedAssistidosIdRoute,
   AuthenticatedAssistidosNovoRoute: AuthenticatedAssistidosNovoRoute,
+  AuthenticatedDoadoresNovoRoute: AuthenticatedDoadoresNovoRoute,
   AuthenticatedAssistidosIndexRoute: AuthenticatedAssistidosIndexRoute,
+  AuthenticatedDoadoresIndexRoute: AuthenticatedDoadoresIndexRoute,
+  AuthenticatedAssistidosIdIdRoute: AuthenticatedAssistidosIdIdRoute,
+  AuthenticatedDoadoresIdIdRoute: AuthenticatedDoadoresIdIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

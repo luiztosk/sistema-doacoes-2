@@ -1,29 +1,29 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { AssistidosTable } from "@/react-app/components/tables/assistidos";
+import { DoadoresTable } from "@/react-app/components/tables/doadores";
 import { tableViewSchema } from "@/react-app/components/tables/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 
-function Assistidos() {
+function Doadores() {
 	const view = Route.useSearch();
 
 	return (
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h1 className="text-3xl font-bold">Assistidos</h1>
+				<h1 className="text-3xl font-bold">Doadores</h1>
 				<Link
-					to="/assistidos/novo"
+					to="/doadores/novo"
 					className={buttonVariants({ size: "sm" })}
 				>
-					Novo assistido
+					Novo doador
 				</Link>
 			</div>
-			<AssistidosTable view={view} />
+			<DoadoresTable view={view} />
 		</section>
 	);
 }
 
-export const Route = createFileRoute("/_authenticated/assistidos/")({
+export const Route = createFileRoute("/_authenticated/doadores/")({
 	validateSearch: tableViewSchema,
-	component: Assistidos,
+	component: Doadores,
 });

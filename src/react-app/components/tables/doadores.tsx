@@ -8,8 +8,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Assistido } from "@/react-app/lib/api/assistidos";
-import { assistidoOptions } from "@/react-app/lib/api/assistidos";
+import type { Doador } from "@/react-app/lib/api/doadores";
+import { doadorOptions } from "@/react-app/lib/api/doadores";
 import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/table-features";
 import { TablePagination } from "@/react-app/components/tables/table-pagination";
@@ -34,42 +34,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { TIPOS_IMOVEL } from "@/worker/db/schema";
+import { UFS } from "@/worker/db/schema";
 
 const empty = "—";
-
-const emptyRows: Assistido[] = [];
-
-const cityLabel = (row: Assistido) =>
+const emptyRows: Doador[] = [];
+const cityLabel = (row: Doador) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
-
-const searchable = new Set([
-	"nome",
-	"cityLabel",
-	"telefone",
-	"email",
-	"tipoImovel",
-]);
-
-const tipoImovelOptions = TIPOS_IMOVEL.map((value) => ({
-	value,
-	label: value === "ALUGADO" ? "Alugado" : "Próprio",
-}));
-
-const cestaBasicaOptions = [
-	{ value: "true", label: "Sim" },
-	{ value: "false", label: "Não" },
-];
-
-const columnHelper = createColumnHelper<DataTableFeatures, Assistido>();
+const searchable = new Set(["nome", "cityLabel", "telefone", "email"]);
+const ufOptions = UFS.map((value) => ({ value, label: value }));
+const columnHelper = createColumnHelper<DataTableFeatures, Doador>();
 const ListViewContext = createContext<TableViewState>({});
 
-function DetalhesLink({ id }: { id: string }) {
+function DetailsLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
-
 	return (
 		<Link
-			to="/assistidos/id/$id"
+			to="/doadores/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -109,55 +89,28 @@ const columns = columnHelper.columns([
 		sortFn: "alphanumeric",
 		sortUndefined: "last",
 	}),
-	columnHelper.accessor((row) => row.renda ?? undefined, {
-		id: "renda",
-		header: ({ column }) => <SortableHeader column={column} label="Renda" />,
-		cell: ({ getValue }) => {
-			const value = getValue();
-			return value == null ? empty : `R$ ${value.toFixed(2)}`;
-		},
-		sortFn: "basic",
-		sortUndefined: "last",
-	}),
-	columnHelper.accessor((row) => row.tipoImovel ?? undefined, {
-		id: "tipoImovel",
-		header: ({ column }) => <SortableHeader column={column} label="Tipo de imóvel" />,
-		cell: ({ getValue }) => getValue() ?? empty,
-		filterFn: "equalsString",
-		sortFn: "alphanumeric",
-		sortUndefined: "last",
-	}),
-	columnHelper.accessor((row) => row.cestaBasica ?? undefined, {
-		id: "cestaBasica",
-		header: ({ column }) => (
-			<SortableHeader column={column} label="Cesta básica" />
-		),
-		cell: ({ getValue }) => {
-			const value = getValue();
-			return value == null ? empty : value ? "Sim" : "Não";
-		},
-		filterFn: "equalsString",
-		sortFn: "basic",
-		sortUndefined: "last",
-	}),
 	columnHelper.display({
 		id: "details",
 		header: "Detalhes",
-		cell: ({ row }) => <DetalhesLink id={row.id} />,
+		cell: ({ row }) => <DetailsLink id={row.id} />,
+	}),
+	columnHelper.accessor("uf", {
+		filterFn: "equalsString",
+		enableSorting: false,
 	}),
 ]);
 
-type AssistidosTableProps = {
+type DoadoresTableProps = {
 	view: TableViewState;
 };
 
-export function AssistidosTable({ view }: AssistidosTableProps) {
-	const { data, isPending } = useQuery(assistidoOptions);
+export function DoadoresTable({ view }: DoadoresTableProps) {
+	const { data, isPending, isError } = useQuery(doadorOptions);
 	const navigate = useNavigate();
 
-	const irPara = useCallback(
+	const navigateToView = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/assistidos", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/doadores", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -172,7 +125,7 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 		},
 		onPaginationChange: (updater) => {
 			const next = functionalUpdate(updater, paginationFromView(view));
-			irPara({
+			navigateToView({
 				page: next.pageIndex,
 				pageSize: next.pageSize,
 				sort: view.sort,
@@ -180,7 +133,7 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 		},
 		onSortingChange: (updater) => {
 			const next = functionalUpdate(updater, sortingFromView(view.sort));
-			irPara({
+			navigateToView({
 				page: 0,
 				pageSize: view.pageSize,
 				sort: sortingToView(next),
@@ -200,50 +153,58 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 			return;
 		}
 		if (pageIndex > 0 && pageIndex * pageSize >= total) {
-			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
+			navigateToView({ page: 0, pageSize: view.pageSize, sort: view.sort });
 		}
-	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	}, [
+		isPending,
+		navigateToView,
+		pageIndex,
+		pageSize,
+		total,
+		view.pageSize,
+		view.sort,
+	]);
 
-	const abrir = (id: string) =>
+	const openDonor = (id: string) =>
 		navigate({
-			to: "/assistidos/id/$id",
+			to: "/doadores/id/$id",
 			params: { id },
 			state: { lista: view },
 		});
 
 	const rows = table.getRowModel().rows;
 
+	if (isError) {
+		return <p>Não foi possível carregar os doadores.</p>;
+	}
+
 	return (
 		<ListViewContext value={view}>
 			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar assistido">
+				<TableToolbar table={table} searchLabel="Buscar doador">
 					<TableColumnFilter
 						table={table}
-						columnId="tipoImovel"
-						label="Tipo de imóvel"
-						options={tipoImovelOptions}
-					/>
-					<TableColumnFilter
-						table={table}
-						columnId="cestaBasica"
-						label="Cesta básica"
-						options={cestaBasicaOptions}
+						columnId="uf"
+						label="UF"
+						options={ufOptions}
 					/>
 				</TableToolbar>
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((group) => (
 							<TableRow key={group.id}>
-								{group.headers.map((header) => (
-									<TableHead
-										key={header.id}
-										aria-sort={ariaSort(header.column.getIsSorted())}
-									>
-										{header.isPlaceholder ? null : (
-											<table.FlexRender header={header} />
-										)}
-									</TableHead>
-								))}
+								{group.headers
+									.filter((header) => header.column.id !== "uf")
+									.map((header) => (
+										<TableHead
+											key={header.id}
+											aria-sort={ariaSort(header.column.getIsSorted())}
+										>
+											{header.isPlaceholder ? null : (
+												<table.FlexRender header={header} />
+											)}
+										</TableHead>
+									))}
 							</TableRow>
 						))}
 					</TableHeader>
@@ -253,25 +214,32 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 								<TableRow
 									key={row.id}
 									className="cursor-pointer"
-									onClick={() => abrir(row.id)}
+									onClick={() => openDonor(row.id)}
 								>
-									{row.getAllCells().map((cell) => (
-										<TableCell key={cell.id}>
-											<table.FlexRender cell={cell} />
-										</TableCell>
-									))}
+									{row.getAllCells()
+										.filter((cell) => cell.column.id !== "uf")
+										.map((cell) => (
+											<TableCell key={cell.id}>
+												<table.FlexRender cell={cell} />
+											</TableCell>
+										))}
 								</TableRow>
 							))
 						) : (
 							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									Nenhum assistido encontrado.
+								<TableCell
+									colSpan={columns.length - 1}
+									className="h-24 text-center"
+								>
+									{isPending
+										? "Carregando doadores..."
+										: "Nenhum doador encontrado."}
 								</TableCell>
 							</TableRow>
 						)}
 					</TableBody>
 				</Table>
-				<TablePagination table={table} totalLabel="assistido" />
+				<TablePagination table={table} totalLabel="doador" />
 			</div>
 		</ListViewContext>
 	);

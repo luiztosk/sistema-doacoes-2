@@ -25,6 +25,6 @@ function EditarAssistido() {
 	return <AssistidoForm assistido={data} />;
 }
 
-export const Route = createFileRoute("/_authenticated/assistidos/$id")({
+export const Route = createFileRoute("/_authenticated/assistidos/id/$id")({
 	component: EditarAssistido,
 });

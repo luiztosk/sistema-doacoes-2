@@ -67,6 +67,7 @@ export const assistidoOptions = queryOptions({
 		const { data } = await request<Assistido[]>(endpoint, { method: "GET" });
 		return data;
 	},
+	staleTime: 1000 * 30,
 });
 
 export const assistidoDetailOptions = (id: string) =>

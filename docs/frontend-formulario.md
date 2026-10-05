@@ -11,7 +11,7 @@ e escreve em um arquivo só. Aqui é só a metade que escreve.
 | `lib/api/<recurso>.ts` | `lib/api/assistidos.ts` (as 3 mutations que faltam) |
 | `components/forms/<recurso>.tsx` | `components/forms/assistido.tsx` |
 | `routes/_authenticated/<recurso>/novo.tsx` | `.../assistidos/novo.tsx` |
-| `routes/_authenticated/<recurso>/$id.tsx` | `.../assistidos/$id.tsx` |
+| `routes/_authenticated/<recurso>/id/$id.tsx` | `.../assistidos/id/$id.tsx` |
 
 Comece por [`frontend-tabela.md`](frontend-tabela.md): a lista é o que dá de
 acesso ao registro, e `lib/api/<recurso>.ts` já existe quando você chegar aqui.
@@ -52,6 +52,36 @@ export type AssistidoFormValues = RequiredNullable<
   `default` e viram `Field 'x' has an invalid value.`.
 - `updateAssistidoOptions` recebe o `id` como **argumento separado** do payload.
   `parseBody` rejeita `id` no corpo com `READ_ONLY_FIELD` antes mesmo do zod.
+- **`mutateAsync` com `await`, e só depois o `invalidateQueries`.** A ordem é
+  load-bearing. Com `mutate` (sem `await`), o `PATCH` sai e a invalidação marca a
+  lista como stale na mesma hora: como a query da lista não tem observador na tela
+  do detalhe, `invalidateQueries` não busca nada ali — o `GET` só acontece quando
+  a tabela monta de novo, e aí corre contra o `PATCH`, que faz três queries no D1
+  contra uma do `GET`. Quando o `GET` chega primeiro, ele grava no cache a linha
+  antiga com `dataUpdatedAt` novo, o `staleTime` segura os 5 segundos seguintes e
+  nada revalida: a lista volta velha e só um F5 conserta. Com `mutateAsync` o
+  `await` garante que a escrita está committed antes de invalidar.
+- **`try`/`catch` em volta do `mutateAsync`, e `return` no `catch`.** `mutateAsync`
+  lança onde `mutate` engolia. O `catch` evita a rejeição solta e, de brinde,
+  segura a navegação: em erro de servidor o formulário fica no lugar com o
+  preenchimento intacto, em vez de navegar e descartar o que a pessoa digitou. O
+  erro continua indo para o `console` pelo `MutationCache` global — a exibição
+  na tela é o item 5 de [`backlog-pi2.md`](backlog-pi2.md), e é no `catch` que
+  ela vai entrar.
+- **Invalide antes de navegar, nunca depois.** Na ordem inversa a tabela monta e
+  busca com dado velho, e só então invalida: dois `GET` por save.
+- **Não use `router.invalidate()` para isto.** Ele reexecuta o `beforeLoad` da
+  rota que está saindo. O único `beforeLoad` é o `ensureQueryData(sessionOptions)`
+  de `_authenticated.tsx`, e a sessão tem `staleTime` de 5 minutos, então nunca
+  busca. Os dados da tabela vivem no cache de query, não em loader de rota.
+- **Devolva a pessoa para a página de onde ela saiu.** A lista mora na
+  `?page`/`?sort`, então o formulário lê o contexto do `state` da navegação com
+  `useListView()` e o usa como `search` tanto no **Voltar para a lista** quanto no
+  `navigate` do `onSubmit`. Sem isso, voltar cai na primeira página — e o
+  componente desmonta ao navegar, então nada na tela sobrevive para recuperar.
+- **Voltar para a lista é `<a>`, não `<button>`.** Sai de um `Button` com
+  `nativeButton={false}` e `render={<Link />}`, então quem procura o botão por
+  seletor `button` no teste não acha — e é o que a navegação por teclado precisa.
 - Três modos num componente só: `assistido` ausente cria, presente visualiza, e
   `isEditing` interno libera a edição. `Cancelar` faz `form.reset()` antes de
   voltar, senão a tela mostraria alteração não salva.
@@ -62,13 +92,17 @@ export type AssistidoFormValues = RequiredNullable<
   `UPPER_SNAKE` é o contrato com o servidor.
 - `Button` com `render={<Link />}` precisa de `nativeButton={false}`, senão o
   Base UI reclama que espera um `<button>` nativo.
-- Rota estática vence dinâmica: `/assistidos/novo` não cai em `/assistidos/$id`.
-  Não edite `route-tree.tsx`, ele é gerado.
+- A rota do registro tem um segmento `id` antes do parâmetro, então
+  `/assistidos/novo` e `/assistidos/id/<uuid>` são duas rotas estáticas irmãs e
+  não competem pelo mesmo segmento. Sem ele, `novo` só não caía em `$id` porque
+  o roteador ranqueia estática acima de dinâmica.
+- Não edite `route-tree.tsx`, ele é gerado.
 
 ## O que vem depois
 
-`doador` é o próximo e está **liberado**: é o `assistido` sem a parte social, só
-texto e o enum `uf`. Comece por ele.
+`doador` já aplica esta receita: os 10 campos de identificação e endereço,
+com texto e o enum `uf`, nos modos de criação, visualização e edição. O retorno
+do detalhe preserva página e ordenação; após criar, a lista abre na página 1.
 
 `coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**: o modelo já foi implementado e virou
 `donation`, `delivery` e `inventory_item`, com `donation_line` e `delivery_line`
@@ -92,7 +126,7 @@ redesenho for implementado:
 
 `SelectField` **alimentado por outra lista** não tem exemplo, e não vai ter até o
 redesenho de coleta e entrega: os únicos recursos com chave estrangeira são os que
-não ganharam tela. `doador`, que é o próximo, só tem texto e o enum `uf`.
+não ganharam tela. `doador`, já implementado, só tem texto e o enum `uf`.
 
 Quando o caso aparecer, a query da tabela de origem já existe e as opções são o
 array dela (`{ value: linha.id, label: linha.nome }` — o `value` é o que vai no

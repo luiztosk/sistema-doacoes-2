@@ -2,42 +2,42 @@ import { queryOptions } from "@tanstack/react-query";
 import type { infer as ZodInfer } from "zod";
 
 import type {
-	donationInsertSchema,
-	donationSelectSchema,
+	deliveryInsertSchema,
+	deliverySelectSchema,
 } from "@/worker/db/schema";
 
-export type DonationLineItem = {
+export type DeliveryLineItem = {
 	inventoryItemId: string;
 	quantity: number;
 };
 
-export type Donation = Pick<
-	DonationCompleto,
-	"id" | "donorId" | "occurredAt" | "status" | "note"
+export type Delivery = Pick<
+	DeliveryCompleto,
+	"id" | "beneficiaryId" | "occurredAt" | "status" | "note"
 > & {
-	lines?: DonationLineItem[];
+	lines?: DeliveryLineItem[];
 };
 
-export type DonationCompleto = ZodInfer<typeof donationSelectSchema> & {
-	lines?: DonationLineItem[];
+export type DeliveryCompleto = ZodInfer<typeof deliverySelectSchema> & {
+	lines?: DeliveryLineItem[];
 };
 
 type RequiredNullable<TForm> = {
 	[K in keyof TForm]-?: Exclude<TForm[K], undefined> | null;
 };
 
-export type DonationFormValues = RequiredNullable<
-	ZodInfer<typeof donationInsertSchema>
+export type DeliveryFormValues = RequiredNullable<
+	ZodInfer<typeof deliveryInsertSchema>
 > & {
 	lines?: { inventoryItemId: string; quantity: number }[];
 };
 
-export const donationKeys = {
-	all: ["donations"] as const,
-	detail: (id: string) => [...donationKeys.all, id] as const,
+export const deliveryKeys = {
+	all: ["deliveries"] as const,
+	detail: (id: string) => [...deliveryKeys.all, id] as const,
 };
 
-const endpoint = "/api/v1/donations";
+const endpoint = "/api/v1/deliveries";
 
 type ApiError = { code: string; message: string };
 
@@ -64,20 +64,20 @@ async function request<T>(
 	return (await res.json()) as { data: T };
 }
 
-export const donationOptions = queryOptions({
-	queryKey: donationKeys.all,
-	queryFn: async (): Promise<Donation[]> => {
-		const { data } = await request<Donation[]>(endpoint, { method: "GET" });
+export const deliveryOptions = queryOptions({
+	queryKey: deliveryKeys.all,
+	queryFn: async (): Promise<Delivery[]> => {
+		const { data } = await request<Delivery[]>(endpoint, { method: "GET" });
 		return data;
 	},
 	staleTime: 1000 * 30,
 });
 
-export const donationDetailOptions = (id: string) =>
+export const deliveryDetailOptions = (id: string) =>
 	queryOptions({
-		queryKey: donationKeys.detail(id),
-		queryFn: async (): Promise<DonationCompleto> => {
-			const { data } = await request<DonationCompleto>(
+		queryKey: deliveryKeys.detail(id),
+		queryFn: async (): Promise<DeliveryCompleto> => {
+			const { data } = await request<DeliveryCompleto>(
 				`${endpoint}/${id}`,
 				{ method: "GET" },
 			);

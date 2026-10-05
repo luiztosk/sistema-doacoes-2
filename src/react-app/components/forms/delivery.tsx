@@ -9,43 +9,43 @@ import { SubmitField, TextField } from "@/react-app/components/forms/fields";
 import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type { DonationCompleto, DonationFormValues } from "@/react-app/lib/api/donations";
+import type { DeliveryCompleto, DeliveryFormValues } from "@/react-app/lib/api/deliveries";
 import {
-	donationKeys,
-	createDonationOptions,
-	updateDonationOptions,
-} from "@/react-app/lib/api/donations";
-import { donationInsertSchema } from "@/worker/db/schema";
+	deliveryKeys,
+	createDeliveryOptions,
+	updateDeliveryOptions,
+} from "@/react-app/lib/api/deliveries";
+import { deliveryInsertSchema } from "@/worker/db/schema";
 
-type DonationFormProps = { donation?: DonationCompleto };
+type DeliveryFormProps = { delivery?: DeliveryCompleto };
 
-function initialValues(record?: DonationCompleto): DonationFormValues {
+function initialValues(record?: DeliveryCompleto): DeliveryFormValues {
 	return {
-		donorId: record?.donorId ?? null,
+		beneficiaryId: record?.beneficiaryId ?? null,
 		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000).toISOString() : null,
 		note: record?.note ?? null,
 	};
 }
 
-export function DonationForm({ donation }: DonationFormProps) {
+export function DeliveryForm({ delivery }: DeliveryFormProps) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const lista = useListView();
-	const [isEditing, setIsEditing] = useState(!donation);
+	const [isEditing, setIsEditing] = useState(!delivery);
 
-	const create = useMutation({ ...createDonationOptions, mutationKey: [...donationKeys.all, "create"] });
-	const update = useMutation({ ...updateDonationOptions(donation?.id ?? ""), mutationKey: [...donationKeys.all, "update"] });
+	const create = useMutation({ ...createDeliveryOptions, mutationKey: [...deliveryKeys.all, "create"] });
+	const update = useMutation({ ...updateDeliveryOptions(delivery?.id ?? ""), mutationKey: [...deliveryKeys.all, "update"] });
 
 	const form = useForm({
-		defaultValues: initialValues(donation),
+		defaultValues: initialValues(delivery),
 		onSubmit: async ({ value }) => {
-			if (!donationInsertSchema.safeParse(value).success) return;
+			if (!deliveryInsertSchema.safeParse(value).success) return;
 			try {
-				if (donation) await update.mutateAsync(value);
+				if (delivery) await update.mutateAsync(value);
 				else await create.mutateAsync(value);
 			} catch { return; }
-			await queryClient.invalidateQueries({ queryKey: donationKeys.all });
-			await router.navigate({ to: "/donations", search: lista ? viewForUrl(lista) : {} });
+			await queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
+			await router.navigate({ to: "/deliveries", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
@@ -54,10 +54,10 @@ export function DonationForm({ donation }: DonationFormProps) {
 	return (
 		<section className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h1 className="text-3xl font-bold">{donation ? "Detalhes da doacao" : "Nova doacao"}</h1>
+				<h1 className="text-3xl font-bold">{delivery ? "Detalhes da entrega" : "Nova entrega"}</h1>
 				<div className="flex gap-2">
-					{donation && !isEditing ? <Button size="sm" onClick={() => setIsEditing(true)}>Editar</Button> : null}
-					<Link to="/donations" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Voltar</Link>
+					{delivery && !isEditing ? <Button size="sm" onClick={() => setIsEditing(true)}>Editar</Button> : null}
+					<Link to="/deliveries" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Voltar</Link>
 				</div>
 			</div>
 			<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}>
@@ -65,12 +65,12 @@ export function DonationForm({ donation }: DonationFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="donorId" children={(field) => <TextField field={field} label="Doador" />} />
+							<form.Field name="beneficiaryId" children={(field) => <TextField field={field} label="Beneficiario" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">
 								<form.Subscribe selector={(s) => [s.canSubmit]} children={([canSubmit]) => (
-									<SubmitField label={donation ? "Salvar" : "Cadastrar"} pendingLabel={donation ? "Salvando..." : "Cadastrando..."} canSubmit={canSubmit} isPending={isPending} />
+									<SubmitField label={delivery ? "Salvar" : "Cadastrar"} pendingLabel={delivery ? "Salvando..." : "Cadastrando..."} canSubmit={canSubmit} isPending={isPending} />
 								)} />
 							</div>
 						) : null}

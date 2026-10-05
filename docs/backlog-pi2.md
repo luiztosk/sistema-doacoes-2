@@ -139,6 +139,15 @@ Estado conferido em 05/10/2026.
    para `src/react-app/components/tables/utils/` e atualizados todos os imports
    correspondentes em componentes de tabela e formulários para refletir a nova
    estrutura, eliminando erros de "Cannot find module".
+10. **Estender padrão categoryName para outras tabelas** — aplicar o mesmo processo
+    usado para inventory-items (substituir IDs estrangeiros por nomes legíveis) às
+    tabelas `/donations` e `/deliveries`:
+    - Criar schemas de visualização compartilhados (ex: donationTableViewSchema,
+      deliveryTableViewSchema) em `src/worker/db/schema.ts`
+    - Substituir `donorId` por `donorName`, `beneficiaryId` por `beneficiaryName`,
+      `inventoryItemId` por `inventoryItemName` onde apropriado
+    - Atualizar rotas explícitas para usar esses schemas e fazer os joins necessários
+    - Atualizar tipos e queries do frontend para usar os novos schemas de visualização
 
 ### O que falta
 

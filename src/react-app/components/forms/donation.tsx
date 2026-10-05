@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
@@ -29,7 +29,7 @@ type DonationFormProps = { donation?: DonationCompleto };
 function initialValues(record?: DonationCompleto): DonationFormValues {
 	return {
 		donorId: record?.donorId ?? null,
-		occurredAt: record?.occurredAt ? new Date(record.occurredAt * 1000) : null,
+		occurredAt: record?.occurredAt != null ? new Date(Number(record.occurredAt) * 1000) : null,
 		note: record?.note ?? null,
 	};
 }

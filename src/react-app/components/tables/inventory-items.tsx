@@ -8,7 +8,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { InventoryItem } from "@/react-app/lib/api/inventory-items";
+import type { InventoryItemTableView } from "@/react-app/lib/api/inventory-items";
 import { inventoryItemOptions } from "@/react-app/lib/api/inventory-items";
 import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/table-features";
@@ -38,7 +38,7 @@ import { UNITS } from "@/worker/db/schema";
 
 const empty = "—";
 
-const emptyRows: InventoryItem[] = [];
+const emptyRows: InventoryItemTableView[] = [];
 
 const searchable = new Set(["name", "categoryId", "unit"]);
 
@@ -52,7 +52,7 @@ const unitOptions = UNITS.map((value) => ({
 		"Caixa",
 }));
 
-const columnHelper = createColumnHelper<DataTableFeatures, InventoryItem>();
+const columnHelper = createColumnHelper<DataTableFeatures, InventoryItemTableView>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
@@ -77,7 +77,7 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor("categoryId", {
+	columnHelper.accessor("categoryName", {
 		id: "categoryId",
 		header: ({ column }) => (
 			<SortableHeader column={column} label="Categoria" />

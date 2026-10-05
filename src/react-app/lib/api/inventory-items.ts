@@ -4,14 +4,17 @@ import type { infer as ZodInfer } from "zod";
 import type {
 	inventoryItemInsertSchema,
 	inventoryItemSelectSchema,
+	inventoryItemTableViewSchema,
 } from "@/worker/db/schema";
 
-export type InventoryItem = Pick<
-	InventoryItemCompleto,
-	"id" | "name" | "categoryId" | "unit" | "onHand" | "reservedQuantity" | "available"
+export type InventoryItemCompleto = ZodInfer<typeof inventoryItemSelectSchema>;
+
+type InventoryItemTableViewSchema = ZodInfer<typeof inventoryItemTableViewSchema>;
+export type InventoryItemTableView = Pick<
+	InventoryItemTableViewSchema,
+	"id" | "name" | "categoryName" | "unit" | "onHand" | "reservedQuantity" | "available"
 >;
 
-export type InventoryItemCompleto = ZodInfer<typeof inventoryItemSelectSchema>;
 
 type RequiredNullable<TForm> = {
 	[K in keyof TForm]-?: Exclude<TForm[K], undefined> | null;
@@ -55,8 +58,8 @@ async function request<T>(
 
 export const inventoryItemOptions = queryOptions({
 	queryKey: inventoryItemKeys.all,
-	queryFn: async (): Promise<InventoryItem[]> => {
-		const { data } = await request<InventoryItem[]>(endpoint, {
+	queryFn: async (): Promise<InventoryItemTableView[]> => {
+		const { data } = await request<InventoryItemTableView[]>(endpoint, {
 			method: "GET",
 		});
 		return data;

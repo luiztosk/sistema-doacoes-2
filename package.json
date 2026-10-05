@@ -76,6 +76,7 @@
 		"lint": "eslint .",
 		"test": "tsx tests/api.ts",
 		"test:inventory": "tsx tests/inventory.ts",
+		"typecheck": "tsc -p tsconfig.app.json --noEmit",
 		"gen-auth": "npx auth@latest generate --config=./src/worker/auth.ts --output=./src/worker/db/auth-schema.ts",
 		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "npx tsx src/worker/db/seed.ts",

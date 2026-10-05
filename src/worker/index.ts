@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
 import { registerResources } from "./api/v1";
+import { inventoryItems } from "./routes/inventory-items";
 import { auth } from "./auth";
 import { requireSession, sessionMiddleware } from "./session-middleware";
 
@@ -17,6 +18,7 @@ app.use("/api/v1/*", sessionMiddleware, requireSession);
 const api = new Hono<{ Bindings: Env }>();
 registerResources(api);
 app.route("/api/v1", api);
+app.route("/api/v1/inventory-items", inventoryItems);
 
 app.onError(handleApiError);
 app.notFound((c) =>

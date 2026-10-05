@@ -2,26 +2,24 @@ import { eq, inArray } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import {
-	delivery,
-	deliveryInsertSchema,
-	deliveryLine,
-	donationLine,
-	deliveryUpdateSchema,
-	donation,
-	donationInsertSchema,
-	donationLineInsertSchema,
-	donationUpdateSchema,
-	inventoryAdjustment,
-	inventoryAdjustmentInsertSchema,
-	inventoryCount,
-	inventoryCountInsertSchema,
-	inventoryCountLineInsertSchema,
-	inventoryItem,
-	inventoryItemInsertSchema,
-	inventoryItemUpdateSchema,
-	itemCategory,
-	itemCategoryInsertSchema,
-	itemCategoryUpdateSchema,
+  delivery,
+  deliveryInsertSchema,
+  deliveryLine,
+  donationLine,
+  deliveryUpdateSchema,
+  donation,
+  donationInsertSchema,
+  donationLineInsertSchema,
+  donationUpdateSchema,
+  inventoryAdjustment,
+  inventoryAdjustmentInsertSchema,
+  inventoryCount,
+  inventoryCountInsertSchema,
+  inventoryCountLineInsertSchema,
+  inventoryItem,
+  itemCategory,
+  itemCategoryInsertSchema,
+  itemCategoryUpdateSchema,
 } from "../db/schema";
 import { apiError, parseBody, readJsonObject } from "./errors";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
@@ -33,6 +31,8 @@ import {
 	rawOf,
 	registerResource,
 } from "./resource";
+
+
 
 const INSERT_DONATION = `
 	INSERT INTO donation (id, donor_id, occurred_at, status, note)
@@ -200,40 +200,34 @@ function drifted() {
 }
 
 async function reservedByItem(
-	db: ReturnType<typeof dbOf>,
-	ids: string[],
+  db: ReturnType<typeof dbOf>,
+  ids: string[],
 ): Promise<Map<string, number>> {
-	const rows = await db
-		.select({
-			id: inventoryItem.id,
-			reservedQuantity: inventoryItem.reservedQuantity,
-		})
-		.from(inventoryItem)
-		.where(inArray(inventoryItem.id, ids));
+  const rows = await db
+    .select({
+      id: inventoryItem.id,
+      reservedQuantity: inventoryItem.reservedQuantity,
+    })
+    .from(inventoryItem)
+    .where(inArray(inventoryItem.id, ids));
 
-	return new Map(rows.map((row) => [row.id, row.reservedQuantity]));
+  return new Map(rows.map((row) => [row.id, row.reservedQuantity]));
 }
 
-export function registerStock(app: Hono<ApiBindings>) {
-	registerResource(app, {
-		table: itemCategory,
-		path: "item-categories",
-		name: "Item category",
-		schemas: {
-			insert: itemCategoryInsertSchema,
-			update: itemCategoryUpdateSchema,
-		},
-	});
 
-	registerResource(app, {
-		table: inventoryItem,
-		path: "inventory-items",
-		name: "Inventory item",
-		schemas: {
-			insert: inventoryItemInsertSchema,
-			update: inventoryItemUpdateSchema,
-		},
-	});
+
+export function registerStock(app: Hono<ApiBindings>) {
+  registerResource(app, {
+    table: itemCategory,
+    path: "item-categories",
+    name: "Item category",
+    schemas: {
+      insert: itemCategoryInsertSchema,
+      update: itemCategoryUpdateSchema,
+    },
+  });
+
+
 
 	registerResource(app, {
 		table: donation,

@@ -4,7 +4,7 @@ export type SelectOption = {
 };
 
 export function fkOptions(
-	resource: "assistidos" | "doadores" | "inventory-items" | "item-categories",
+	_resource: "assistidos" | "doadores" | "inventory-items" | "item-categories",
 	items?: { id: string; name?: string; nome?: string }[],
 ): SelectOption[] {
 	if (items) {

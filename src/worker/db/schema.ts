@@ -262,6 +262,10 @@ export const inventoryItemSelectSchema = createSelectSchema(
 	inventoryItemRefinements,
 );
 
+export const inventoryItemTableViewSchema = inventoryItemSelectSchema.omit({ categoryId: true }).extend({
+  categoryName: itemCategorySelectSchema.shape.name.nullable(),
+});
+
 export const donation = sqliteTable(
 	"donation",
 	{

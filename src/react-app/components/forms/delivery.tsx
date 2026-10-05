@@ -4,8 +4,9 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
-import { EditableProvider } from "@/react-app/components/forms/fields";
-import { SubmitField, TextField } from "@/react-app/components/forms/fields";
+import { EditableProvider, DateField, SelectField, SubmitField } from "@/react-app/components/forms/fields";
+import { assistidoOptions } from "@/react-app/lib/api/assistidos";
+import { fkOptions } from "@/react-app/lib/api/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
@@ -38,6 +39,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!delivery);
+	const { data: assistidosData } = useQuery(assistidoOptions);
 
 	const create = useMutation({ ...createDeliveryOptions, mutationKey: [...deliveryKeys.all, "create"] });
 	const update = useMutation({ ...updateDeliveryOptions(delivery?.id ?? ""), mutationKey: [...deliveryKeys.all, "update"] });
@@ -71,7 +73,10 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="beneficiaryId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "beneficiaryId") }} children={(field) => <TextField field={field} label="Beneficiario" />} />
+							<form.Field name="beneficiaryId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "beneficiaryId") }} children={(field) => (
+							<SelectField field={field} label="Beneficiario" options={fkOptions("assistidos", assistidosData ?? [])} placeholder="Selecione" />
+						)} />
+						<form.Field name="occurredAt" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }} children={(field) => <DateField field={field} label="Data da entrega" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

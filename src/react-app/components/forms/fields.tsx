@@ -222,6 +222,37 @@ type SubmitFieldProps = {
 	isPending: boolean;
 };
 
+export function DateField({ field, label }: BaseFieldProps<Date | null>) {
+	const error = firstError(field.state.meta);
+	const editable = useEditable();
+
+	const valueStr = field.state.value
+		? new Date(field.state.value.getTime() - field.state.value.getTimezoneOffset() * 60000)
+				.toISOString()
+				.split("T")[0]
+		: "";
+
+	return (
+		<Field data-invalid={invalid(error)}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+			<Input
+				id={field.name}
+				name={field.name}
+				type="date"
+				disabled={!editable}
+				value={valueStr}
+				onBlur={field.handleBlur}
+				onChange={(e) => {
+				const d = e.target.value ? new Date(e.target.value + "T00:00:00") : null;
+				field.handleChange(d);
+			}}
+				aria-invalid={invalid(error)}
+			/>
+			<FieldError>{error}</FieldError>
+		</Field>
+	);
+}
+
 export function SubmitField({
 	label,
 	pendingLabel,

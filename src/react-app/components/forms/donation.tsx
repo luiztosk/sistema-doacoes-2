@@ -4,8 +4,9 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
-import { EditableProvider } from "@/react-app/components/forms/fields";
-import { SubmitField, TextField } from "@/react-app/components/forms/fields";
+import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
+import { doadorOptions } from "@/react-app/lib/api/doadores";
+import { fkOptions } from "@/react-app/lib/api/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
@@ -38,9 +39,11 @@ export function DonationForm({ donation }: DonationFormProps) {
 	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!donation);
+	const { data: doadoresData } = useQuery(doadorOptions);
 
 	const create = useMutation({ ...createDonationOptions, mutationKey: [...donationKeys.all, "create"] });
 	const update = useMutation({ ...updateDonationOptions(donation?.id ?? ""), mutationKey: [...donationKeys.all, "update"] });
+
 
 	const form = useForm({
 		defaultValues: initialValues(donation),
@@ -71,7 +74,11 @@ export function DonationForm({ donation }: DonationFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="donorId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "donorId") }} children={(field) => <TextField field={field} label="Doador" />} />
+							<form.Field name="donorId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "donorId") }} children={(field) => (
+							<SelectField field={field} label="Doador" options={fkOptions("doadores", doadoresData ?? [])} placeholder="Selecione" />
+						)} />
+						<form.Field name="occurredAt" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }} children={(field) => <DateField field={field} label="Data da doacao" />} />
+						<form.Field name="note" children={(field) => <TextField field={field} label="Observacao" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

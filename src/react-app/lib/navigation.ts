@@ -27,7 +27,17 @@ export const resources: readonly Resource[] = [
 	{
 		path: "/item-categories",
 		label: "Categorias de item",
-		description: "Categorias para classificação de itens.",
+		description: "Categorias para classificacao de itens.",
+	},
+	{
+		path: "/donations",
+		label: "Doacoes",
+		description: "Registro e recebimento de doacoes.",
+	},
+	{
+		path: "/deliveries",
+		label: "Entregas",
+		description: "Reservas e entregas de estoque.",
 	},
 ];
 

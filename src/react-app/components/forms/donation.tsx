@@ -7,7 +7,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
 import { doadorOptions } from "@/react-app/lib/api/doadores";
 import { fkOptions } from "@/react-app/lib/api/fk-factory";
-import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
+import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type { DonationCompleto, DonationFormValues } from "@/react-app/lib/api/donations";

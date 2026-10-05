@@ -6,7 +6,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider } from "@/react-app/components/forms/fields";
 import { SubmitField, TextField } from "@/react-app/components/forms/fields";
-import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
+import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {

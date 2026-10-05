@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DonationsTable } from "@/react-app/components/tables/donations";
-import { tableViewSchema } from "@/react-app/components/tables/table-view-state";
+import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 
 function Donations() {

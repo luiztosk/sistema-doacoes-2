@@ -10,21 +10,21 @@ import {
 
 import type { InventoryItemTableView } from "@/react-app/lib/api/inventory-items";
 import { inventoryItemOptions } from "@/react-app/lib/api/inventory-items";
-import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
-import { ariaSort, features } from "@/react-app/components/tables/table-features";
-import { TablePagination } from "@/react-app/components/tables/table-pagination";
-import { SortableHeader } from "@/react-app/components/tables/table-sortable-header";
+import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
+import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
+import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
+import { SortableHeader } from "@/react-app/components/tables/utils/table-sortable-header";
 import {
 	TableColumnFilter,
 	TableToolbar,
-} from "@/react-app/components/tables/table-toolbar";
-import type { TableViewState } from "@/react-app/components/tables/table-view-state";
+} from "@/react-app/components/tables/utils/table-toolbar";
+import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
 import {
 	paginationFromView,
 	sortingFromView,
 	sortingToView,
 	viewForUrl,
-} from "@/react-app/components/tables/table-view-state";
+} from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -40,7 +40,7 @@ const empty = "—";
 
 const emptyRows: InventoryItemTableView[] = [];
 
-const searchable = new Set(["name", "categoryId", "unit"]);
+const searchable = new Set(["name", "categoryName", "unit"]);
 
 const unitOptions = UNITS.map((value) => ({
 	value,

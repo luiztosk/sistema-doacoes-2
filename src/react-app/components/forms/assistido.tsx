@@ -14,7 +14,7 @@ import {
 	TextField,
 } from "@/react-app/components/forms/fields";
 import type { SelectOption } from "@/react-app/components/forms/fields";
-import { useListView, viewForUrl } from "@/react-app/components/tables/table-view-state";
+import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import {
 	FieldGroup,

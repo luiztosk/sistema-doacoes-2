@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { ReactTable, RowData } from "@tanstack/react-table";
 
 import type { SelectOption } from "@/react-app/components/forms/fields";
-import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
+import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import {
 	InputGroup,
 	InputGroupInput,

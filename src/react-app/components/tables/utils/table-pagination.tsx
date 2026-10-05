@@ -2,7 +2,7 @@ import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ReactTable, RowData } from "@tanstack/react-table";
 
-import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
+import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { Button } from "@/react-app/components/ui/button";
 import {
 	Select,

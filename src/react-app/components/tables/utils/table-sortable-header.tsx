@@ -6,7 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Column, RowData } from "@tanstack/react-table";
 
-import type { DataTableFeatures } from "@/react-app/components/tables/table-features";
+import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { Button } from "@/react-app/components/ui/button";
 
 type SortableHeaderProps<TData extends RowData, TValue> = {

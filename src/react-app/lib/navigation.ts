@@ -19,6 +19,16 @@ export const resources: readonly Resource[] = [
 		label: "Doadores",
 		description: "Cadastro de quem faz as doações.",
 	},
+	{
+		path: "/inventory-items",
+		label: "Itens de estoque",
+		description: "Catálogo de itens e controle de estoque.",
+	},
+	{
+		path: "/item-categories",
+		label: "Categorias de item",
+		description: "Categorias para classificação de itens.",
+	},
 ];
 
 export const homePath: Path = "/painel";

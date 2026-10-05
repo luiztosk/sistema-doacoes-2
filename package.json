@@ -79,6 +79,9 @@
 		"gen-auth": "npx auth@latest generate --config=./src/worker/auth.ts --output=./src/worker/db/auth-schema.ts",
 		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "npx tsx src/worker/db/seed.ts",
+		"db-init": "node scripts/db-init.js",
+		"db-reset": "node scripts/db-init.js --local --force",
+		"db-reset-remote": "node scripts/db-init.js --remote --force",
 		"local-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --local && wrangler types && npm run db-seed",
 		"remote-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
 		"preview": "npm run build && vite preview"

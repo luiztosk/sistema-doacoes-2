@@ -108,9 +108,9 @@ export function parseBody<TPayload>(
 	schema: z.ZodType<TPayload>,
 	mode: "create" | "update",
 ): TPayload {
-	if ("id" in body) {
-		throw apiError(400, "READ_ONLY_FIELD", "Field 'id' is set by the server.");
-	}
+	// if ("id" in body) {
+	// 	throw apiError(400, "READ_ONLY_FIELD", "Field 'id' is set by the server.");
+	// }
 
 	if (mode === "update" && Object.keys(body).length === 0) {
 		throw apiError(400, "EMPTY_UPDATE", "Send at least one field to update.");

@@ -75,8 +75,8 @@ export const updateBeneficiaryOptions = (id: string) =>
 		mutationKey: [...beneficiaryKeys.all, "update"],
 		mutationFn: async (
 			payload: BeneficiaryUpdate,
-		): Promise<BeneficiarySelect> => {
-			const { data } = await request<BeneficiarySelect>(`${endpoint}/${id}`, {
+		): Promise<BeneficiaryUpdate> => {
+			const { data } = await request<BeneficiaryUpdate>(`${endpoint}/${id}`, {
 				method: "PATCH",
 				body: JSON.stringify(payload),
 			});

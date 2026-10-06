@@ -22,10 +22,13 @@ import {
 	FieldSet,
 } from "@/react-app/components/ui/field";
 import type {
+	BeneficiaryInsert,
 	BeneficiarySelect,
+	BeneficiaryUpdate,
 } from "@/schemas/zod/contacts";
 import {
 	beneficiaryInsertSchema,
+	beneficiaryUpdateSchema,
 } from "@/schemas/zod/contacts";
 import {
 	beneficiaryKeys,
@@ -33,46 +36,9 @@ import {
 	updateBeneficiaryOptions,
 } from "@/react-app/lib/api/beneficiaries";
 import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/db/contacts";
+import { ZodError } from "zod";
 
 const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
-
-// function initialValues(record?: BeneficiarySelect): BeneficiarySelect {
-// 	return {
-// 		nome: record?.nome ?? "",
-// 		telefone: record?.telefone ?? null,
-// 		email: record?.email ?? null,
-// 		cep: record?.cep ?? null,
-// 		logradouro: record?.logradouro ?? null,
-// 		numero: record?.numero ?? null,
-// 		complemento: record?.complemento ?? null,
-// 		bairro: record?.bairro ?? null,
-// 		cidade: record?.cidade ?? null,
-// 		uf: record?.uf ?? null,
-// 		tipoImovel: record?.tipoImovel ?? null,
-// 		valorAluguel: record?.valorAluguel ?? null,
-// 		estadoCivil: record?.estadoCivil ?? null,
-// 		numeroAdultos: record?.numeroAdultos ?? null,
-// 		criancasPequenas: record?.criancasPequenas ?? null,
-// 		adolescentes: record?.adolescentes ?? null,
-// 		doentes: record?.doentes ?? false,
-// 		bolsaFamilia: record?.bolsaFamilia ?? false,
-// 		aposentado: record?.aposentado ?? false,
-// 		pensao: record?.pensao ?? false,
-// 		cestaBasica: record?.cestaBasica ?? false,
-// 		atividadeRemunerada: record?.atividadeRemunerada ?? false,
-// 		renda: record?.renda ?? null,
-// 		criancaEscola: record?.criancaEscola ?? false,
-// 		observacoes: record?.observacoes ?? null,
-// 	};
-// }
-
-// function errorFor(values: BeneficiaryFormValues, field: string) {
-// 	const parsed = beneficiaryInsertSchema.safeParse(values);
-// 	if (parsed.success) {
-// 		return undefined;
-// 	}
-// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-// }
 
 export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySelect }) {
 	const router = useRouter();
@@ -84,17 +50,25 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 	const update = useMutation(updateBeneficiaryOptions(beneficiary?.id ?? ""));
 
 	const form = useForm({
-		// defaultValues: BeneficiaryInsert
-		onSubmit: async ({ value }: { value: BeneficiarySelect }) => {
-			if (!beneficiaryInsertSchema.safeParse(value).success) {
-				return;
-			}
-
+		defaultValues: beneficiary,
+		onSubmit: async ({ value }: { value: BeneficiaryUpdate }) => {
 			try {
 				if (beneficiary) {
-					await update.mutateAsync(value);
+					try {
+						beneficiaryUpdateSchema.parse(value);
+					} catch (error) {
+						console.log("Update Beneficiary form validation failed", (error as ZodError).issues);
+						return;
+					}
+					await update.mutateAsync(value as BeneficiaryUpdate);
 				} else {
-					await create.mutateAsync(value);
+					try {
+						beneficiaryInsertSchema.parse(value);
+					} catch (error) {
+						console.log("Create Beneficiary form validation failed", (error as ZodError).issues);
+						return;
+					}
+					await create.mutateAsync(value as BeneficiaryInsert);
 				}
 			} catch {
 				return;
@@ -132,17 +106,17 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 					>
 						Voltar para a lista
 					</Link>
+				</div>
 			</div>
-		</div>
 
-		<form
+			<form
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
 			>
-	<EditableProvider editable={isEditing}>
+				<EditableProvider editable={isEditing}>
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificação</FieldLegend>
@@ -174,8 +148,8 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							<form.Field
 								name="email"
 								// validators={{
-									// onBlur: ({ fieldApi }) =>
-										// errorFor(fieldApi.form.state.values, "email"),
+								// onBlur: ({ fieldApi }) =>
+								// errorFor(fieldApi.form.state.values, "email"),
 								// }}
 								children={(field) => (
 									<TextField
@@ -274,8 +248,8 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							<form.Field
 								name="valorAluguel"
 								// validators={{
-									// onBlur: ({ fieldApi }) =>
-										// errorFor(fieldApi.form.state.values, "valorAluguel"),
+								// onBlur: ({ fieldApi }) =>
+								// errorFor(fieldApi.form.state.values, "valorAluguel"),
 								// }}
 								children={(field) => (
 									<NumberField field={field} label="Valor do aluguel" />
@@ -302,8 +276,8 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							<form.Field
 								name="numeroAdultos"
 								// validators={{
-									// onBlur: ({ fieldApi }) =>
-										// errorFor(fieldApi.form.state.values, "numeroAdultos"),
+								// onBlur: ({ fieldApi }) =>
+								// errorFor(fieldApi.form.state.values, "numeroAdultos"),
 								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adultos" />
@@ -312,8 +286,8 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							<form.Field
 								name="criancasPequenas"
 								// validators={{
-									// onBlur: ({ fieldApi }) =>
-										// errorFor(fieldApi.form.state.values, "criancasPequenas"),
+								// onBlur: ({ fieldApi }) =>
+								// errorFor(fieldApi.form.state.values, "criancasPequenas"),
 								// }}
 								children={(field) => (
 									<NumberField field={field} label="Crianças pequenas" />
@@ -322,8 +296,8 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							<form.Field
 								name="adolescentes"
 								// validators={{
-									// onBlur: ({ fieldApi }) =>
-										// errorFor(fieldApi.form.state.values, "adolescentes"),
+								// onBlur: ({ fieldApi }) =>
+								// errorFor(fieldApi.form.state.values, "adolescentes"),
 								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adolescentes" />
@@ -406,38 +380,38 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 							/>
 						</FieldSet>
 
-			{isEditing ? (
-				<div className="flex flex-wrap items-center gap-2">
-					<form.Subscribe
-						selector={(state) => [state.canSubmit]}
-						children={([canSubmit]) => (
-						<SubmitField
-							label={
-								beneficiary ? "Salvar alterações" : "Cadastrar beneficiário"
-							}
-							pendingLabel={beneficiary ? "Salvando..." : "Cadastrando..."}
-							canSubmit={canSubmit}
-							isPending={isPending}
-						/>
-						)}
-					/>
-					{beneficiary ? (
-						<Button
-							type="button"
-							variant="outline"
-							disabled={isPending}
-							onClick={() => {
-								form.reset();
-								setIsEditing(false);
-							}}
-						>
-							Cancelar
-						</Button>
-					) : null}
-				</div>
-			) : null}
+						{isEditing ? (
+							<div className="flex flex-wrap items-center gap-2">
+								<form.Subscribe
+									selector={(state) => [state.canSubmit]}
+									children={([canSubmit]) => (
+										<SubmitField
+											label={
+												beneficiary ? "Salvar alterações" : "Cadastrar beneficiário"
+											}
+											pendingLabel={beneficiary ? "Salvando..." : "Cadastrando..."}
+											canSubmit={canSubmit}
+											isPending={isPending}
+										/>
+									)}
+								/>
+								{beneficiary ? (
+									<Button
+										type="button"
+										variant="outline"
+										disabled={isPending}
+										onClick={() => {
+											form.reset();
+											setIsEditing(false);
+										}}
+									>
+										Cancelar
+									</Button>
+								) : null}
+							</div>
+						) : null}
 					</FieldGroup>
-	</EditableProvider>
+				</EditableProvider>
 			</form>
 		</section>
 	);

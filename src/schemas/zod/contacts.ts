@@ -10,12 +10,12 @@ import { beneficiary, donor, ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "../db/cont
 const contactRefinements = {
     id: z.uuid(),
     name: z.string().trim().min(1),
-    email: z.email(),
+    email: z.email().optional(),
     phone: z.e164(),
-    cep: z.string().regex(/^\d{8}$/),
-    logradouro: z.string().trim().min(1),
-    numero: z.string().trim().min(1),
-    complemento: z.string().trim(),
+    cep: z.string().regex(/^\d{8}$/).optional(),
+    logradouro: z.string().trim().min(1).optional(),
+    numero: z.string().trim().min(1).optional(),
+    complemento: z.string().trim().optional(),
     bairro: z.string().trim().min(1),
     cidade: z.string().trim().min(1),
     uf: z.enum(UFS),
@@ -33,18 +33,18 @@ const beneficiaryRefinements = {
     ...contactRefinements,
     tipoImovel: z.enum(TIPOS_IMOVEL),
     estadoCivil: z.enum(ESTADOS_CIVIS),
-    valorAluguel: z.number().nonnegative(),
-    renda: z.number().nonnegative(),
-    numeroAdultos: z.number().int().nonnegative(),
-    criancasPequenas: z.number().int().nonnegative(),
-    adolescentes: z.number().int().nonnegative(),
-    doentes: z.boolean(),
-    bolsaFamilia: z.boolean(),
-    aposentado: z.boolean(),
-    pensao: z.boolean(),
-    cestaBasica: z.boolean(),
-    atividadeRemunerada: z.boolean(),
-    criancaEscola: z.boolean(),
+    valorAluguel: z.number().nonnegative().optional(),
+    renda: z.number().nonnegative().optional(),
+    numeroAdultos: z.number().int().nonnegative().optional(),
+    criancasPequenas: z.number().int().nonnegative().optional(),
+    adolescentes: z.number().int().nonnegative().optional(),
+    doentes: z.boolean().optional(),
+    bolsaFamilia: z.boolean().optional(),
+    aposentado: z.boolean().optional(),
+    pensao: z.boolean().optional(),
+    cestaBasica: z.boolean().optional(),
+    atividadeRemunerada: z.boolean().optional(),
+    criancaEscola: z.boolean().optional(),
 };
 
 export const beneficiaryInsertSchema = createInsertSchema(
@@ -81,14 +81,12 @@ export const donorInsertSchema = createInsertSchema(
     donor, 
     donorRefinements
 )
-    .omit({ id: true })
     .strict();
 
 export const donorUpdateSchema = createUpdateSchema(
     donor, 
     donorRefinements
 )
-    .omit({ id: true })
     .strict();
 
 export const donorSelectSchema = createSelectSchema(

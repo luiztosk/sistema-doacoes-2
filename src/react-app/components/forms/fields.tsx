@@ -66,7 +66,7 @@ export function TextField({
 	placeholder,
 	autoComplete,
 	type = "text",
-}: BaseFieldProps<string | null> & {
+}: BaseFieldProps<string | null | undefined> & {
 	placeholder?: string;
 	autoComplete?: string;
 	type?: "text" | "email" | "tel";
@@ -120,7 +120,7 @@ export function NumberField({
 	label,
 	step = 1,
 	min = 0,
-}: BaseFieldProps<number | null> & { step?: number; min?: number }) {
+}: BaseFieldProps<number | null | undefined> & { step?: number; min?: number }) {
 	const error = firstError(field.state.meta);
 	const editable = useEditable();
 
@@ -195,7 +195,7 @@ export function SelectField({
 	);
 }
 
-export function CheckboxField({ field, label }: BaseFieldProps<boolean | null>) {
+export function CheckboxField({ field, label }: BaseFieldProps<boolean | null | undefined>) {
 	const labelId = `${field.name}-label`;
 	const editable = useEditable();
 

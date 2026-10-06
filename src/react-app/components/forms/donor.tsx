@@ -23,6 +23,7 @@ import {
 import type {
 	DonorInsert,
 	DonorSelect,
+	DonorUpdate,
 } from "@/schemas/zod/contacts";
 import {
 	createDonorOptions,
@@ -30,7 +31,8 @@ import {
 	updateDonorOptions,
 } from "@/react-app/lib/api/donors";
 import { UFS } from "@/schemas/db/contacts";
-import { donorInsertSchema } from "@/schemas/zod/contacts";
+import { donorInsertSchema, donorUpdateSchema } from "@/schemas/zod/contacts";
+import { ZodError } from "zod";
 
 export function DonorForm({ donor }: { donor?: DonorSelect }) {
 	const router = useRouter();
@@ -41,16 +43,25 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 	const update = useMutation(updateDonorOptions(donor?.id ?? ""));
 
 	const form = useForm({
-		onSubmit: async ({ value }: { value: DonorInsert }) => {
-			if (!donorInsertSchema.safeParse(value).success) {
-				return;
-			}
-
+		defaultValues: donor,
+		onSubmit: async ({ value }: { value: DonorUpdate }) => {
 			try {
 				if (donor) {
-					await update.mutateAsync(value);
+					try {
+						donorUpdateSchema.parse(value);
+					} catch (error) {
+						console.log("Update Donor form validation failed", (error as ZodError).issues);
+						return;
+					}
+					await update.mutateAsync(value as DonorUpdate);
 				} else {
-					await create.mutateAsync(value);
+					try {
+						donorInsertSchema.parse(value);
+					} catch (error) {
+						console.log("Create Donor form validation failed", (error as ZodError).issues);
+						return;
+					}
+					await create.mutateAsync(value as DonorInsert);
 				}
 			} catch {
 				return;

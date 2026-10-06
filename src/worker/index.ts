@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
 import { registerResources } from "./api/v1";
 import { inventoryItems } from "./routes/inventory-items";
-import { auth } from "./auth";
+import { auth } from "../auth.config";
 import { requireSession, sessionMiddleware } from "./session-middleware";
 
 const app = new Hono<{

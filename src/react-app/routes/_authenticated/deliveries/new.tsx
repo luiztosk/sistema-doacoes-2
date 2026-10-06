@@ -6,6 +6,6 @@ function NovaDelivery() {
 	return <DeliveryForm />;
 }
 
-export const Route = createFileRoute("/_authenticated/deliveries/novo")({
+export const Route = createFileRoute("/_authenticated/deliveries/new")({
 	component: NovaDelivery,
 });

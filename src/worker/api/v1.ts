@@ -1,30 +1,32 @@
 import type { Hono } from "hono";
 import {
-	assistido,
-	assistidoInsertSchema,
-	assistidoUpdateSchema,
-	doador,
-	doadorInsertSchema,
-	doadorUpdateSchema,
-} from "../db/schema";
+  beneficiary,
+  donor,
+} from "../../schemas/db/contacts";
+import {
+  beneficiaryInsertSchema,
+  beneficiaryUpdateSchema,
+  donorInsertSchema,
+  donorUpdateSchema,
+} from "../../schemas/zod/contacts";
 import type { ApiBindings } from "./resource";
 import { registerResource } from "./resource";
-import { registerStock } from "./stock";
+import { registerStock } from "./inventory";
 
 export function registerResources(app: Hono<ApiBindings>) {
 	registerResource(app, {
-		table: assistido,
-		path: "assistidos",
-		name: "Assistido",
-		schemas: { insert: assistidoInsertSchema, update: assistidoUpdateSchema },
+		table: beneficiary,
+		path: "beneficiaries",
+		name: "Beneficiary",
+		schemas: { insert: beneficiaryInsertSchema, update: beneficiaryUpdateSchema },
 	});
 
-	registerResource(app, {
-		table: doador,
-		path: "doadores",
-		name: "Doador",
-		schemas: { insert: doadorInsertSchema, update: doadorUpdateSchema },
-	});
+  registerResource(app, {
+    table: donor,
+    path: "donors",
+    name: "Donor",
+    schemas: { insert: donorInsertSchema, update: donorUpdateSchema },
+  });
 
 	registerStock(app);
 }

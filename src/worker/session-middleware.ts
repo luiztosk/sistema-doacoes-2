@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { createMiddleware } from "hono/factory";
-import { auth } from "./auth";
+import { auth } from "../auth.config";
 
 type SessionEnv = {
 	Variables: {

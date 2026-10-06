@@ -8,8 +8,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Doador } from "@/react-app/lib/api/doadores";
-import { doadorOptions } from "@/react-app/lib/api/doadores";
+import type { DonorTableView } from "@/schemas/zod/contacts";
+import { donorOptions } from "@/react-app/lib/api/donors";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -34,22 +34,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { UFS } from "@/worker/db/schema";
+import { UFS } from "@/schemas/db/contacts";
 
 const empty = "—";
-const emptyRows: Doador[] = [];
-const cityLabel = (row: Doador) =>
+const emptyRows: DonorTableView[] = [];
+const cityLabel = (row: DonorTableView) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 const searchable = new Set(["nome", "cityLabel", "telefone", "email"]);
-const ufOptions = UFS.map((value) => ({ value, label: value }));
-const columnHelper = createColumnHelper<DataTableFeatures, Doador>();
+const columnHelper = createColumnHelper<DataTableFeatures, DonorTableView>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetailsLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link
-			to="/doadores/id/$id"
+			to="/donors/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -61,7 +60,7 @@ function DetailsLink({ id }: { id: string }) {
 }
 
 const columns = columnHelper.columns([
-	columnHelper.accessor("nome", {
+	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
@@ -73,7 +72,7 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor((row) => row.telefone ?? undefined, {
+	columnHelper.accessor((row) => row.phone ?? undefined, {
 		id: "telefone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
 		cell: ({ getValue }) => getValue() ?? empty,
@@ -100,17 +99,17 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-type DoadoresTableProps = {
+type DonorsTableProps = {
 	view: TableViewState;
 };
 
-export function DoadoresTable({ view }: DoadoresTableProps) {
-	const { data, isPending, isError } = useQuery(doadorOptions);
+export function DonorsTable({ view }: DonorsTableProps) {
+	const { data, isPending, isError } = useQuery(donorOptions);
 	const navigate = useNavigate();
 
 	const navigateToView = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/doadores", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/donors", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -167,7 +166,7 @@ export function DoadoresTable({ view }: DoadoresTableProps) {
 
 	const openDonor = (id: string) =>
 		navigate({
-			to: "/doadores/id/$id",
+			to: "/donors/id/$id",
 			params: { id },
 			state: { lista: view },
 		});
@@ -179,68 +178,68 @@ export function DoadoresTable({ view }: DoadoresTableProps) {
 	}
 
 	return (
-		<ListViewContext value={view}>
-			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar doador">
-					<TableColumnFilter
-						table={table}
-						columnId="uf"
-						label="UF"
-						options={ufOptions}
-					/>
-				</TableToolbar>
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((group) => (
-							<TableRow key={group.id}>
-								{group.headers
-									.filter((header) => header.column.id !== "uf")
-									.map((header) => (
-										<TableHead
-											key={header.id}
-											aria-sort={ariaSort(header.column.getIsSorted())}
-										>
-											{header.isPlaceholder ? null : (
-												<table.FlexRender header={header} />
-											)}
-										</TableHead>
-									))}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{rows.length ? (
-							rows.map((row) => (
-								<TableRow
-									key={row.id}
-									className="cursor-pointer"
-									onClick={() => openDonor(row.id)}
-								>
-									{row.getAllCells()
-										.filter((cell) => cell.column.id !== "uf")
-										.map((cell) => (
-											<TableCell key={cell.id}>
-												<table.FlexRender cell={cell} />
-											</TableCell>
+			<ListViewContext value={view}>
+				<div className="space-y-4">
+					<TableToolbar table={table} searchLabel="Buscar donor">
+						<TableColumnFilter
+							table={table}
+							columnId="uf"
+							label="UF"
+							options={UFS.map((value) => ({ value, label: value }))}
+						/>
+					</TableToolbar>
+					<Table>
+						<TableHeader>
+							{table.getHeaderGroups().map((group) => (
+								<TableRow key={group.id}>
+									{group.headers
+										.filter((header) => header.column.id !== "uf")
+										.map((header) => (
+											<TableHead
+												key={header.id}
+												aria-sort={ariaSort(header.column.getIsSorted())}
+											>
+												{header.isPlaceholder ? null : (
+													<table.FlexRender header={header} />
+												)
+											}</TableHead>
 										))}
 								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length - 1}
-									className="h-24 text-center"
-								>
-									{isPending
-										? "Carregando doadores..."
-										: "Nenhum doador encontrado."}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-				<TablePagination table={table} totalLabel="doador" />
-			</div>
-		</ListViewContext>
+							))}
+						</TableHeader>
+						<TableBody>
+							{rows.length ? (
+								rows.map((row) => (
+									<TableRow
+										key={row.id}
+										className="cursor-pointer"
+										onClick={() => openDonor(row.id)}
+									>
+										{row.getAllCells()
+											.filter((cell) => cell.column.id !== "uf")
+											.map((cell) => (
+												<TableCell key={cell.id}>
+													<table.FlexRender cell={cell} />
+												)</TableCell>
+											))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell
+										colSpan={columns.length - 1}
+										className="h-24 text-center"
+									>
+										{isPending
+											? "Carregando donors..."
+											: "Nenhum donor encontrado."}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+					<TablePagination table={table} totalLabel="donor" />
+				</div>
+			</ListViewContext>
 	);
 }

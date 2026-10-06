@@ -8,8 +8,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Assistido } from "@/react-app/lib/api/assistidos";
-import { assistidoOptions } from "@/react-app/lib/api/assistidos";
+import type { BeneficiaryTableView } from "@/schemas/zod/contacts";
+import { beneficiaryTableOptions } from "@/react-app/lib/api/beneficiaries";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -34,13 +34,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { TIPOS_IMOVEL } from "@/worker/db/schema";
+import { TIPOS_IMOVEL } from "@/schemas/db/contacts";
 
 const empty = "—";
 
-const emptyRows: Assistido[] = [];
+const emptyRows: BeneficiaryTableView[] = [];
 
-const cityLabel = (row: Assistido) =>
+const cityLabel = (row: BeneficiaryTableView) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 
 const searchable = new Set([
@@ -61,7 +61,7 @@ const cestaBasicaOptions = [
 	{ value: "false", label: "Não" },
 ];
 
-const columnHelper = createColumnHelper<DataTableFeatures, Assistido>();
+const columnHelper = createColumnHelper<DataTableFeatures, BeneficiaryTableView>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
@@ -69,7 +69,7 @@ function DetalhesLink({ id }: { id: string }) {
 
 	return (
 		<Link
-			to="/assistidos/id/$id"
+			to="/beneficiaries/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -81,7 +81,7 @@ function DetalhesLink({ id }: { id: string }) {
 }
 
 const columns = columnHelper.columns([
-	columnHelper.accessor("nome", {
+	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
@@ -93,7 +93,7 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor((row) => row.telefone ?? undefined, {
+	columnHelper.accessor((row) => row.phone ?? undefined, {
 		id: "telefone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
 		cell: ({ getValue }) => getValue() ?? empty,
@@ -147,17 +147,17 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-type AssistidosTableProps = {
+type BeneficiariesTableProps = {
 	view: TableViewState;
 };
 
-export function AssistidosTable({ view }: AssistidosTableProps) {
-	const { data, isPending } = useQuery(assistidoOptions);
+export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
+	const { data, isPending } = useQuery(beneficiaryTableOptions);
 	const navigate = useNavigate();
 
 	const irPara = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/assistidos", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/beneficiaries", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -206,7 +206,7 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 
 	const abrir = (id: string) =>
 		navigate({
-			to: "/assistidos/id/$id",
+			to: "/beneficiaries/id/$id",
 			params: { id },
 			state: { lista: view },
 		});
@@ -214,65 +214,65 @@ export function AssistidosTable({ view }: AssistidosTableProps) {
 	const rows = table.getRowModel().rows;
 
 	return (
-		<ListViewContext value={view}>
-			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar assistido">
-					<TableColumnFilter
-						table={table}
-						columnId="tipoImovel"
-						label="Tipo de imóvel"
-						options={tipoImovelOptions}
-					/>
-					<TableColumnFilter
-						table={table}
-						columnId="cestaBasica"
-						label="Cesta básica"
-						options={cestaBasicaOptions}
-					/>
-				</TableToolbar>
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((group) => (
-							<TableRow key={group.id}>
-								{group.headers.map((header) => (
-									<TableHead
-										key={header.id}
-										aria-sort={ariaSort(header.column.getIsSorted())}
-									>
-										{header.isPlaceholder ? null : (
-											<table.FlexRender header={header} />
-										)}
-									</TableHead>
-								))}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{rows.length ? (
-							rows.map((row) => (
-								<TableRow
-									key={row.id}
-									className="cursor-pointer"
-									onClick={() => abrir(row.id)}
-								>
-									{row.getAllCells().map((cell) => (
-										<TableCell key={cell.id}>
-											<table.FlexRender cell={cell} />
-										</TableCell>
+			<ListViewContext value={view}>
+				<div className="space-y-4">
+					<TableToolbar table={table} searchLabel="Buscar beneficiary">
+						<TableColumnFilter
+							table={table}
+							columnId="tipoImovel"
+							label="Tipo de imóvel"
+							options={tipoImovelOptions}
+						/>
+						<TableColumnFilter
+							table={table}
+							columnId="cestaBasica"
+							label="Cesta básica"
+							options={cestaBasicaOptions}
+						/>
+					</TableToolbar>
+					<Table>
+						<TableHeader>
+							{table.getHeaderGroups().map((group) => (
+								<TableRow key={group.id}>
+									{group.headers.map((header) => (
+										<TableHead
+											key={header.id}
+											aria-sort={ariaSort(header.column.getIsSorted())}
+										>
+											{header.isPlaceholder ? null : (
+												<table.FlexRender header={header} />
+											)}
+										</TableHead>
 									))}
 								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									Nenhum assistido encontrado.
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-				<TablePagination table={table} totalLabel="assistido" />
-			</div>
-		</ListViewContext>
+							))}
+						</TableHeader>
+						<TableBody>
+							{rows.length ? (
+								rows.map((row) => (
+									<TableRow
+										key={row.id}
+										className="cursor-pointer"
+										onClick={() => abrir(row.id)}
+									>
+										{row.getAllCells().map((cell) => (
+											<TableCell key={cell.id}>
+												<table.FlexRender cell={cell} />
+											)</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center">
+										Nenhum beneficiary encontrado.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+					<TablePagination table={table} totalLabel="beneficiary" />
+				</div>
+			</ListViewContext>
 	);
 }

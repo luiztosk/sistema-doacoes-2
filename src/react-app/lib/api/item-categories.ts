@@ -4,7 +4,7 @@ import type { infer as ZodInfer } from "zod";
 import type {
 	itemCategoryInsertSchema,
 	itemCategorySelectSchema,
-} from "@/worker/db/schema";
+} from "@/schemas/zod/inventory";
 
 export type ItemCategory = Pick<
 	ItemCategoryCompleto,

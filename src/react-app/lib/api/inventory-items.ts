@@ -4,7 +4,7 @@ import type {
 	InventoryItemInsert,
 	InventoryItemSelect,
 	InventoryItemTableView,
-} from "@/worker/db/schema";
+} from "@/schemas/zod/inventory";
 
 export const inventoryItemKeys = {
 	all: ["inventory-items"] as const,

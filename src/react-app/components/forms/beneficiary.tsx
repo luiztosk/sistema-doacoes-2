@@ -22,100 +22,76 @@ import {
 	FieldSet,
 } from "@/react-app/components/ui/field";
 import type {
-	AssistidoCompleto,
-	AssistidoFormValues,
-} from "@/react-app/lib/api/assistidos";
+	BeneficiarySelect,
+} from "@/schemas/zod/contacts";
 import {
-	assistidoKeys,
-	createAssistidoOptions,
-	updateAssistidoOptions,
-} from "@/react-app/lib/api/assistidos";
+	beneficiaryInsertSchema,
+} from "@/schemas/zod/contacts";
 import {
-	ESTADOS_CIVIS,
-	TIPOS_IMOVEL,
-	UFS,
-	assistidoInsertSchema,
-} from "@/worker/db/schema";
-
-type AssistidoFormProps = {
-	assistido?: AssistidoCompleto;
-};
-
-const tipoImovelOptions: SelectOption[] = TIPOS_IMOVEL.map((value) => ({
-	value,
-	label: value === "ALUGADO" ? "Alugado" : "Próprio",
-}));
-
-const estadoCivilOptions: SelectOption[] = ESTADOS_CIVIS.map((value) => ({
-	value,
-	label:
-		{
-			SOLTEIRO: "Solteiro",
-			CASADO: "Casado",
-			DIVORCIADO: "Divorciado",
-			VIUVO: "Viúvo",
-			UNIAO_ESTAVEL: "União estável",
-		}[value] ?? value,
-}));
+	beneficiaryKeys,
+	createBeneficiaryOptions,
+	updateBeneficiaryOptions,
+} from "@/react-app/lib/api/beneficiaries";
+import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/db/contacts";
 
 const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
 
-function initialValues(record?: AssistidoCompleto): AssistidoFormValues {
-	return {
-		nome: record?.nome ?? "",
-		telefone: record?.telefone ?? null,
-		email: record?.email ?? null,
-		cep: record?.cep ?? null,
-		logradouro: record?.logradouro ?? null,
-		numero: record?.numero ?? null,
-		complemento: record?.complemento ?? null,
-		bairro: record?.bairro ?? null,
-		cidade: record?.cidade ?? null,
-		uf: record?.uf ?? null,
-		tipoImovel: record?.tipoImovel ?? null,
-		valorAluguel: record?.valorAluguel ?? null,
-		estadoCivil: record?.estadoCivil ?? null,
-		numeroAdultos: record?.numeroAdultos ?? null,
-		criancasPequenas: record?.criancasPequenas ?? null,
-		adolescentes: record?.adolescentes ?? null,
-		doentes: record?.doentes ?? false,
-		bolsaFamilia: record?.bolsaFamilia ?? false,
-		aposentado: record?.aposentado ?? false,
-		pensao: record?.pensao ?? false,
-		cestaBasica: record?.cestaBasica ?? false,
-		atividadeRemunerada: record?.atividadeRemunerada ?? false,
-		renda: record?.renda ?? null,
-		criancaEscola: record?.criancaEscola ?? false,
-		observacoes: record?.observacoes ?? null,
-	};
-}
+// function initialValues(record?: BeneficiarySelect): BeneficiarySelect {
+// 	return {
+// 		nome: record?.nome ?? "",
+// 		telefone: record?.telefone ?? null,
+// 		email: record?.email ?? null,
+// 		cep: record?.cep ?? null,
+// 		logradouro: record?.logradouro ?? null,
+// 		numero: record?.numero ?? null,
+// 		complemento: record?.complemento ?? null,
+// 		bairro: record?.bairro ?? null,
+// 		cidade: record?.cidade ?? null,
+// 		uf: record?.uf ?? null,
+// 		tipoImovel: record?.tipoImovel ?? null,
+// 		valorAluguel: record?.valorAluguel ?? null,
+// 		estadoCivil: record?.estadoCivil ?? null,
+// 		numeroAdultos: record?.numeroAdultos ?? null,
+// 		criancasPequenas: record?.criancasPequenas ?? null,
+// 		adolescentes: record?.adolescentes ?? null,
+// 		doentes: record?.doentes ?? false,
+// 		bolsaFamilia: record?.bolsaFamilia ?? false,
+// 		aposentado: record?.aposentado ?? false,
+// 		pensao: record?.pensao ?? false,
+// 		cestaBasica: record?.cestaBasica ?? false,
+// 		atividadeRemunerada: record?.atividadeRemunerada ?? false,
+// 		renda: record?.renda ?? null,
+// 		criancaEscola: record?.criancaEscola ?? false,
+// 		observacoes: record?.observacoes ?? null,
+// 	};
+// }
 
-function errorFor(values: AssistidoFormValues, field: string) {
-	const parsed = assistidoInsertSchema.safeParse(values);
-	if (parsed.success) {
-		return undefined;
-	}
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
+// function errorFor(values: BeneficiaryFormValues, field: string) {
+// 	const parsed = beneficiaryInsertSchema.safeParse(values);
+// 	if (parsed.success) {
+// 		return undefined;
+// 	}
+// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+// }
 
-export function AssistidoForm({ assistido }: AssistidoFormProps) {
+export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySelect }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const lista = useListView();
-	const [isEditing, setIsEditing] = useState(!assistido);
+	const [isEditing, setIsEditing] = useState(!beneficiary);
 
-	const create = useMutation(createAssistidoOptions);
-	const update = useMutation(updateAssistidoOptions(assistido?.id ?? ""));
+	const create = useMutation(createBeneficiaryOptions);
+	const update = useMutation(updateBeneficiaryOptions(beneficiary?.id ?? ""));
 
 	const form = useForm({
-		defaultValues: initialValues(assistido),
-		onSubmit: async ({ value }) => {
-			if (!assistidoInsertSchema.safeParse(value).success) {
+		// defaultValues: BeneficiaryInsert
+		onSubmit: async ({ value }: { value: BeneficiarySelect }) => {
+			if (!beneficiaryInsertSchema.safeParse(value).success) {
 				return;
 			}
 
 			try {
-				if (assistido) {
+				if (beneficiary) {
 					await update.mutateAsync(value);
 				} else {
 					await create.mutateAsync(value);
@@ -125,11 +101,11 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 			}
 
 			await queryClient.invalidateQueries({
-				queryKey: assistidoKeys.all,
+				queryKey: beneficiaryKeys.all,
 			});
 
 			await router.navigate({
-				to: "/assistidos",
+				to: "/beneficiaries",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
@@ -141,25 +117,25 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 		<section className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">
-					{assistido ? "Detalhes do assistido" : "Novo assistido"}
+					{beneficiary ? "Detalhes do beneficiário" : "Novo beneficiário"}
 				</h1>
 				<div className="flex flex-wrap items-center gap-2">
-					{assistido && !isEditing ? (
+					{beneficiary && !isEditing ? (
 						<Button size="sm" onClick={() => setIsEditing(true)}>
 							Editar
 						</Button>
 					) : null}
 					<Link
-						to="/assistidos"
+						to="/beneficiaries"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
 						Voltar para a lista
 					</Link>
-				</div>
 			</div>
+		</div>
 
-			<form
+		<form
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -171,11 +147,11 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 						<FieldSet>
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
-								name="nome"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "nome"),
-								}}
+								name="name"
+								// validators={{
+								// 	onBlur: ({ fieldApi }) =>
+								// 		errorFor(fieldApi.form.state.values, "nome"),
+								// }}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -185,7 +161,7 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 								)}
 							/>
 							<form.Field
-								name="telefone"
+								name="phone"
 								children={(field) => (
 									<TextField
 										field={field}
@@ -197,10 +173,10 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							/>
 							<form.Field
 								name="email"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "email"),
-								}}
+								// validators={{
+									// onBlur: ({ fieldApi }) =>
+										// errorFor(fieldApi.form.state.values, "email"),
+								// }}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -216,10 +192,10 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							<FieldLegend variant="label">Endereço</FieldLegend>
 							<form.Field
 								name="cep"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "cep"),
-								}}
+								// validators={{
+								// 	onBlur: ({ fieldApi }) =>
+								// 		errorFor(fieldApi.form.state.values, "cep"),
+								// }}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -291,16 +267,16 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 									<SelectField
 										field={field}
 										label="Tipo de imóvel"
-										options={tipoImovelOptions}
+										options={TIPOS_IMOVEL.map((value) => ({ value, label: value }))}
 									/>
 								)}
 							/>
 							<form.Field
 								name="valorAluguel"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "valorAluguel"),
-								}}
+								// validators={{
+									// onBlur: ({ fieldApi }) =>
+										// errorFor(fieldApi.form.state.values, "valorAluguel"),
+								// }}
 								children={(field) => (
 									<NumberField field={field} label="Valor do aluguel" />
 								)}
@@ -315,7 +291,7 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 									<SelectField
 										field={field}
 										label="Estado civil"
-										options={estadoCivilOptions}
+										options={ESTADOS_CIVIS.map((value) => ({ value, label: value }))}
 									/>
 								)}
 							/>
@@ -325,30 +301,30 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							<FieldLegend variant="label">Composição familiar</FieldLegend>
 							<form.Field
 								name="numeroAdultos"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "numeroAdultos"),
-								}}
+								// validators={{
+									// onBlur: ({ fieldApi }) =>
+										// errorFor(fieldApi.form.state.values, "numeroAdultos"),
+								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adultos" />
 								)}
 							/>
 							<form.Field
 								name="criancasPequenas"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "criancasPequenas"),
-								}}
+								// validators={{
+									// onBlur: ({ fieldApi }) =>
+										// errorFor(fieldApi.form.state.values, "criancasPequenas"),
+								// }}
 								children={(field) => (
 									<NumberField field={field} label="Crianças pequenas" />
 								)}
 							/>
 							<form.Field
 								name="adolescentes"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "adolescentes"),
-								}}
+								// validators={{
+									// onBlur: ({ fieldApi }) =>
+										// errorFor(fieldApi.form.state.values, "adolescentes"),
+								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adolescentes" />
 								)}
@@ -410,10 +386,10 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							<FieldLegend variant="label">Renda</FieldLegend>
 							<form.Field
 								name="renda"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "renda"),
-								}}
+								// validators={{
+								// 	onBlur: ({ fieldApi }) =>
+								// 		errorFor(fieldApi.form.state.values, "renda"),
+								// }}
 								children={(field) => (
 									<NumberField field={field} label="Renda mensal" step={0.01} />
 								)}
@@ -430,36 +406,36 @@ export function AssistidoForm({ assistido }: AssistidoFormProps) {
 							/>
 						</FieldSet>
 
-						{isEditing ? (
-							<div className="flex flex-wrap items-center gap-2">
-								<form.Subscribe
-									selector={(state) => [state.canSubmit]}
-									children={([canSubmit]) => (
-										<SubmitField
-											label={
-												assistido ? "Salvar alterações" : "Cadastrar assistido"
-											}
-											pendingLabel={assistido ? "Salvando..." : "Cadastrando..."}
-											canSubmit={canSubmit}
-											isPending={isPending}
-										/>
-									)}
-								/>
-								{assistido ? (
-									<Button
-										type="button"
-										variant="outline"
-										disabled={isPending}
-										onClick={() => {
-											form.reset();
-											setIsEditing(false);
-										}}
-									>
-										Cancelar
-									</Button>
-								) : null}
-							</div>
-						) : null}
+			{isEditing ? (
+				<div className="flex flex-wrap items-center gap-2">
+					<form.Subscribe
+						selector={(state) => [state.canSubmit]}
+						children={([canSubmit]) => (
+						<SubmitField
+							label={
+								beneficiary ? "Salvar alterações" : "Cadastrar beneficiário"
+							}
+							pendingLabel={beneficiary ? "Salvando..." : "Cadastrando..."}
+							canSubmit={canSubmit}
+							isPending={isPending}
+						/>
+						)}
+					/>
+					{beneficiary ? (
+						<Button
+							type="button"
+							variant="outline"
+							disabled={isPending}
+							onClick={() => {
+								form.reset();
+								setIsEditing(false);
+							}}
+						>
+							Cancelar
+						</Button>
+					) : null}
+				</div>
+			) : null}
 					</FieldGroup>
 	</EditableProvider>
 			</form>

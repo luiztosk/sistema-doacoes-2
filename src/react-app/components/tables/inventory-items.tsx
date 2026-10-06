@@ -8,7 +8,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { InventoryItemTableView } from "@/worker/db/schema";
+import type { InventoryItemTableView } from "@/schemas/zod/inventory";
 import { inventoryItemOptions } from "@/react-app/lib/api/inventory-items";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
@@ -34,7 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { UNITS } from "@/worker/db/schema";
+import { UNITS } from "@/schemas/db/inventory";
 
 const empty = "—";
 

@@ -16,22 +16,22 @@ import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthLogoutRouteImport } from './routes/auth/logout'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
-import { Route as AuthenticatedAssistidosIndexRouteImport } from './routes/_authenticated/assistidos/index'
-import { Route as AuthenticatedAssistidosNovoRouteImport } from './routes/_authenticated/assistidos/novo'
+import { Route as AuthenticatedBeneficiariesIndexRouteImport } from './routes/_authenticated/beneficiaries/index'
+import { Route as AuthenticatedBeneficiariesNewRouteImport } from './routes/_authenticated/beneficiaries/new'
 import { Route as AuthenticatedDeliveriesIndexRouteImport } from './routes/_authenticated/deliveries/index'
-import { Route as AuthenticatedDeliveriesNovoRouteImport } from './routes/_authenticated/deliveries/novo'
-import { Route as AuthenticatedDoadoresIndexRouteImport } from './routes/_authenticated/doadores/index'
-import { Route as AuthenticatedDoadoresNovoRouteImport } from './routes/_authenticated/doadores/novo'
+import { Route as AuthenticatedDeliveriesNewRouteImport } from './routes/_authenticated/deliveries/new'
 import { Route as AuthenticatedDonationsIndexRouteImport } from './routes/_authenticated/donations/index'
-import { Route as AuthenticatedDonationsNovoRouteImport } from './routes/_authenticated/donations/novo'
+import { Route as AuthenticatedDonationsNewRouteImport } from './routes/_authenticated/donations/new'
+import { Route as AuthenticatedDonorsIndexRouteImport } from './routes/_authenticated/donors/index'
+import { Route as AuthenticatedDonorsNewRouteImport } from './routes/_authenticated/donors/new'
 import { Route as AuthenticatedInventoryItemsIndexRouteImport } from './routes/_authenticated/inventory-items/index'
-import { Route as AuthenticatedInventoryItemsNovoRouteImport } from './routes/_authenticated/inventory-items/novo'
+import { Route as AuthenticatedInventoryItemsNewRouteImport } from './routes/_authenticated/inventory-items/new'
 import { Route as AuthenticatedItemCategoriesIndexRouteImport } from './routes/_authenticated/item-categories/index'
 import { Route as AuthenticatedItemCategoriesNovoRouteImport } from './routes/_authenticated/item-categories/novo'
-import { Route as AuthenticatedAssistidosIdIdRouteImport } from './routes/_authenticated/assistidos/id/$id'
+import { Route as AuthenticatedBeneficiariesIdIdRouteImport } from './routes/_authenticated/beneficiaries/id/$id'
 import { Route as AuthenticatedDeliveriesIdIdRouteImport } from './routes/_authenticated/deliveries/id/$id'
-import { Route as AuthenticatedDoadoresIdIdRouteImport } from './routes/_authenticated/doadores/id/$id'
 import { Route as AuthenticatedDonationsIdIdRouteImport } from './routes/_authenticated/donations/id/$id'
+import { Route as AuthenticatedDonorsIdIdRouteImport } from './routes/_authenticated/donors/id/$id'
 import { Route as AuthenticatedInventoryItemsIdIdRouteImport } from './routes/_authenticated/inventory-items/id/$id'
 import { Route as AuthenticatedItemCategoriesIdIdRouteImport } from './routes/_authenticated/item-categories/id/$id'
 
@@ -69,16 +69,16 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   path: '/auth/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAssistidosIndexRoute =
-  AuthenticatedAssistidosIndexRouteImport.update({
-    id: '/assistidos/',
-    path: '/assistidos/',
+const AuthenticatedBeneficiariesIndexRoute =
+  AuthenticatedBeneficiariesIndexRouteImport.update({
+    id: '/beneficiaries/',
+    path: '/beneficiaries/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAssistidosNovoRoute =
-  AuthenticatedAssistidosNovoRouteImport.update({
-    id: '/assistidos/novo',
-    path: '/assistidos/novo',
+const AuthenticatedBeneficiariesNewRoute =
+  AuthenticatedBeneficiariesNewRouteImport.update({
+    id: '/beneficiaries/new',
+    path: '/beneficiaries/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDeliveriesIndexRoute =
@@ -87,22 +87,10 @@ const AuthenticatedDeliveriesIndexRoute =
     path: '/deliveries/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedDeliveriesNovoRoute =
-  AuthenticatedDeliveriesNovoRouteImport.update({
-    id: '/deliveries/novo',
-    path: '/deliveries/novo',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedDoadoresIndexRoute =
-  AuthenticatedDoadoresIndexRouteImport.update({
-    id: '/doadores/',
-    path: '/doadores/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedDoadoresNovoRoute =
-  AuthenticatedDoadoresNovoRouteImport.update({
-    id: '/doadores/novo',
-    path: '/doadores/novo',
+const AuthenticatedDeliveriesNewRoute =
+  AuthenticatedDeliveriesNewRouteImport.update({
+    id: '/deliveries/new',
+    path: '/deliveries/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDonationsIndexRoute =
@@ -111,22 +99,33 @@ const AuthenticatedDonationsIndexRoute =
     path: '/donations/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedDonationsNovoRoute =
-  AuthenticatedDonationsNovoRouteImport.update({
-    id: '/donations/novo',
-    path: '/donations/novo',
+const AuthenticatedDonationsNewRoute =
+  AuthenticatedDonationsNewRouteImport.update({
+    id: '/donations/new',
+    path: '/donations/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedDonorsIndexRoute =
+  AuthenticatedDonorsIndexRouteImport.update({
+    id: '/donors/',
+    path: '/donors/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDonorsNewRoute = AuthenticatedDonorsNewRouteImport.update({
+  id: '/donors/new',
+  path: '/donors/new',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedInventoryItemsIndexRoute =
   AuthenticatedInventoryItemsIndexRouteImport.update({
     id: '/inventory-items/',
     path: '/inventory-items/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedInventoryItemsNovoRoute =
-  AuthenticatedInventoryItemsNovoRouteImport.update({
-    id: '/inventory-items/novo',
-    path: '/inventory-items/novo',
+const AuthenticatedInventoryItemsNewRoute =
+  AuthenticatedInventoryItemsNewRouteImport.update({
+    id: '/inventory-items/new',
+    path: '/inventory-items/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedItemCategoriesIndexRoute =
@@ -141,10 +140,10 @@ const AuthenticatedItemCategoriesNovoRoute =
     path: '/item-categories/novo',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAssistidosIdIdRoute =
-  AuthenticatedAssistidosIdIdRouteImport.update({
-    id: '/assistidos/id/$id',
-    path: '/assistidos/id/$id',
+const AuthenticatedBeneficiariesIdIdRoute =
+  AuthenticatedBeneficiariesIdIdRouteImport.update({
+    id: '/beneficiaries/id/$id',
+    path: '/beneficiaries/id/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDeliveriesIdIdRoute =
@@ -153,18 +152,17 @@ const AuthenticatedDeliveriesIdIdRoute =
     path: '/deliveries/id/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedDoadoresIdIdRoute =
-  AuthenticatedDoadoresIdIdRouteImport.update({
-    id: '/doadores/id/$id',
-    path: '/doadores/id/$id',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedDonationsIdIdRoute =
   AuthenticatedDonationsIdIdRouteImport.update({
     id: '/donations/id/$id',
     path: '/donations/id/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedDonorsIdIdRoute = AuthenticatedDonorsIdIdRouteImport.update({
+  id: '/donors/id/$id',
+  path: '/donors/id/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedInventoryItemsIdIdRoute =
   AuthenticatedInventoryItemsIdIdRouteImport.update({
     id: '/inventory-items/id/$id',
@@ -185,22 +183,22 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
-  '/deliveries/novo': typeof AuthenticatedDeliveriesNovoRoute
-  '/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
-  '/donations/novo': typeof AuthenticatedDonationsNovoRoute
-  '/inventory-items/novo': typeof AuthenticatedInventoryItemsNovoRoute
+  '/beneficiaries/new': typeof AuthenticatedBeneficiariesNewRoute
+  '/deliveries/new': typeof AuthenticatedDeliveriesNewRoute
+  '/donations/new': typeof AuthenticatedDonationsNewRoute
+  '/donors/new': typeof AuthenticatedDonorsNewRoute
+  '/inventory-items/new': typeof AuthenticatedInventoryItemsNewRoute
   '/item-categories/novo': typeof AuthenticatedItemCategoriesNovoRoute
-  '/assistidos/': typeof AuthenticatedAssistidosIndexRoute
+  '/beneficiaries/': typeof AuthenticatedBeneficiariesIndexRoute
   '/deliveries/': typeof AuthenticatedDeliveriesIndexRoute
-  '/doadores/': typeof AuthenticatedDoadoresIndexRoute
   '/donations/': typeof AuthenticatedDonationsIndexRoute
+  '/donors/': typeof AuthenticatedDonorsIndexRoute
   '/inventory-items/': typeof AuthenticatedInventoryItemsIndexRoute
   '/item-categories/': typeof AuthenticatedItemCategoriesIndexRoute
-  '/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/beneficiaries/id/$id': typeof AuthenticatedBeneficiariesIdIdRoute
   '/deliveries/id/$id': typeof AuthenticatedDeliveriesIdIdRoute
-  '/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
   '/donations/id/$id': typeof AuthenticatedDonationsIdIdRoute
+  '/donors/id/$id': typeof AuthenticatedDonorsIdIdRoute
   '/inventory-items/id/$id': typeof AuthenticatedInventoryItemsIdIdRoute
   '/item-categories/id/$id': typeof AuthenticatedItemCategoriesIdIdRoute
 }
@@ -211,22 +209,22 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
-  '/deliveries/novo': typeof AuthenticatedDeliveriesNovoRoute
-  '/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
-  '/donations/novo': typeof AuthenticatedDonationsNovoRoute
-  '/inventory-items/novo': typeof AuthenticatedInventoryItemsNovoRoute
+  '/beneficiaries/new': typeof AuthenticatedBeneficiariesNewRoute
+  '/deliveries/new': typeof AuthenticatedDeliveriesNewRoute
+  '/donations/new': typeof AuthenticatedDonationsNewRoute
+  '/donors/new': typeof AuthenticatedDonorsNewRoute
+  '/inventory-items/new': typeof AuthenticatedInventoryItemsNewRoute
   '/item-categories/novo': typeof AuthenticatedItemCategoriesNovoRoute
-  '/assistidos': typeof AuthenticatedAssistidosIndexRoute
+  '/beneficiaries': typeof AuthenticatedBeneficiariesIndexRoute
   '/deliveries': typeof AuthenticatedDeliveriesIndexRoute
-  '/doadores': typeof AuthenticatedDoadoresIndexRoute
   '/donations': typeof AuthenticatedDonationsIndexRoute
+  '/donors': typeof AuthenticatedDonorsIndexRoute
   '/inventory-items': typeof AuthenticatedInventoryItemsIndexRoute
   '/item-categories': typeof AuthenticatedItemCategoriesIndexRoute
-  '/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/beneficiaries/id/$id': typeof AuthenticatedBeneficiariesIdIdRoute
   '/deliveries/id/$id': typeof AuthenticatedDeliveriesIdIdRoute
-  '/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
   '/donations/id/$id': typeof AuthenticatedDonationsIdIdRoute
+  '/donors/id/$id': typeof AuthenticatedDonorsIdIdRoute
   '/inventory-items/id/$id': typeof AuthenticatedInventoryItemsIdIdRoute
   '/item-categories/id/$id': typeof AuthenticatedItemCategoriesIdIdRoute
 }
@@ -239,22 +237,22 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/_authenticated/assistidos/novo': typeof AuthenticatedAssistidosNovoRoute
-  '/_authenticated/deliveries/novo': typeof AuthenticatedDeliveriesNovoRoute
-  '/_authenticated/doadores/novo': typeof AuthenticatedDoadoresNovoRoute
-  '/_authenticated/donations/novo': typeof AuthenticatedDonationsNovoRoute
-  '/_authenticated/inventory-items/novo': typeof AuthenticatedInventoryItemsNovoRoute
+  '/_authenticated/beneficiaries/new': typeof AuthenticatedBeneficiariesNewRoute
+  '/_authenticated/deliveries/new': typeof AuthenticatedDeliveriesNewRoute
+  '/_authenticated/donations/new': typeof AuthenticatedDonationsNewRoute
+  '/_authenticated/donors/new': typeof AuthenticatedDonorsNewRoute
+  '/_authenticated/inventory-items/new': typeof AuthenticatedInventoryItemsNewRoute
   '/_authenticated/item-categories/novo': typeof AuthenticatedItemCategoriesNovoRoute
-  '/_authenticated/assistidos/': typeof AuthenticatedAssistidosIndexRoute
+  '/_authenticated/beneficiaries/': typeof AuthenticatedBeneficiariesIndexRoute
   '/_authenticated/deliveries/': typeof AuthenticatedDeliveriesIndexRoute
-  '/_authenticated/doadores/': typeof AuthenticatedDoadoresIndexRoute
   '/_authenticated/donations/': typeof AuthenticatedDonationsIndexRoute
+  '/_authenticated/donors/': typeof AuthenticatedDonorsIndexRoute
   '/_authenticated/inventory-items/': typeof AuthenticatedInventoryItemsIndexRoute
   '/_authenticated/item-categories/': typeof AuthenticatedItemCategoriesIndexRoute
-  '/_authenticated/assistidos/id/$id': typeof AuthenticatedAssistidosIdIdRoute
+  '/_authenticated/beneficiaries/id/$id': typeof AuthenticatedBeneficiariesIdIdRoute
   '/_authenticated/deliveries/id/$id': typeof AuthenticatedDeliveriesIdIdRoute
-  '/_authenticated/doadores/id/$id': typeof AuthenticatedDoadoresIdIdRoute
   '/_authenticated/donations/id/$id': typeof AuthenticatedDonationsIdIdRoute
+  '/_authenticated/donors/id/$id': typeof AuthenticatedDonorsIdIdRoute
   '/_authenticated/inventory-items/id/$id': typeof AuthenticatedInventoryItemsIdIdRoute
   '/_authenticated/item-categories/id/$id': typeof AuthenticatedItemCategoriesIdIdRoute
 }
@@ -267,22 +265,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/assistidos/novo'
-    | '/deliveries/novo'
-    | '/doadores/novo'
-    | '/donations/novo'
-    | '/inventory-items/novo'
+    | '/beneficiaries/new'
+    | '/deliveries/new'
+    | '/donations/new'
+    | '/donors/new'
+    | '/inventory-items/new'
     | '/item-categories/novo'
-    | '/assistidos/'
+    | '/beneficiaries/'
     | '/deliveries/'
-    | '/doadores/'
     | '/donations/'
+    | '/donors/'
     | '/inventory-items/'
     | '/item-categories/'
-    | '/assistidos/id/$id'
+    | '/beneficiaries/id/$id'
     | '/deliveries/id/$id'
-    | '/doadores/id/$id'
     | '/donations/id/$id'
+    | '/donors/id/$id'
     | '/inventory-items/id/$id'
     | '/item-categories/id/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -293,22 +291,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/assistidos/novo'
-    | '/deliveries/novo'
-    | '/doadores/novo'
-    | '/donations/novo'
-    | '/inventory-items/novo'
+    | '/beneficiaries/new'
+    | '/deliveries/new'
+    | '/donations/new'
+    | '/donors/new'
+    | '/inventory-items/new'
     | '/item-categories/novo'
-    | '/assistidos'
+    | '/beneficiaries'
     | '/deliveries'
-    | '/doadores'
     | '/donations'
+    | '/donors'
     | '/inventory-items'
     | '/item-categories'
-    | '/assistidos/id/$id'
+    | '/beneficiaries/id/$id'
     | '/deliveries/id/$id'
-    | '/doadores/id/$id'
     | '/donations/id/$id'
+    | '/donors/id/$id'
     | '/inventory-items/id/$id'
     | '/item-categories/id/$id'
   id:
@@ -320,22 +318,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/auth/signup'
-    | '/_authenticated/assistidos/novo'
-    | '/_authenticated/deliveries/novo'
-    | '/_authenticated/doadores/novo'
-    | '/_authenticated/donations/novo'
-    | '/_authenticated/inventory-items/novo'
+    | '/_authenticated/beneficiaries/new'
+    | '/_authenticated/deliveries/new'
+    | '/_authenticated/donations/new'
+    | '/_authenticated/donors/new'
+    | '/_authenticated/inventory-items/new'
     | '/_authenticated/item-categories/novo'
-    | '/_authenticated/assistidos/'
+    | '/_authenticated/beneficiaries/'
     | '/_authenticated/deliveries/'
-    | '/_authenticated/doadores/'
     | '/_authenticated/donations/'
+    | '/_authenticated/donors/'
     | '/_authenticated/inventory-items/'
     | '/_authenticated/item-categories/'
-    | '/_authenticated/assistidos/id/$id'
+    | '/_authenticated/beneficiaries/id/$id'
     | '/_authenticated/deliveries/id/$id'
-    | '/_authenticated/doadores/id/$id'
     | '/_authenticated/donations/id/$id'
+    | '/_authenticated/donors/id/$id'
     | '/_authenticated/inventory-items/id/$id'
     | '/_authenticated/item-categories/id/$id'
   fileRoutesById: FileRoutesById
@@ -400,18 +398,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/assistidos/': {
-      id: '/_authenticated/assistidos/'
-      path: '/assistidos'
-      fullPath: '/assistidos/'
-      preLoaderRoute: typeof AuthenticatedAssistidosIndexRouteImport
+    '/_authenticated/beneficiaries/': {
+      id: '/_authenticated/beneficiaries/'
+      path: '/beneficiaries'
+      fullPath: '/beneficiaries/'
+      preLoaderRoute: typeof AuthenticatedBeneficiariesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/assistidos/novo': {
-      id: '/_authenticated/assistidos/novo'
-      path: '/assistidos/novo'
-      fullPath: '/assistidos/novo'
-      preLoaderRoute: typeof AuthenticatedAssistidosNovoRouteImport
+    '/_authenticated/beneficiaries/new': {
+      id: '/_authenticated/beneficiaries/new'
+      path: '/beneficiaries/new'
+      fullPath: '/beneficiaries/new'
+      preLoaderRoute: typeof AuthenticatedBeneficiariesNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/deliveries/': {
@@ -421,25 +419,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDeliveriesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/deliveries/novo': {
-      id: '/_authenticated/deliveries/novo'
-      path: '/deliveries/novo'
-      fullPath: '/deliveries/novo'
-      preLoaderRoute: typeof AuthenticatedDeliveriesNovoRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/doadores/': {
-      id: '/_authenticated/doadores/'
-      path: '/doadores'
-      fullPath: '/doadores/'
-      preLoaderRoute: typeof AuthenticatedDoadoresIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/doadores/novo': {
-      id: '/_authenticated/doadores/novo'
-      path: '/doadores/novo'
-      fullPath: '/doadores/novo'
-      preLoaderRoute: typeof AuthenticatedDoadoresNovoRouteImport
+    '/_authenticated/deliveries/new': {
+      id: '/_authenticated/deliveries/new'
+      path: '/deliveries/new'
+      fullPath: '/deliveries/new'
+      preLoaderRoute: typeof AuthenticatedDeliveriesNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/donations/': {
@@ -449,11 +433,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDonationsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/donations/novo': {
-      id: '/_authenticated/donations/novo'
-      path: '/donations/novo'
-      fullPath: '/donations/novo'
-      preLoaderRoute: typeof AuthenticatedDonationsNovoRouteImport
+    '/_authenticated/donations/new': {
+      id: '/_authenticated/donations/new'
+      path: '/donations/new'
+      fullPath: '/donations/new'
+      preLoaderRoute: typeof AuthenticatedDonationsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/donors/': {
+      id: '/_authenticated/donors/'
+      path: '/donors'
+      fullPath: '/donors/'
+      preLoaderRoute: typeof AuthenticatedDonorsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/donors/new': {
+      id: '/_authenticated/donors/new'
+      path: '/donors/new'
+      fullPath: '/donors/new'
+      preLoaderRoute: typeof AuthenticatedDonorsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/inventory-items/': {
@@ -463,11 +461,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryItemsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/inventory-items/novo': {
-      id: '/_authenticated/inventory-items/novo'
-      path: '/inventory-items/novo'
-      fullPath: '/inventory-items/novo'
-      preLoaderRoute: typeof AuthenticatedInventoryItemsNovoRouteImport
+    '/_authenticated/inventory-items/new': {
+      id: '/_authenticated/inventory-items/new'
+      path: '/inventory-items/new'
+      fullPath: '/inventory-items/new'
+      preLoaderRoute: typeof AuthenticatedInventoryItemsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/item-categories/': {
@@ -484,11 +482,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedItemCategoriesNovoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/assistidos/id/$id': {
-      id: '/_authenticated/assistidos/id/$id'
-      path: '/assistidos/id/$id'
-      fullPath: '/assistidos/id/$id'
-      preLoaderRoute: typeof AuthenticatedAssistidosIdIdRouteImport
+    '/_authenticated/beneficiaries/id/$id': {
+      id: '/_authenticated/beneficiaries/id/$id'
+      path: '/beneficiaries/id/$id'
+      fullPath: '/beneficiaries/id/$id'
+      preLoaderRoute: typeof AuthenticatedBeneficiariesIdIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/deliveries/id/$id': {
@@ -498,18 +496,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDeliveriesIdIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/doadores/id/$id': {
-      id: '/_authenticated/doadores/id/$id'
-      path: '/doadores/id/$id'
-      fullPath: '/doadores/id/$id'
-      preLoaderRoute: typeof AuthenticatedDoadoresIdIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/donations/id/$id': {
       id: '/_authenticated/donations/id/$id'
       path: '/donations/id/$id'
       fullPath: '/donations/id/$id'
       preLoaderRoute: typeof AuthenticatedDonationsIdIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/donors/id/$id': {
+      id: '/_authenticated/donors/id/$id'
+      path: '/donors/id/$id'
+      fullPath: '/donors/id/$id'
+      preLoaderRoute: typeof AuthenticatedDonorsIdIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/inventory-items/id/$id': {
@@ -531,44 +529,44 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
-  AuthenticatedAssistidosNovoRoute: typeof AuthenticatedAssistidosNovoRoute
-  AuthenticatedDeliveriesNovoRoute: typeof AuthenticatedDeliveriesNovoRoute
-  AuthenticatedDoadoresNovoRoute: typeof AuthenticatedDoadoresNovoRoute
-  AuthenticatedDonationsNovoRoute: typeof AuthenticatedDonationsNovoRoute
-  AuthenticatedInventoryItemsNovoRoute: typeof AuthenticatedInventoryItemsNovoRoute
+  AuthenticatedBeneficiariesNewRoute: typeof AuthenticatedBeneficiariesNewRoute
+  AuthenticatedDeliveriesNewRoute: typeof AuthenticatedDeliveriesNewRoute
+  AuthenticatedDonationsNewRoute: typeof AuthenticatedDonationsNewRoute
+  AuthenticatedDonorsNewRoute: typeof AuthenticatedDonorsNewRoute
+  AuthenticatedInventoryItemsNewRoute: typeof AuthenticatedInventoryItemsNewRoute
   AuthenticatedItemCategoriesNovoRoute: typeof AuthenticatedItemCategoriesNovoRoute
-  AuthenticatedAssistidosIndexRoute: typeof AuthenticatedAssistidosIndexRoute
+  AuthenticatedBeneficiariesIndexRoute: typeof AuthenticatedBeneficiariesIndexRoute
   AuthenticatedDeliveriesIndexRoute: typeof AuthenticatedDeliveriesIndexRoute
-  AuthenticatedDoadoresIndexRoute: typeof AuthenticatedDoadoresIndexRoute
   AuthenticatedDonationsIndexRoute: typeof AuthenticatedDonationsIndexRoute
+  AuthenticatedDonorsIndexRoute: typeof AuthenticatedDonorsIndexRoute
   AuthenticatedInventoryItemsIndexRoute: typeof AuthenticatedInventoryItemsIndexRoute
   AuthenticatedItemCategoriesIndexRoute: typeof AuthenticatedItemCategoriesIndexRoute
-  AuthenticatedAssistidosIdIdRoute: typeof AuthenticatedAssistidosIdIdRoute
+  AuthenticatedBeneficiariesIdIdRoute: typeof AuthenticatedBeneficiariesIdIdRoute
   AuthenticatedDeliveriesIdIdRoute: typeof AuthenticatedDeliveriesIdIdRoute
-  AuthenticatedDoadoresIdIdRoute: typeof AuthenticatedDoadoresIdIdRoute
   AuthenticatedDonationsIdIdRoute: typeof AuthenticatedDonationsIdIdRoute
+  AuthenticatedDonorsIdIdRoute: typeof AuthenticatedDonorsIdIdRoute
   AuthenticatedInventoryItemsIdIdRoute: typeof AuthenticatedInventoryItemsIdIdRoute
   AuthenticatedItemCategoriesIdIdRoute: typeof AuthenticatedItemCategoriesIdIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
-  AuthenticatedAssistidosNovoRoute: AuthenticatedAssistidosNovoRoute,
-  AuthenticatedDeliveriesNovoRoute: AuthenticatedDeliveriesNovoRoute,
-  AuthenticatedDoadoresNovoRoute: AuthenticatedDoadoresNovoRoute,
-  AuthenticatedDonationsNovoRoute: AuthenticatedDonationsNovoRoute,
-  AuthenticatedInventoryItemsNovoRoute: AuthenticatedInventoryItemsNovoRoute,
+  AuthenticatedBeneficiariesNewRoute: AuthenticatedBeneficiariesNewRoute,
+  AuthenticatedDeliveriesNewRoute: AuthenticatedDeliveriesNewRoute,
+  AuthenticatedDonationsNewRoute: AuthenticatedDonationsNewRoute,
+  AuthenticatedDonorsNewRoute: AuthenticatedDonorsNewRoute,
+  AuthenticatedInventoryItemsNewRoute: AuthenticatedInventoryItemsNewRoute,
   AuthenticatedItemCategoriesNovoRoute: AuthenticatedItemCategoriesNovoRoute,
-  AuthenticatedAssistidosIndexRoute: AuthenticatedAssistidosIndexRoute,
+  AuthenticatedBeneficiariesIndexRoute: AuthenticatedBeneficiariesIndexRoute,
   AuthenticatedDeliveriesIndexRoute: AuthenticatedDeliveriesIndexRoute,
-  AuthenticatedDoadoresIndexRoute: AuthenticatedDoadoresIndexRoute,
   AuthenticatedDonationsIndexRoute: AuthenticatedDonationsIndexRoute,
+  AuthenticatedDonorsIndexRoute: AuthenticatedDonorsIndexRoute,
   AuthenticatedInventoryItemsIndexRoute: AuthenticatedInventoryItemsIndexRoute,
   AuthenticatedItemCategoriesIndexRoute: AuthenticatedItemCategoriesIndexRoute,
-  AuthenticatedAssistidosIdIdRoute: AuthenticatedAssistidosIdIdRoute,
+  AuthenticatedBeneficiariesIdIdRoute: AuthenticatedBeneficiariesIdIdRoute,
   AuthenticatedDeliveriesIdIdRoute: AuthenticatedDeliveriesIdIdRoute,
-  AuthenticatedDoadoresIdIdRoute: AuthenticatedDoadoresIdIdRoute,
   AuthenticatedDonationsIdIdRoute: AuthenticatedDonationsIdIdRoute,
+  AuthenticatedDonorsIdIdRoute: AuthenticatedDonorsIdIdRoute,
   AuthenticatedInventoryItemsIdIdRoute: AuthenticatedInventoryItemsIdIdRoute,
   AuthenticatedItemCategoriesIdIdRoute: AuthenticatedItemCategoriesIdIdRoute,
 }

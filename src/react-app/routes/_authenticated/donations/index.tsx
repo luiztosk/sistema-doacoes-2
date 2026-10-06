@@ -10,7 +10,7 @@ function Donations() {
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">Doacoes</h1>
-				<Link to="/donations/novo" className={buttonVariants({ size: "sm" })}>Nova doacao</Link>
+				<Link to="/donations/new" className={buttonVariants({ size: "sm" })}>Nova doacao</Link>
 			</div>
 			<DonationsTable view={view} />
 		</section>

@@ -6,6 +6,6 @@ function NovaDonation() {
 	return <DonationForm />;
 }
 
-export const Route = createFileRoute("/_authenticated/donations/novo")({
+export const Route = createFileRoute("/_authenticated/donations/new")({
 	component: NovaDonation,
 });

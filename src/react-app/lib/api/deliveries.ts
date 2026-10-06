@@ -4,7 +4,7 @@ import type { infer as ZodInfer } from "zod";
 import type {
 	deliveryInsertSchema,
 	deliverySelectSchema,
-} from "@/worker/db/schema";
+} from "@/schemas/zod/inventory";
 
 export type DeliveryLineItem = {
 	inventoryItemId: string;

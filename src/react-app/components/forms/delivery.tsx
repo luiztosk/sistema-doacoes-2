@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField } from "@/react-app/components/forms/fields";
-import { assistidoOptions } from "@/react-app/lib/api/assistidos";
+import { beneficiaryTableOptions } from "@/react-app/lib/api/beneficiaries";
 import { fkOptions } from "@/react-app/lib/api/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
@@ -16,7 +16,7 @@ import {
 	createDeliveryOptions,
 	updateDeliveryOptions,
 } from "@/react-app/lib/api/deliveries";
-import { deliveryInsertSchema } from "@/worker/db/schema";
+import { deliveryInsertSchema } from "@/schemas/zod/inventory";
 
 type DeliveryFormProps = { delivery?: DeliveryCompleto };
 
@@ -28,18 +28,18 @@ function initialValues(record?: DeliveryCompleto): DeliveryFormValues {
 	};
 }
 
-function errorFor(values: DeliveryFormValues, field: string) {
-	const parsed = deliveryInsertSchema.safeParse(values);
-	if (parsed.success) return undefined;
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
+// function errorFor(values: DeliveryFormValues, field: string) {
+// 	const parsed = deliveryInsertSchema.safeParse(values);
+// 	if (parsed.success) return undefined;
+// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+// }
 
 export function DeliveryForm({ delivery }: DeliveryFormProps) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!delivery);
-	const { data: assistidosData } = useQuery(assistidoOptions);
+	const { data: beneficiariesData } = useQuery(beneficiaryTableOptions);
 
 	const create = useMutation({ ...createDeliveryOptions, mutationKey: [...deliveryKeys.all, "create"] });
 	const update = useMutation({ ...updateDeliveryOptions(delivery?.id ?? ""), mutationKey: [...deliveryKeys.all, "update"] });
@@ -73,10 +73,14 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="beneficiaryId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "beneficiaryId") }} children={(field) => (
-							<SelectField field={field} label="Beneficiario" options={fkOptions("assistidos", assistidosData ?? [])} placeholder="Selecione" />
-						)} />
-						<form.Field name="occurredAt" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }} children={(field) => <DateField field={field} label="Data da entrega" />} />
+							<form.Field name="beneficiaryId"
+								// validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "beneficiaryId") }} 
+								children={(field) => (
+									<SelectField field={field} label="Beneficiario" options={fkOptions("beneficiaries", beneficiariesData ?? [])} placeholder="Selecione" />
+								)} />
+							<form.Field name="occurredAt"
+								// validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }}
+								children={(field) => <DateField field={field} label="Data da entrega" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

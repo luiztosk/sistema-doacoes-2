@@ -4,7 +4,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { drizzle } from "drizzle-orm/d1";
 import { organization } from "better-auth/plugins";
 import { env } from "cloudflare:workers";
-import * as schema from "./db/auth-schema";
+import * as schema from "./schemas/db/auth";
 
 const db = drizzle(env.prod_sistema_doacoes_2);
 

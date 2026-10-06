@@ -2,11 +2,13 @@ import { Context, Hono } from "hono";
 import { eq } from "drizzle-orm";
 import {
   inventoryItem,
+  itemCategory,
+} from "../../schemas/db/inventory";
+import {
   inventoryItemInsertSchema,
   inventoryItemUpdateSchema,
-  itemCategory,
   inventoryItemTableViewSchema,
-} from "../db/schema";
+} from "../../schemas/zod/inventory";
 import { apiError, parseBody, readJsonObject } from "../api/errors";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";

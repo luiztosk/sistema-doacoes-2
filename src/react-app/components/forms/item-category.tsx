@@ -18,7 +18,7 @@ import {
 	createItemCategoryOptions,
 	updateItemCategoryOptions,
 } from "@/react-app/lib/api/item-categories";
-import { itemCategoryInsertSchema } from "@/worker/db/schema";
+import { itemCategoryInsertSchema } from "@/schemas/zod/inventory";
 
 type ItemCategoryFormProps = {
 	itemCategory?: ItemCategoryCompleto;
@@ -30,13 +30,13 @@ function initialValues(record?: ItemCategoryCompleto): ItemCategoryFormValues {
 	};
 }
 
-function errorFor(values: ItemCategoryFormValues, field: string) {
-	const parsed = itemCategoryInsertSchema.safeParse(values);
-	if (parsed.success) {
-		return undefined;
-	}
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
+// function errorFor(values: ItemCategoryFormValues, field: string) {
+// 	const parsed = itemCategoryInsertSchema.safeParse(values);
+// 	if (parsed.success) {
+// 		return undefined;
+// 	}
+// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+// }
 
 export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
 	const router = useRouter();
@@ -114,10 +114,10 @@ export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "name"),
-								}}
+								// validators={{
+								// 	onBlur: ({ fieldApi }) =>
+								// 		errorFor(fieldApi.form.state.values, "name"),
+								// }}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}

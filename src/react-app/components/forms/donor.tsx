@@ -10,7 +10,6 @@ import {
 	SubmitField,
 	TextField,
 } from "@/react-app/components/forms/fields";
-import type { SelectOption } from "@/react-app/components/forms/fields";
 import {
   useListView,
   viewForUrl,
@@ -22,62 +21,33 @@ import {
 	FieldSet,
 } from "@/react-app/components/ui/field";
 import type {
-	DoadorCompleto,
-	DoadorFormValues,
-} from "@/react-app/lib/api/doadores";
+	DonorInsert,
+	DonorSelect,
+} from "@/schemas/zod/contacts";
 import {
-	createDoadorOptions,
-	doadorKeys,
-	updateDoadorOptions,
-} from "@/react-app/lib/api/doadores";
-import { UFS, doadorInsertSchema } from "@/worker/db/schema";
+	createDonorOptions,
+	donorKeys,
+	updateDonorOptions,
+} from "@/react-app/lib/api/donors";
+import { UFS } from "@/schemas/db/contacts";
+import { donorInsertSchema } from "@/schemas/zod/contacts";
 
-type DoadorFormProps = {
-	doador?: DoadorCompleto;
-};
-
-const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
-
-function initialValues(record?: DoadorCompleto): DoadorFormValues {
-	return {
-		nome: record?.nome ?? "",
-		telefone: record?.telefone ?? null,
-		email: record?.email ?? null,
-		cep: record?.cep ?? null,
-		logradouro: record?.logradouro ?? null,
-		numero: record?.numero ?? null,
-		complemento: record?.complemento ?? null,
-		bairro: record?.bairro ?? null,
-		cidade: record?.cidade ?? null,
-		uf: record?.uf ?? null,
-	};
-}
-
-function errorFor(values: DoadorFormValues, field: string) {
-	const parsed = doadorInsertSchema.safeParse(values);
-	if (parsed.success) {
-		return undefined;
-	}
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
-
-export function DoadorForm({ doador }: DoadorFormProps) {
+export function DonorForm({ donor }: { donor?: DonorSelect }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const listView = useListView();
-	const [isEditing, setIsEditing] = useState(!doador);
-	const create = useMutation(createDoadorOptions);
-	const update = useMutation(updateDoadorOptions(doador?.id ?? ""));
+	const [isEditing, setIsEditing] = useState(!donor);
+	const create = useMutation(createDonorOptions);
+	const update = useMutation(updateDonorOptions(donor?.id ?? ""));
 
 	const form = useForm({
-		defaultValues: initialValues(doador),
-		onSubmit: async ({ value }) => {
-			if (!doadorInsertSchema.safeParse(value).success) {
+		onSubmit: async ({ value }: { value: DonorInsert }) => {
+			if (!donorInsertSchema.safeParse(value).success) {
 				return;
 			}
 
 			try {
-				if (doador) {
+				if (donor) {
 					await update.mutateAsync(value);
 				} else {
 					await create.mutateAsync(value);
@@ -86,10 +56,10 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 				return;
 			}
 
-			await queryClient.invalidateQueries({ queryKey: doadorKeys.all });
+			await queryClient.invalidateQueries({ queryKey: donorKeys.all });
 			await router.navigate({
-				to: "/doadores",
-				search: doador && listView ? viewForUrl(listView) : {},
+				to: "/donors",
+				search: donor && listView ? viewForUrl(listView) : {},
 			});
 		},
 	});
@@ -100,24 +70,25 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 		<section className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">
-					{doador ? "Detalhes do doador" : "Novo doador"}
+					{donor ? "Detalhes do donor" : "Novo donor"}
 				</h1>
 				<div className="flex flex-wrap items-center gap-2">
-					{doador && !isEditing ? (
+					{donor && !isEditing ? (
 						<Button size="sm" onClick={() => setIsEditing(true)}>
 							Editar
 						</Button>
 					) : null}
 					<Link
-						to="/doadores"
-						search={doador && listView ? viewForUrl(listView) : {}}
+						to="/donors"
+						search={donor && listView ? viewForUrl(listView) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
 						Voltar para a lista
 					</Link>
-				</div>
 			</div>
-			<form
+		</div>
+
+		<form
 				onSubmit={(event) => {
 					event.preventDefault();
 					event.stopPropagation();
@@ -129,17 +100,13 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 						<FieldSet>
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
-								name="nome"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "nome"),
-								}}
+								name="name"
 								children={(field) => (
 									<TextField field={field} label="Nome" autoComplete="name" />
 								)}
 							/>
 							<form.Field
-								name="telefone"
+								name="phone"
 								children={(field) => (
 									<TextField
 										field={field}
@@ -151,10 +118,6 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 							/>
 							<form.Field
 								name="email"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "email"),
-								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -169,10 +132,6 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 							<FieldLegend variant="label">Endereço</FieldLegend>
 							<form.Field
 								name="cep"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "cep"),
-								}}
 								children={(field) => (
 									<TextField field={field} label="CEP" placeholder="01310100" />
 								)}
@@ -221,7 +180,7 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 									<SelectField
 										field={field}
 										label="UF"
-										options={ufOptions}
+										options={UFS.map((value) => ({ value: value, label: value }))}
 										placeholder="Selecione"
 									/>
 								)}
@@ -232,15 +191,15 @@ export function DoadorForm({ doador }: DoadorFormProps) {
 								<form.Subscribe
 									selector={(state) => [state.canSubmit]}
 									children={([canSubmit]) => (
-										<SubmitField
-											label={doador ? "Salvar alterações" : "Cadastrar doador"}
-											pendingLabel={doador ? "Salvando..." : "Cadastrando..."}
-											canSubmit={canSubmit}
-											isPending={isPending}
-										/>
+									<SubmitField
+										label={donor ? "Salvar alterações" : "Cadastrar donor"}
+										pendingLabel={donor ? "Salvando..." : "Cadastrando..."}
+										canSubmit={canSubmit}
+										isPending={isPending}
+									/>
 									)}
 								/>
-								{doador ? (
+								{donor ? (
 									<Button
 										type="button"
 										variant="outline"

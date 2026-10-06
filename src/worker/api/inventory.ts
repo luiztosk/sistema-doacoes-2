@@ -3,24 +3,26 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import {
   delivery,
-  deliveryInsertSchema,
   deliveryLine,
-  donationLine,
-  deliveryUpdateSchema,
   donation,
+  donationLine,
+  inventoryAdjustment,
+  inventoryCount,
+  inventoryItem,
+  itemCategory,
+} from "../../schemas/db/inventory";
+import {
+  deliveryInsertSchema,
+  deliveryUpdateSchema,
   donationInsertSchema,
   donationLineInsertSchema,
   donationUpdateSchema,
-  inventoryAdjustment,
   inventoryAdjustmentInsertSchema,
-  inventoryCount,
   inventoryCountInsertSchema,
   inventoryCountLineInsertSchema,
-  inventoryItem,
-  itemCategory,
   itemCategoryInsertSchema,
   itemCategoryUpdateSchema,
-} from "../db/schema";
+} from "../../schemas/zod/inventory";
 import { apiError, parseBody, readJsonObject } from "./errors";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { InferSelectModel } from "drizzle-orm";
@@ -113,9 +115,7 @@ const ADJUSTMENT_REASONS = ["DONOR_RETURN", "LOSS", "DAMAGE"] as const;
 const linePayloadSchema = donationLineInsertSchema.omit({ donationId: true });
 
 const donationCreateSchema = donationInsertSchema.extend({
-	lines: z.array(linePayloadSchema).min(1, {
-		error: "A donation needs at least one line.",
-	}),
+	lines: z.array(linePayloadSchema)
 });
 
 const deliveryCreateSchema = deliveryInsertSchema.extend({
@@ -217,15 +217,15 @@ async function reservedByItem(
 
 
 export function registerStock(app: Hono<ApiBindings>) {
-  registerResource(app, {
-    table: itemCategory,
-    path: "item-categories",
-    name: "Item category",
-    schemas: {
-      insert: itemCategoryInsertSchema,
-      update: itemCategoryUpdateSchema,
-    },
-  });
+	registerResource(app, {
+		table: itemCategory,
+		path: "item-categories",
+		name: "Item category",
+		schemas: {
+			insert: itemCategoryInsertSchema,
+			update: itemCategoryUpdateSchema,
+		},
+	});
 
 
 

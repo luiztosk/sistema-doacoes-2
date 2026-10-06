@@ -13,13 +13,14 @@ import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/fie
 import type {
 	InventoryItemSelect,
 	InventoryItemInsert,
-} from "@/worker/db/schema";
+} from "@/schemas/zod/inventory";
+import { inventoryItemInsertSchema } from "@/schemas/zod/inventory";
+import { UNITS } from "@/schemas/db/inventory";
 import {
 	inventoryItemKeys,
 	createInventoryItemOptions,
 	updateInventoryItemOptions,
 } from "@/react-app/lib/api/inventory-items";
-import { UNITS, inventoryItemInsertSchema } from "@/worker/db/schema";
 
 type InventoryItemFormProps = {
 	inventoryItem?: InventoryItemSelect;
@@ -43,13 +44,13 @@ function initialValues(record?: InventoryItemSelect): InventoryItemInsert {
 	};
 }
 
-function errorFor(values: InventoryItemInsert, field: string) {
-	const parsed = inventoryItemInsertSchema.safeParse(values);
-	if (parsed.success) {
-		return undefined;
-	}
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
+// function errorFor(values: InventoryItemInsert, field: string) {
+// 	const parsed = inventoryItemInsertSchema.safeParse(values);
+// 	if (parsed.success) {
+// 		return undefined;
+// 	}
+// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+// }
 
 export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
 	const router = useRouter();
@@ -127,10 +128,10 @@ export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
-								validators={{
-									onBlur: ({ fieldApi }) =>
-										errorFor(fieldApi.form.state.values, "name"),
-								}}
+								// validators={{
+								// 	onBlur: ({ fieldApi }) =>
+								// 		errorFor(fieldApi.form.state.values, "name"),
+								// }}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}

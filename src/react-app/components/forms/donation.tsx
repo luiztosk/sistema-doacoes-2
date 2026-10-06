@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
-import { doadorOptions } from "@/react-app/lib/api/doadores";
+import { donorOptions } from "@/react-app/lib/api/donors";
 import { fkOptions } from "@/react-app/lib/api/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
@@ -16,13 +16,13 @@ import {
 	createDonationOptions,
 	updateDonationOptions,
 } from "@/react-app/lib/api/donations";
-import { donationInsertSchema } from "@/worker/db/schema";
+import { donationInsertSchema } from "@/schemas/zod/inventory";
 
-function errorFor(values: DonationFormValues, field: string) {
-	const parsed = donationInsertSchema.safeParse(values);
-	if (parsed.success) return undefined;
-	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-}
+// function errorFor(values: DonationFormValues, field: string) {
+// 	const parsed = donationInsertSchema.safeParse(values);
+// 	if (parsed.success) return undefined;
+// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+// }
 
 type DonationFormProps = { donation?: DonationCompleto };
 
@@ -39,7 +39,7 @@ export function DonationForm({ donation }: DonationFormProps) {
 	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!donation);
-	const { data: doadoresData } = useQuery(doadorOptions);
+	const { data: doadoresData } = useQuery(donorOptions);
 
 	const create = useMutation({ ...createDonationOptions, mutationKey: [...donationKeys.all, "create"] });
 	const update = useMutation({ ...updateDonationOptions(donation?.id ?? ""), mutationKey: [...donationKeys.all, "update"] });
@@ -74,11 +74,15 @@ export function DonationForm({ donation }: DonationFormProps) {
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend variant="label">Identificacao</FieldLegend>
-							<form.Field name="donorId" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "donorId") }} children={(field) => (
-							<SelectField field={field} label="Doador" options={fkOptions("doadores", doadoresData ?? [])} placeholder="Selecione" />
-						)} />
-						<form.Field name="occurredAt" validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }} children={(field) => <DateField field={field} label="Data da doacao" />} />
-						<form.Field name="note" children={(field) => <TextField field={field} label="Observacao" />} />
+							<form.Field
+								name="donorId"
+								// validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "donorId") }}
+								children={(field) => (
+									<SelectField field={field} label="Doador" options={fkOptions("doadores", doadoresData ?? [])} placeholder="Selecione" />
+								)} />
+							<form.Field name="occurredAt" // validators={{ onBlur: ({ fieldApi }) => errorFor(fieldApi.form.state.values, "occurredAt") }}
+								children={(field) => <DateField field={field} label="Data da doacao" />} />
+							<form.Field name="note" children={(field) => <TextField field={field} label="Observacao" />} />
 						</FieldSet>
 						{isEditing ? (
 							<div className="flex gap-2">

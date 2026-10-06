@@ -10,13 +10,13 @@ export type Resource = {
 
 export const resources: readonly Resource[] = [
 	{
-		path: "/assistidos",
-		label: "Assistidos",
+		path: "/beneficiaries",
+		label: "Beneficiaries",
 		description: "Cadastro das famílias e pessoas atendidas.",
 	},
 	{
-		path: "/doadores",
-		label: "Doadores",
+		path: "/donors",
+		label: "Donors",
 		description: "Cadastro de quem faz as doações.",
 	},
 	{

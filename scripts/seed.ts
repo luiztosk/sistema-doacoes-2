@@ -3,8 +3,10 @@ import { drizzle } from "drizzle-orm/d1";
 import { D1Database } from "@cloudflare/workers-types";
 import { gerarSeed } from "./generate";
 import {
-	assistido,
-	doador,
+	beneficiary,
+	donor,
+} from "../src/schemas/db/contacts";
+import {
 	itemCategory,
 	inventoryItem,
 	donation,
@@ -14,7 +16,7 @@ import {
 	inventoryCount,
 	inventoryCountLine,
 	inventoryAdjustment,
-} from "./schema";
+} from "../src/schemas/db/inventory";
 
 async function seed() {
 	const dados = gerarSeed();
@@ -26,8 +28,8 @@ async function seed() {
 	};
 
 	const tableNames = [
-		{ name: "assistido", tableName: assistido, rows: dados.assistido },
-		{ name: "doador", tableName: doador, rows: dados.doador },
+		{ name: "beneficiary", tableName: beneficiary, rows: dados.beneficiary },
+		{ name: "doador", tableName: donor, rows: dados.donor },
 		{ name: "item_category", tableName: itemCategory, rows: dados.itemCategory },
 		{
 			name: "inventory_item",

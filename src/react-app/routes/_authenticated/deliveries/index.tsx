@@ -10,7 +10,7 @@ function Deliveries() {
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">Entregas</h1>
-				<Link to="/deliveries/novo" className={buttonVariants({ size: "sm" })}>Nova entrega</Link>
+				<Link to="/deliveries/new" className={buttonVariants({ size: "sm" })}>Nova entrega</Link>
 			</div>
 			<DeliveriesTable view={view} />
 		</section>

@@ -10,5 +10,5 @@
 		"emitDeclarationOnly": true,
 		"noEmit": false
 	},
-	"include": ["src/worker", "tests"]
+	"include": ["src/worker", "tests", "scripts/seed.ts", "scripts/generate.ts", "src/schemas", "src/auth.config.ts"]
 }

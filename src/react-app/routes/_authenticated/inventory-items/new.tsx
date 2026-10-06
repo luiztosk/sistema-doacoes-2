@@ -6,6 +6,6 @@ function NovoInventoryItem() {
 	return <InventoryItemForm />;
 }
 
-export const Route = createFileRoute("/_authenticated/inventory-items/novo")({
+export const Route = createFileRoute("/_authenticated/inventory-items/new")({
 	component: NovoInventoryItem,
 });

@@ -12,7 +12,7 @@ function InventoryItems() {
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">Itens de estoque</h1>
 				<Link
-					to="/inventory-items/novo"
+					to="/inventory-items/new"
 					className={buttonVariants({ size: "sm" })}
 				>
 					Novo item

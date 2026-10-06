@@ -5,21 +5,28 @@ import { z } from "zod";
 import { fake, getFaker, seed, setFaker } from "zod-schema-faker/v4";
 import { faker as fakerPTBR } from "@faker-js/faker/locale/pt_BR";
 import {
-	assistido,
-	assistidoSelectSchema,
+	beneficiary,
+} from "../src/schemas/db/contacts";
+import {
+	inventoryItem,
+	UNITS,
+} from "../src/schemas/db/inventory";
+
+import {
+	beneficiarySelectSchema,
+	donorSelectSchema,
+} from "../src/schemas/zod/contacts";
+import {
 	deliveryLineSelectSchema,
 	deliverySelectSchema,
 	donationLineSelectSchema,
 	donationSelectSchema,
-	doadorSelectSchema,
 	inventoryAdjustmentSelectSchema,
 	inventoryCountLineSelectSchema,
 	inventoryCountSelectSchema,
-	inventoryItem,
 	inventoryItemSelectSchema,
 	itemCategorySelectSchema,
-	UNITS,
-} from "./schema";
+} from "../src/schemas/zod/inventory";
 
 setFaker(fakerPTBR);
 seed(42);
@@ -28,8 +35,8 @@ const faker = getFaker();
 const BASE_DIR = "mock_data";
 
 const ROWS_PER_TABLE = {
-	assistido: 100,
-	doador: 25,
+	beneficiary: 100,
+	donor: 25,
 	donation: 45,
 	delivery: 30,
 	inventoryCount: 3,
@@ -37,9 +44,9 @@ const ROWS_PER_TABLE = {
 } as const;
 
 const ENUM_VALUES = {
-	uf: getTableColumns(assistido).uf.enumValues,
-	tipoImovel: getTableColumns(assistido).tipoImovel.enumValues,
-	estadoCivil: getTableColumns(assistido).estadoCivil.enumValues,
+	uf: getTableColumns(beneficiary).uf.enumValues,
+	tipoImovel: getTableColumns(beneficiary).tipoImovel.enumValues,
+	estadoCivil: getTableColumns(beneficiary).estadoCivil.enumValues,
 	unit: getTableColumns(inventoryItem).unit.enumValues,
 } as const;
 
@@ -90,8 +97,8 @@ type Municipio = { cidade: string; uf: string };
 
 type Unit = (typeof UNITS)[number];
 
-type AssistidoRow = z.infer<typeof assistidoSelectSchema>;
-type DoadorRow = z.infer<typeof doadorSelectSchema>;
+type BeneficiaryRow = z.infer<typeof beneficiarySelectSchema>;
+type DonorRow = z.infer<typeof donorSelectSchema>;
 type ItemCategoryRow = z.infer<typeof itemCategorySelectSchema>;
 type InventoryItemRow = z.infer<typeof inventoryItemSelectSchema>;
 type DonationRow = z.infer<typeof donationSelectSchema>;
@@ -114,8 +121,8 @@ const catalogSchema: z.ZodType<Catalog[]> = z.array(
 );
 
 export type SeedData = {
-	assistido: AssistidoRow[];
-	doador: DoadorRow[];
+	beneficiary: BeneficiaryRow[];
+	donor: DonorRow[];
 	itemCategory: ItemCategoryRow[];
 	inventoryItem: InventoryItemRow[];
 	donation: DonationRow[];
@@ -195,8 +202,8 @@ function doisDecimais(valor: number): number {
 	return Math.round(valor * 100) / 100;
 }
 
-function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
-	return Array.from({ length: ROWS_PER_TABLE.assistido }, () => {
+function criarBeneficiaries(municipios: Municipio[]): BeneficiaryRow[] {
+	return Array.from({ length: ROWS_PER_TABLE.beneficiary }, () => {
 		const aposentado = faker.datatype.boolean();
 		const criancasPequenas = fake(z.int().min(0).max(4));
 		const adolescentes = fake(z.int().min(0).max(3));
@@ -227,12 +234,12 @@ function criarAssistidos(municipios: Municipio[]): AssistidoRow[] {
 			observacoes: faker.helpers.arrayElement(OBSERVACAO),
 		};
 
-		return validar(assistidoSelectSchema, "assistido", row);
+		return validar(beneficiarySelectSchema, "beneficiary", row);
 	});
 }
 
-function criarDoadores(municipios: Municipio[]): DoadorRow[] {
-	return Array.from({ length: ROWS_PER_TABLE.doador }, () => {
+function criarDoadores(municipios: Municipio[]): DonorRow[] {
+	return Array.from({ length: ROWS_PER_TABLE.donor }, () => {
 		const row = {
 			id: novoId(),
 			nome: nomeDePessoa(),
@@ -241,7 +248,7 @@ function criarDoadores(municipios: Municipio[]): DoadorRow[] {
 			...endereco(municipios),
 		};
 
-		return validar(doadorSelectSchema, "doador", row);
+		return validar(donorSelectSchema, "donor", row);
 	});
 }
 
@@ -297,7 +304,7 @@ function pickItems<T>(items: Map<string, T>, quantity: number): T[] {
 }
 
 function createDonations(
-	doadores: DoadorRow[],
+	doadores: DonorRow[],
 	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
@@ -348,7 +355,7 @@ function withAvailability(
 }
 
 function createDeliveries(
-	beneficiaries: AssistidoRow[],
+	beneficiaries: BeneficiaryRow[],
 	items: Map<string, InventoryItemRow>,
 	estado: Map<string, Estado>,
 ) {
@@ -511,11 +518,11 @@ export function gerarSeed(): SeedData {
 		estado.set(id, { onHand: 0, reserved: 0 });
 	}
 
-	const assistidos = criarAssistidos(municipios);
+	const beneficiaries = criarBeneficiaries(municipios);
 	const doadores = criarDoadores(municipios);
 	const { donations, donationLines } = createDonations(doadores, items, estado);
 	const { deliveries, deliveryLines } = createDeliveries(
-		assistidos,
+		beneficiaries,
 		items,
 		estado,
 	);
@@ -550,8 +557,8 @@ export function gerarSeed(): SeedData {
 	);
 
 	return {
-		assistido: assistidos,
-		doador: doadores,
+		beneficiary: beneficiaries,
+		donor: doadores,
 		itemCategory: categories,
 		inventoryItem: inventoryItems,
 		donation: donations,

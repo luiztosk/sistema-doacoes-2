@@ -166,6 +166,7 @@ function validar<T>(schema: z.ZodType, tableName: string, row: unknown): T {
 		.map((issue) => `${issue.path.join(".") || "(linha)"}: ${issue.message}`)
 		.join("; ");
 
+	// throw new Error(`${tableName} gerada fora do schema — ${detail}`);
 	throw new Error(`${tableName} gerada fora do schema — ${detail}`);
 }
 
@@ -173,25 +174,19 @@ function nomeDePessoa(): string {
 	return faker.person.fullName().replace(TITULO, "").trim();
 }
 
-function telefoneBrasileiro(): string {
-	const ddd = String(faker.number.int({ min: 11, max: 99 }));
-	const celular = String(faker.number.int({ min: 900000000, max: 999999999 }));
-	return `(${ddd}) ${celular.slice(0, 5)}-${celular.slice(5)}`;
-}
-
 function endereco(municipios: Municipio[]) {
-	const municipio = faker.helpers.arrayElement(municipios);
-	return {
-		cep: faker.location.zipCode().replace("-", ""),
-		logradouro: `${faker.helpers.arrayElement(TIPO_DE_LOGRADOURO)} ${faker.person.firstName()} ${faker.person.lastName()}`,
-		numero: faker.location.buildingNumber(),
-		complemento: faker.datatype.boolean()
-			? faker.location.secondaryAddress()
-			: null,
-		bairro: faker.helpers.arrayElement(BAIRRO),
-		cidade: municipio.cidade,
-		uf: municipio.uf,
-	};
+  const municipio = faker.helpers.arrayElement(municipios);
+  return {
+    cep: faker.location.zipCode().replace("-", ""),
+    logradouro: `${faker.helpers.arrayElement(TIPO_DE_LOGRADOURO)} ${faker.person.firstName()} ${faker.person.lastName()}`,
+    numero: faker.location.buildingNumber(),
+    complemento: faker.datatype.boolean()
+      ? faker.location.secondaryAddress()
+      : "",
+    bairro: faker.helpers.arrayElement(BAIRRO),
+    cidade: municipio.cidade,
+    uf: municipio.uf,
+  };
 }
 
 function instant(janela: { de: number; ate: number }): Date {
@@ -209,31 +204,32 @@ function criarBeneficiaries(municipios: Municipio[]): BeneficiaryRow[] {
 		const adolescentes = fake(z.int().min(0).max(3));
 		const tipoImovel = fake(z.enum(ENUM_VALUES.tipoImovel));
 
-		const row = {
-			id: novoId(),
-			nome: nomeDePessoa(),
-			telefone: telefoneBrasileiro(),
-			email: faker.internet.email(),
-			...endereco(municipios),
-			tipoImovel,
-			valorAluguel:
-				tipoImovel === "ALUGADO" ? fake(z.int().min(200).max(3000)) : null,
-			estadoCivil: fake(z.enum(ENUM_VALUES.estadoCivil)),
-			numeroAdultos: fake(z.int().min(1).max(5)),
-			criancasPequenas,
-			adolescentes,
-			doentes: faker.datatype.boolean(),
-			bolsaFamilia: faker.datatype.boolean(),
-			aposentado,
-			pensao: aposentado ? true : faker.datatype.boolean(),
-			cestaBasica: faker.datatype.boolean(),
-			atividadeRemunerada: aposentado ? false : faker.datatype.boolean(),
-			renda: doisDecimais(fake(z.number().min(0).max(9000))),
-			criancaEscola:
-				criancasPequenas + adolescentes > 0 ? faker.datatype.boolean() : false,
-			observacoes: faker.helpers.arrayElement(OBSERVACAO),
-		};
+        const row = {
+          id: novoId(),
+          name: nomeDePessoa(),
+          phone: faker.phone.number({style: 'international'}),
+          email: faker.internet.email(),
+          ...endereco(municipios),
+          tipoImovel,
+          valorAluguel:
+            tipoImovel === "ALUGADO" ? fake(z.int().min(200).max(3000)) : 0,
+          estadoCivil: fake(z.enum(ENUM_VALUES.estadoCivil)),
+          numeroAdultos: fake(z.int().min(1).max(5)),
+          criancasPequenas,
+          adolescentes,
+          doentes: faker.datatype.boolean(),
+          bolsaFamilia: faker.datatype.boolean(),
+          aposentado,
+          pensao: aposentado ? true : faker.datatype.boolean(),
+          cestaBasica: faker.datatype.boolean(),
+          atividadeRemunerada: aposentado ? false : faker.datatype.boolean(),
+          renda: doisDecimais(fake(z.number().min(0).max(9000))),
+          criancaEscola:
+            criancasPequenas + adolescentes > 0 ? faker.datatype.boolean() : false,
+          observacoes: faker.helpers.arrayElement(OBSERVACAO),
+        };
 
+		// console.log(row);
 		return validar(beneficiarySelectSchema, "beneficiary", row);
 	});
 }
@@ -242,12 +238,13 @@ function criarDoadores(municipios: Municipio[]): DonorRow[] {
 	return Array.from({ length: ROWS_PER_TABLE.donor }, () => {
 		const row = {
 			id: novoId(),
-			nome: nomeDePessoa(),
-			telefone: telefoneBrasileiro(),
+			name: nomeDePessoa(),
+			phone: faker.phone.number({style: 'international'}),
 			email: faker.internet.email(),
 			...endereco(municipios),
 		};
 
+		// console.log(row);
 		return validar(donorSelectSchema, "donor", row);
 	});
 }
@@ -436,7 +433,7 @@ function createCounts(
 			const atual = estado.get(item.id)!;
 			const counted = Math.max(
 				atual.reserved,
-				atual.onHand + fake(z.int().min(-4).max(4)),
+				atual.onHand + fake(z.int().min(0).max(12)),
 			);
 
 			countLines.push(

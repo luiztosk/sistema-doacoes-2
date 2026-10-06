@@ -15,15 +15,15 @@ import { ariaSort, features } from "@/react-app/components/tables/utils/table-fe
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
 import { SortableHeader } from "@/react-app/components/tables/utils/table-sortable-header";
 import {
-  TableColumnFilter,
-  TableToolbar,
+	TableColumnFilter,
+	TableToolbar,
 } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
 import {
-  paginationFromView,
-  sortingFromView,
-  sortingToView,
-  viewForUrl,
+	paginationFromView,
+	sortingFromView,
+	sortingToView,
+	viewForUrl,
 } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
@@ -214,65 +214,65 @@ export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
 	const rows = table.getRowModel().rows;
 
 	return (
-			<ListViewContext value={view}>
-				<div className="space-y-4">
-					<TableToolbar table={table} searchLabel="Buscar beneficiary">
-						<TableColumnFilter
-							table={table}
-							columnId="tipoImovel"
-							label="Tipo de imóvel"
-							options={tipoImovelOptions}
-						/>
-						<TableColumnFilter
-							table={table}
-							columnId="cestaBasica"
-							label="Cesta básica"
-							options={cestaBasicaOptions}
-						/>
-					</TableToolbar>
-					<Table>
-						<TableHeader>
-							{table.getHeaderGroups().map((group) => (
-								<TableRow key={group.id}>
-									{group.headers.map((header) => (
-										<TableHead
-											key={header.id}
-											aria-sort={ariaSort(header.column.getIsSorted())}
-										>
-											{header.isPlaceholder ? null : (
-												<table.FlexRender header={header} />
-											)}
-										</TableHead>
+		<ListViewContext value={view}>
+			<div className="space-y-4">
+				<TableToolbar table={table} searchLabel="Buscar beneficiary">
+					<TableColumnFilter
+						table={table}
+						columnId="tipoImovel"
+						label="Tipo de imóvel"
+						options={tipoImovelOptions}
+					/>
+					<TableColumnFilter
+						table={table}
+						columnId="cestaBasica"
+						label="Cesta básica"
+						options={cestaBasicaOptions}
+					/>
+				</TableToolbar>
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((group) => (
+							<TableRow key={group.id}>
+								{group.headers.map((header) => (
+									<TableHead
+										key={header.id}
+										aria-sort={ariaSort(header.column.getIsSorted())}
+									>
+										{header.isPlaceholder ? null : (
+											<table.FlexRender header={header} />
+										)}
+									</TableHead>
+								))}
+							</TableRow>
+						))}
+					</TableHeader>
+					<TableBody>
+						{rows.length ? (
+							rows.map((row) => (
+								<TableRow
+									key={row.id}
+									className="cursor-pointer"
+									onClick={() => abrir(row.id)}
+								>
+									{row.getAllCells().map((cell) => (
+										<TableCell key={cell.id}>
+											<table.FlexRender cell={cell} />
+											</TableCell>
 									))}
 								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{rows.length ? (
-								rows.map((row) => (
-									<TableRow
-										key={row.id}
-										className="cursor-pointer"
-										onClick={() => abrir(row.id)}
-									>
-										{row.getAllCells().map((cell) => (
-											<TableCell key={cell.id}>
-												<table.FlexRender cell={cell} />
-											)</TableCell>
-										))}
-									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell colSpan={columns.length} className="h-24 text-center">
-										Nenhum beneficiary encontrado.
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-					<TablePagination table={table} totalLabel="beneficiary" />
-				</div>
-			</ListViewContext>
+							))
+						) : (
+							<TableRow>
+								<TableCell colSpan={columns.length} className="h-24 text-center">
+									Nenhum beneficiary encontrado.
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+				<TablePagination table={table} totalLabel="beneficiary" />
+			</div>
+		</ListViewContext>
 	);
 }

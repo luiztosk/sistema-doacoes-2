@@ -220,7 +220,7 @@ export function DonorsTable({ view }: DonorsTableProps) {
 											.map((cell) => (
 												<TableCell key={cell.id}>
 													<table.FlexRender cell={cell} />
-												)</TableCell>
+												</TableCell>
 											))}
 									</TableRow>
 								))

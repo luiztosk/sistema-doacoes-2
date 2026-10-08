@@ -144,78 +144,79 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-type InventoryItemsTableProps = {
-	view: TableViewState;
-};
+// type InventoryItemsTableProps = {
+// 	view: TableViewState;
+// };
 
-export function InventoryItemsTable({ view }: InventoryItemsTableProps) {
-	const { data, isPending } = useQuery(inventoryItemOptions);
-	const navigate = useNavigate();
+export function InventoryItemsTable(rows: InventoryItemTableView[]) {
+	// const { data, isPending } = useQuery(inventoryItemOptions);
+	// const navigate = useNavigate();
 
-	const irPara = useCallback(
-		(next: TableViewState) =>
-			navigate({
-				to: "/inventory-items",
-				search: viewForUrl(next),
-				replace: true,
-			}),
-		[navigate],
-	);
+	// const irPara = useCallback(
+	// 	(next: TableViewState) =>
+	// 		navigate({
+	// 			to: "/inventory-items",
+	// 			search: viewForUrl(next),
+	// 			replace: true,
+	// 		}),
+	// 	[navigate],
+	// );
 
 	const table = useTable({
 		features,
 		columns,
-		data: data ?? emptyRows,
-		getRowId: (row) => row.id,
-		state: {
-			pagination: paginationFromView(view),
-			sorting: sortingFromView(view.sort),
-		},
-		onPaginationChange: (updater) => {
-			const next = functionalUpdate(updater, paginationFromView(view));
-			irPara({
-				page: next.pageIndex,
-				pageSize: next.pageSize,
-				sort: view.sort,
-			});
-		},
-		onSortingChange: (updater) => {
-			const next = functionalUpdate(updater, sortingFromView(view.sort));
-			irPara({
-				page: 0,
-				pageSize: view.pageSize,
-				sort: sortingToView(next),
-			});
-		},
-		autoResetPageIndex: false,
-		autoResetSorting: false,
-		globalFilterFn: "includesString",
-		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
+		data: rows,
+		// data: data ?? emptyRows,
+		// getRowId: (row) => row.id,
+		// state: {
+		// 	pagination: paginationFromView(view),
+		// 	sorting: sortingFromView(view.sort),
+		// },
+		// onPaginationChange: (updater) => {
+		// 	const next = functionalUpdate(updater, paginationFromView(view));
+		// 	irPara({
+		// 		page: next.pageIndex,
+		// 		pageSize: next.pageSize,
+		// 		sort: view.sort,
+		// 	});
+		// },
+		// onSortingChange: (updater) => {
+		// 	const next = functionalUpdate(updater, sortingFromView(view.sort));
+		// 	irPara({
+		// 		page: 0,
+		// 		pageSize: view.pageSize,
+		// 		sort: sortingToView(next),
+		// 	});
+		// },
+		// autoResetPageIndex: false,
+		// autoResetSorting: false,
+		// globalFilterFn: "includesString",
+		// getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	const { pageIndex, pageSize } = table.state.pagination;
-	const total = table.getFilteredRowModel().rows.length;
+	// const { pageIndex, pageSize } = table.state.pagination;
+	// const total = table.getFilteredRowModel().rows.length;
 
-	useEffect(() => {
-		if (isPending) {
-			return;
-		}
-		if (pageIndex > 0 && pageIndex * pageSize >= total) {
-			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
-		}
-	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	// useEffect(() => {
+	// 	if (isPending) {
+	// 		return;
+	// 	}
+	// 	if (pageIndex > 0 && pageIndex * pageSize >= total) {
+	// 		irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
+	// 	}
+	// }, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
-	const abrir = (id: string) =>
-		navigate({
-			to: "/inventory-items/id/$id",
-			params: { id },
-			state: { lista: view },
-		});
+	// const abrir = (id: string) =>
+	// 	navigate({
+	// 		to: "/inventory-items/id/$id",
+	// 		params: { id },
+	// 		state: { lista: view },
+	// 	});
 
-	const rows = table.getRowModel().rows;
+	// const rows = table.getRowModel().rows;
 
 	return (
-		<ListViewContext value={view}>
+		// <ListViewContext value={data}>
 			<div className="space-y-4">
 				<TableToolbar table={table} searchLabel="Buscar item de estoque">
 					<TableColumnFilter
@@ -243,12 +244,16 @@ export function InventoryItemsTable({ view }: InventoryItemsTableProps) {
 						))}
 					</TableHeader>
 					<TableBody>
-						{rows.length ? (
-							rows.map((row) => (
+						{table.getRowModel().rows.map((row) => (
 								<TableRow
 									key={row.id}
-									className="cursor-pointer"
-									onClick={() => abrir(row.id)}
+									// className="cursor-pointer"
+									// onClick={() => abrir(row.id)}
+									// onClick={() => navigate({
+									// 	to: "/inventory-items/id/$id",
+									// 	params: { id: row.id },
+									// 	state: { lista: data },
+									// })}
 								>
 									{row.getAllCells().map((cell) => (
 										<TableCell key={cell.id}>
@@ -257,20 +262,11 @@ export function InventoryItemsTable({ view }: InventoryItemsTableProps) {
 									))}
 								</TableRow>
 							))
-						) : (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									className="h-24 text-center"
-								>
-									Nenhum item encontrado.
-								</TableCell>
-							</TableRow>
-						)}
+						}
 					</TableBody>
 				</Table>
 				<TablePagination table={table} totalLabel="item" />
 			</div>
-		</ListViewContext>
+		// </ListViewContext>
 	);
 }

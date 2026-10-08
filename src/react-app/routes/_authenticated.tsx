@@ -9,18 +9,18 @@ import {
 import { sessionOptions } from "@/react-app/lib/api/session";
 
 export const Route = createFileRoute("/_authenticated")({
-	beforeLoad: async ({ context }) => {
-		try {
-			const session = await context.queryClient.ensureQueryData(
-				sessionOptions,
-			);
-			if (!session) {
-				throw redirect({ to: "/auth/login" });
-			}
-		} catch {
-			throw redirect({ to: "/auth/login" });
-		}
-	},
+	// beforeLoad: async ({ context }) => {
+	// 	try {
+	// 		const session = await context.queryClient.ensureQueryData(
+	// 			sessionOptions,
+	// 		);
+	// 		if (!session) {
+	// 			throw redirect({ to: "/auth/login" });
+	// 		}
+	// 	} catch {
+	// 		throw redirect({ to: "/auth/login" });
+	// 	}
+	// },
 	component: () => (
 		<SidebarProvider>
 			<AppSidebar />

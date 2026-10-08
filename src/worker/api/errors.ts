@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { z } from "zod";
+// import type { z } from "zod";
 
 export type ApiErrorStatus = 400 | 404 | 409 | 415;
 
@@ -54,75 +54,72 @@ export async function readJsonObject(c: Context): Promise<JsonObject> {
 	return body;
 }
 
-function invalidValue(field: string) {
-	return apiError(400, "INVALID_VALUE", `${field}has an invalid value.`);
-}
 
-function errorFromIssue(issue: z.core.$ZodIssue, body: JsonObject): HTTPException {
-	const path = typeof issue.path[0] === "string" ? issue.path[0] : undefined;
-	const field = path === undefined ? "" : `Field '${path}' `;
-	const detail = issue as unknown as Record<string, unknown>;
+// function errorFromIssue(issue: z.core.$ZodIssue, body: JsonObject): HTTPException {
+// 	const path = typeof issue.path[0] === "string" ? issue.path[0] : undefined;
+// 	const field = path === undefined ? "" : `Field '${path}' `;
+// 	const detail = issue as unknown as Record<string, unknown>;
 
-	switch (issue.code) {
-		case "unrecognized_keys": {
-			const [key] = detail.keys as string[];
-			return apiError(
-				400,
-				"UNKNOWN_FIELD",
-				`Field '${key}' is not accepted in this resource.`,
-			);
-		}
+// 	switch (issue.code) {
+// 		case "unrecognized_keys": {
+// 			const [key] = detail.keys as string[];
+// 			return apiError(
+// 				400,
+// 				"UNKNOWN_FIELD",
+// 				`Field '${key}' is not accepted in this resource.`,
+// 			);
+// 		}
 
-		case "invalid_type": {
-			if (path !== undefined && body[path] == null) {
-				return apiError(
-					400,
-					"REQUIRED_FIELD",
-					`Field '${path}' is required.`,
-				);
-			}
-			return invalidValue(field);
-		}
+// 		case "invalid_type": {
+// 			if (path !== undefined && body[path] == null) {
+// 				return apiError(
+// 					400,
+// 					"REQUIRED_FIELD",
+// 					`Field '${path}' is required.`,
+// 				);
+// 			}
+// 			return invalidValue(field);
+// 		}
 
-		case "invalid_value": {
-			const options = Object.values(
-				(detail.values as Record<string, string> | undefined) ?? {},
-			);
-			return apiError(
-				400,
-				"INVALID_VALUE",
-				`${field}must be one of: ${options.join(", ")}.`,
-			);
-		}
+// 		case "invalid_value": {
+// 			const options = Object.values(
+// 				(detail.values as Record<string, string> | undefined) ?? {},
+// 			);
+// 			return apiError(
+// 				400,
+// 				"INVALID_VALUE",
+// 				`${field}must be one of: ${options.join(", ")}.`,
+// 			);
+// 		}
 
-		case "custom":
-			return apiError(400, "INVALID_VALUE", `${field}${issue.message}`);
+// 		case "custom":
+// 			return apiError(400, "INVALID_VALUE", `${field}${issue.message}`);
 
-		default:
-			return invalidValue(field);
-	}
-}
+// 		default:
+// 			return invalidValue(field);
+// 	}
+// }
 
-export function parseBody<TPayload>(
-	body: JsonObject,
-	schema: z.ZodType<TPayload>,
-	mode: "create" | "update",
-): TPayload {
-	// if ("id" in body) {
-	// 	throw apiError(400, "READ_ONLY_FIELD", "Field 'id' is set by the server.");
-	// }
+// export function parseBody<TPayload>(
+// 	body: JsonObject,
+// 	schema: z.ZodType<TPayload>,
+// 	mode: "create" | "update",
+// ): TPayload {
+// 	// if ("id" in body) {
+// 	// 	throw apiError(400, "READ_ONLY_FIELD", "Field 'id' is set by the server.");
+// 	// }
 
-	if (mode === "update" && Object.keys(body).length === 0) {
-		throw apiError(400, "EMPTY_UPDATE", "Send at least one field to update.");
-	}
+// 	if (mode === "update" && Object.keys(body).length === 0) {
+// 		throw apiError(400, "EMPTY_UPDATE", "Send at least one field to update.");
+// 	}
 
-	const parsed = schema.safeParse(body);
-	if (parsed.success) {
-		return parsed.data;
-	}
+// 	const parsed = schema.safeParse(body);
+// 	if (parsed.success) {
+// 		return parsed.data;
+// 	}
 
-	throw errorFromIssue(parsed.error.issues[0], body);
-}
+// 	throw errorFromIssue(parsed.error.issues[0], body);
+// }
 
 function errorChainMessage(error: Error): string {
 	const messages: string[] = [];

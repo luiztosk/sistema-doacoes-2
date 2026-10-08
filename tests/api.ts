@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { handleApiError } from "../src/worker/api/errors";
-import { registerResources } from "../src/worker/api/v1";
+// import { registerResources } from "../src/worker/api/v1";
 
 /**
  * The API driven end to end without a D1: every route runs for real, and the
@@ -63,7 +63,7 @@ function stubEnv(opts: { dbError?: string; rows?: Row[] } = {}) {
 
 const app = new Hono<{ Bindings: Env }>();
 const api = new Hono<{ Bindings: Env }>();
-registerResources(api);
+// registerResources(api);
 app.route("/api/v1", api);
 app.get("/sem-sessao", () => {
 	throw new HTTPException(401);

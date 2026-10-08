@@ -2,11 +2,11 @@ import { Hono } from "hono";
 import type { D1Database } from "@cloudflare/workers-types";
 import { getPlatformProxy } from "wrangler";
 import { handleApiError } from "../src/worker/api/errors";
-import { registerResources } from "../src/worker/api/v1";
+// import { registerResources } from "../src/worker/api/v1";
 
 const app = new Hono<{ Bindings: Env }>();
 const api = new Hono<{ Bindings: Env }>();
-registerResources(api);
+// registerResources(api);
 app.route("/api/v1", api);
 app.onError(handleApiError);
 

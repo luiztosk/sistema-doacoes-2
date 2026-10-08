@@ -62,8 +62,15 @@ export const inventoryItemSelectSchema = createSelectSchema(
 export const inventoryItemTableViewSchema = inventoryItemSelectSchema
     .omit({ categoryId: true })
     .extend({
-        categoryName: itemCategorySelectSchema.shape.name.nullable(),
+        categoryName: itemCategorySelectSchema.array(),
     });
+
+export const inventoryItemDetailsViewSchema = z.object({
+    item: inventoryItemSelectSchema,
+    categories: z.array(
+        itemCategorySelectSchema,
+    )
+});
 
 export type DonationSelect = ZodInfer<typeof donationSelectSchema>;
 export type DonationInsert = ZodInfer<typeof donationInsertSchema>;

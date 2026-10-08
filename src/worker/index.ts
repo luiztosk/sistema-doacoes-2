@@ -1,24 +1,27 @@
 import { Hono } from "hono";
 import { handleApiError } from "./api/errors";
-import { registerResources } from "./api/v1";
+// import { registerResources } from "./api/v1";
 import { inventoryItems } from "./routes/inventory-items";
 import { auth } from "../auth.config";
 import { requireSession, sessionMiddleware } from "./session-middleware";
+import { OpenAPIHono } from "@hono/zod-openapi";
 
-const app = new Hono<{
-	Variables: { session: typeof auth.$Infer.Session | null };
-}>();
+// const app = new Hono<{
+// 	Variables: { session: typeof auth.$Infer.Session | null };
+// }>();
+const app = new OpenAPIHono<{ Bindings: Env }>();
 
-app.all("/api/auth/*", async (c) => {
-	return auth.handler(c.req.raw);
-});
+// app.all("/api/auth/*", async (c) => {
+	// return auth.handler(c.req.raw);
+// });
 
-app.use("/api/v1/*", sessionMiddleware, requireSession);
+// app.use("/api/v1/*", sessionMiddleware, requireSession);
 
-const api = new Hono<{ Bindings: Env }>();
-registerResources(api);
-app.route("/api/v1", api);
-app.route("/api/v1/inventory-items", inventoryItems);
+// const api = new Hono<{ Bindings: Env }>();
+// registerResources(api);
+// app.route("/api/v1", api);
+// app.route("/api/v1/inventory-items", inventoryItems);
+app.route('/api', inventoryItems);
 
 app.onError(handleApiError);
 app.notFound((c) =>

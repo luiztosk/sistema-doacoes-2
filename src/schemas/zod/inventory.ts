@@ -66,12 +66,12 @@ export const inventoryItemTableViewSchema = inventoryItemSelectSchema
         // categoryName: itemCategorySelectSchema,
     // });
 
-export const inventoryItemDetailsViewSchema = z.object({
-    item: inventoryItemSelectSchema,
-    categories: z.array(
-        itemCategorySelectSchema,
-    )
-});
+// export const inventoryItemDetailsViewSchema = z.object({
+//     item: inventoryItemSelectSchema,
+//     categories: z.array(
+//         itemCategorySelectSchema,
+//     )
+// });
 
 export type DonationSelect = ZodInfer<typeof donationSelectSchema>;
 export type DonationInsert = ZodInfer<typeof donationInsertSchema>;

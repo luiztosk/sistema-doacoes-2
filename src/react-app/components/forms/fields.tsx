@@ -172,6 +172,9 @@ export function SelectField({
 			<FieldLabel>{label}</FieldLabel>
 			<Select
 				value={field.state.value}
+				name={field.name}
+				items={options}
+
 				disabled={!editable}
 				onValueChange={(value) => field.handleChange(value)}
 			>

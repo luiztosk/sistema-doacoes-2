@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { BeneficiaryForm } from "@/react-app/components/forms/beneficiary";
+import { BeneficiaryForm } from "@/react-app/components/forms/contacts/beneficiary";
 
 function NovoBeneficiary() {
 	return <BeneficiaryForm />;

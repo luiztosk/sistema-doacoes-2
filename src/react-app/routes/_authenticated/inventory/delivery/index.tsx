@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { DeliveriesTable } from "@/react-app/components/tables/deliveries";
+import { DeliveriesTable } from "@/react-app/components/tables/inventory/deliveries";
 import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 
@@ -17,7 +17,7 @@ function Deliveries() {
 	);
 }
 
-export const Route = createFileRoute("/_authenticated/inventory/deliveries/")({
+export const Route = createFileRoute("/_authenticated/inventory/delivery/")({
 	validateSearch: tableViewSchema,
 	component: Deliveries,
 });

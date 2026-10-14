@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { DonorForm } from "@/react-app/components/forms/donor";
+import { DonorForm } from "@/react-app/components/forms/contacts/donor";
 
 function NewDonor() {
 	return <DonorForm />;

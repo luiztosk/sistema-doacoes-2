@@ -4,46 +4,42 @@ import { useForm } from "@tanstack/react-form";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider } from "@/react-app/components/forms/fields";
-import { SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
-import type { SelectOption } from "@/react-app/components/forms/fields";
+import { SubmitField, TextField } from "@/react-app/components/forms/fields";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
-	InventoryItemSelect,
+	ItemCategorySelect,
+	// ItemCategoryFormValues,
 } from "@/schemas/zod/inventory";
-import { inventoryItemInsertSchema } from "@/schemas/zod/inventory";
-import { UNITS } from "@/schemas/db/inventory";
+import { itemCategoryInsertSchema } from "@/schemas/zod/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
 
-const unitOptions: SelectOption[] = UNITS.map((value) => ({
-	value,
-	label:
-		value === "KG" ? "Quilograma" :
-		value === "L" ? "Litro" :
-		value === "UNIT" ? "Unidade" :
-		value === "PACK" ? "Pacote" :
-		"Caixa",
-}));
+// function initialValues(record?: ItemCategorySelect): ItemCategoryFormValues {
+// 	return {
+// 		name: record?.name ?? "",
+// 	};
+// }
 
-export function InventoryItemForm({ inventoryItem, createMutation, updateMutation }: {
-	inventoryItem?: InventoryItemSelect;
+export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
+	itemCategory?: ItemCategorySelect;
 	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 }) {
 	const router = useRouter();
 	const lista = useListView();
-	const [isEditing, setIsEditing] = useState(!inventoryItem);
+	const [isEditing, setIsEditing] = useState(!itemCategory);
 
 	const form = useForm({
-		defaultValues: inventoryItem,
+		// defaultValues: initialValues(itemCategory),
+		defaultValues: itemCategory,
 		onSubmit: async ({ value }) => {
-			if (!inventoryItemInsertSchema.safeParse(value).success) {
+			if (!itemCategoryInsertSchema.safeParse(value).success) {
 				return;
 			}
 
 			try {
-				if (inventoryItem) {
+				if (itemCategory) {
 					await updateMutation?.mutateAsync({ body: value });
 				} else {
 					await createMutation?.mutateAsync({ body: value });
@@ -53,11 +49,11 @@ export function InventoryItemForm({ inventoryItem, createMutation, updateMutatio
 			}
 
 			await queryClient.invalidateQueries({
-				queryKey: ["inventory-items"],
+				queryKey: ["item-categories"],
 			});
 
 			await router.navigate({
-				to: "/inventory/items",
+				to: "/inventory/categories",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
@@ -69,16 +65,16 @@ export function InventoryItemForm({ inventoryItem, createMutation, updateMutatio
 		<section className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">
-					{inventoryItem ? "Detalhes do item" : "Novo item de estoque"}
+					{itemCategory ? "Detalhes da categoria" : "Nova categoria"}
 				</h1>
 				<div className="flex flex-wrap items-center gap-2">
-					{inventoryItem ? (
+					{itemCategory && !isEditing ? (
 						<Button size="sm" onClick={() => setIsEditing(true)}>
 							Editar
 						</Button>
 					) : null}
 					<Link
-						to="/inventory/items"
+						to="/inventory/categories"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
@@ -106,30 +102,6 @@ export function InventoryItemForm({ inventoryItem, createMutation, updateMutatio
 							/>
 						</FieldSet>
 
-						<FieldSet>
-							<FieldLegend variant="label">Classificação</FieldLegend>
-							<form.Field
-								name="categoryId"
-								children={(field) => (
-									<TextField field={field} label="Categoria" />
-								)}
-							/>
-						</FieldSet>
-
-						<FieldSet>
-							<FieldLegend variant="label">Unidade</FieldLegend>
-							<form.Field
-								name="unit"
-								children={(field) => (
-									<SelectField
-										field={field}
-										label="Unidade de medida"
-										options={unitOptions}
-									/>
-								)}
-							/>
-						</FieldSet>
-
 						{isEditing ? (
 							<div className="flex flex-wrap items-center gap-2">
 								<form.Subscribe
@@ -137,19 +109,19 @@ export function InventoryItemForm({ inventoryItem, createMutation, updateMutatio
 									children={([canSubmit]) => (
 										<SubmitField
 											label={
-												inventoryItem
+												itemCategory
 													? "Salvar alterações"
-													: "Cadastrar item"
+													: "Cadastrar categoria"
 											}
 											pendingLabel={
-												inventoryItem ? "Salvando..." : "Cadastrando..."
+												itemCategory ? "Salvando..." : "Cadastrando..."
 											}
 											canSubmit={canSubmit}
 											isPending={isPending}
 										/>
 									)}
 								/>
-								{inventoryItem ? (
+								{itemCategory ? (
 									<Button
 										type="button"
 										variant="outline"

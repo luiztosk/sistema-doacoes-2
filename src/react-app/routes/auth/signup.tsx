@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SignUpForm } from "@/react-app/components/auth/sign-up-form";
+import { SignUpForm } from "@/react-app/components/forms/auth/sign-up-form";
 
 function AuthPage() {
 	return (

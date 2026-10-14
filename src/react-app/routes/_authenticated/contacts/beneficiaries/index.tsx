@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { BeneficiariesTable } from "@/react-app/components/tables/beneficiaries";
+import { BeneficiariesTable } from "@/react-app/components/tables/contacts/beneficiaries";
 import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 

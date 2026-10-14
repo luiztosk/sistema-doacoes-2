@@ -1,6 +1,6 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import { $api } from "../fetch-client";
-import { InventoryItemSelect, InventoryItemTableView } from "@/schemas/zod/inventory";
+import { InventoryItemTableView } from "@/schemas/zod/inventory";
 
 export const inventoryItemsQuery = (): UseQueryResult<InventoryItemTableView[]> =>
 	$api.useQuery("get", "/api/v1/inventory/items");

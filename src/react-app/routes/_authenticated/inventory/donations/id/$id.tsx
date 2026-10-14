@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { DonationForm } from "@/react-app/components/forms/donation";
+import { DonationForm } from "@/react-app/components/forms/inventory/donation";
 import { Spinner } from "@/react-app/components/ui/spinner";
 import { donationDetailOptions } from "@/react-app/lib/queries/inventory/donations";
 

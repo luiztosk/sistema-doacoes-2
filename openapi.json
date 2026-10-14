@@ -1,1 +1,3785 @@
-{"openapi":"3.0.0","info":{"title":"Inventory Items API","version":"1.0.0"},"components":{"schemas":{},"parameters":{}},"paths":{"/api/v1/inventory/items":{"get":{"responses":{"200":{"content":{"application/json":{"schema":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1},"categoryId":{"type":"string"},"unit":{"type":"string","enum":["KG","L","UNIT","PACK","BOX"]},"onHand":{"type":"integer","minimum":0},"reservedQuantity":{"type":"integer","minimum":0},"available":{"type":"integer","nullable":true,"minimum":-9007199254740991,"maximum":9007199254740991}},"required":["id","name","categoryId","unit","onHand","reservedQuantity","available"]}}}}}}},"post":{"responses":{"201":{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1},"categoryId":{"type":"string"},"unit":{"type":"string","enum":["KG","L","UNIT","PACK","BOX"]},"onHand":{"type":"integer","minimum":0},"reservedQuantity":{"type":"integer","minimum":0},"available":{"type":"integer","nullable":true,"minimum":-9007199254740991,"maximum":9007199254740991}},"required":["id","name","categoryId","unit","onHand","reservedQuantity","available"]}}}},"400":{"description":"Invalid input"}}}},"/api/v1/inventory/items/{id}":{"get":{"parameters":[{"schema":{"type":"string"},"required":true,"name":"id","in":"path"}],"responses":{"200":{"content":{"application/json":{"schema":{"type":"object","properties":{"item":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1},"categoryId":{"type":"string"},"unit":{"type":"string","enum":["KG","L","UNIT","PACK","BOX"]},"onHand":{"type":"integer","minimum":0},"reservedQuantity":{"type":"integer","minimum":0},"available":{"type":"integer","nullable":true,"minimum":-9007199254740991,"maximum":9007199254740991}},"required":["id","name","categoryId","unit","onHand","reservedQuantity","available"]},"categories":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1}},"required":["id","name"]}}},"required":["item","categories"]}}}},"404":{"description":"Inventory item not found"}}},"patch":{"parameters":[{"schema":{"type":"string"},"required":true,"name":"id","in":"path"}],"responses":{"200":{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1},"categoryId":{"type":"string"},"unit":{"type":"string","enum":["KG","L","UNIT","PACK","BOX"]},"onHand":{"type":"integer","minimum":0},"reservedQuantity":{"type":"integer","minimum":0},"available":{"type":"integer","nullable":true,"minimum":-9007199254740991,"maximum":9007199254740991}},"required":["id","name","categoryId","unit","onHand","reservedQuantity","available"]}}}},"400":{"description":"Invalid input"},"404":{"description":"Inventory item not found"}}},"delete":{"parameters":[{"schema":{"type":"string"},"required":true,"name":"id","in":"path"}],"responses":{"204":{"description":"Inventory item deleted successfully"},"404":{"description":"Inventory item not found"}}}},"/api/v1/inventory/categories":{"get":{"responses":{"200":{"content":{"application/json":{"schema":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string","minLength":1}},"required":["id","name"]}}}}}}}}}}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Inventory Items API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v1/inventory/items": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "categoryId": {
+                        "type": "string"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "enum": [
+                          "KG",
+                          "L",
+                          "UNIT",
+                          "PACK",
+                          "BOX"
+                        ]
+                      },
+                      "onHand": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "reservedQuantity": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "available": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "categoryId",
+                      "unit",
+                      "onHand",
+                      "reservedQuantity",
+                      "available"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "categoryId": {
+                      "type": "string"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "KG",
+                        "L",
+                        "UNIT",
+                        "PACK",
+                        "BOX"
+                      ]
+                    },
+                    "onHand": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "reservedQuantity": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "available": {
+                      "type": "integer",
+                      "nullable": true,
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "categoryId",
+                    "unit",
+                    "onHand",
+                    "reservedQuantity",
+                    "available"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/items/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "categoryId": {
+                      "type": "string"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "KG",
+                        "L",
+                        "UNIT",
+                        "PACK",
+                        "BOX"
+                      ]
+                    },
+                    "onHand": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "reservedQuantity": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "available": {
+                      "type": "integer",
+                      "nullable": true,
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "categoryId",
+                    "unit",
+                    "onHand",
+                    "reservedQuantity",
+                    "available"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Inventory item not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "categoryId": {
+                      "type": "string"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "KG",
+                        "L",
+                        "UNIT",
+                        "PACK",
+                        "BOX"
+                      ]
+                    },
+                    "onHand": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "reservedQuantity": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "available": {
+                      "type": "integer",
+                      "nullable": true,
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "categoryId",
+                    "unit",
+                    "onHand",
+                    "reservedQuantity",
+                    "available"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Inventory item not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Inventory item deleted successfully"
+          },
+          "404": {
+            "description": "Inventory item not found"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/categories": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/categories/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted successfully"
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      }
+    },
+    "/api/v1/donations": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "donorId": {
+                        "type": "string"
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "DRAFT",
+                          "RECEIVED"
+                        ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "donorId",
+                      "occurredAt",
+                      "status",
+                      "note"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "donorId": {
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "DRAFT",
+                      "RECEIVED"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "inventoryItemId": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        }
+                      },
+                      "required": [
+                        "inventoryItemId",
+                        "quantity"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "donorId",
+                  "occurredAt",
+                  "status",
+                  "note",
+                  "lines"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "donorId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "RECEIVED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "donorId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/donations/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "donorId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "RECEIVED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "donorId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Donation not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "donorId": {
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "donorId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "RECEIVED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "donorId",
+                    "occurredAt",
+                    "status",
+                    "note"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Donation not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Donation deleted successfully"
+          },
+          "404": {
+            "description": "Donation not found"
+          }
+        }
+      }
+    },
+    "/api/v1/donations/{id}/receive": {
+      "post": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "donorId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "RECEIVED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "donorId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid transition"
+          },
+          "404": {
+            "description": "Donation not found"
+          }
+        }
+      }
+    },
+    "/api/v1/deliveries": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "beneficiaryId": {
+                        "type": "string"
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "OPEN",
+                          "COMPLETED",
+                          "CANCELLED"
+                        ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "beneficiaryId",
+                      "occurredAt",
+                      "status",
+                      "note"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "beneficiaryId": {
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "OPEN",
+                      "COMPLETED",
+                      "CANCELLED"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "inventoryItemId": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        }
+                      },
+                      "required": [
+                        "inventoryItemId",
+                        "quantity"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "beneficiaryId",
+                  "occurredAt",
+                  "status",
+                  "note",
+                  "lines"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "beneficiaryId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OPEN",
+                        "COMPLETED",
+                        "CANCELLED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "beneficiaryId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "409": {
+            "description": "Insufficient stock"
+          }
+        }
+      }
+    },
+    "/api/v1/deliveries/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "beneficiaryId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OPEN",
+                        "COMPLETED",
+                        "CANCELLED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "beneficiaryId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Delivery not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "beneficiaryId": {
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "beneficiaryId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OPEN",
+                        "COMPLETED",
+                        "CANCELLED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "beneficiaryId",
+                    "occurredAt",
+                    "status",
+                    "note"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Delivery not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Delivery deleted successfully"
+          },
+          "404": {
+            "description": "Delivery not found"
+          }
+        }
+      }
+    },
+    "/api/v1/deliveries/{id}/complete": {
+      "post": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "beneficiaryId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OPEN",
+                        "COMPLETED",
+                        "CANCELLED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "beneficiaryId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid transition"
+          },
+          "404": {
+            "description": "Delivery not found"
+          },
+          "409": {
+            "description": "Conflict - reserved stock no longer covers this operation"
+          }
+        }
+      }
+    },
+    "/api/v1/deliveries/{id}/cancel": {
+      "post": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "beneficiaryId": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "OPEN",
+                        "COMPLETED",
+                        "CANCELLED"
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "beneficiaryId",
+                    "occurredAt",
+                    "status",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid transition"
+          },
+          "404": {
+            "description": "Delivery not found"
+          },
+          "409": {
+            "description": "Conflict - reserved stock no longer covers this operation"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory-counts": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "countedBy": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "note": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "occurredAt",
+                      "countedBy",
+                      "note"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "countedBy": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "inventoryItemId": {
+                          "type": "string"
+                        },
+                        "countedQuantity": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        }
+                      },
+                      "required": [
+                        "inventoryItemId",
+                        "countedQuantity"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "occurredAt",
+                  "countedBy",
+                  "note",
+                  "lines"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countedBy": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "countedQuantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "countedQuantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "occurredAt",
+                    "countedBy",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "409": {
+            "description": "Counted quantity below reserved"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory-counts/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countedBy": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "inventoryItemId": {
+                            "type": "string"
+                          },
+                          "countedQuantity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "inventoryItemId",
+                          "countedQuantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "occurredAt",
+                    "countedBy",
+                    "note",
+                    "lines"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Inventory count not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "countedBy": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countedBy": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "occurredAt",
+                    "countedBy",
+                    "note"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Inventory count not found"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory-adjustments": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "inventoryItemId": {
+                        "type": "string"
+                      },
+                      "delta": {
+                        "type": "integer"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "STOCKTAKE",
+                          "DONOR_RETURN",
+                          "LOSS",
+                          "DAMAGE",
+                          "CORRECTION"
+                        ]
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "countId": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "inventoryItemId",
+                      "delta",
+                      "reason",
+                      "occurredAt",
+                      "countId"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inventoryItemId": {
+                    "type": "string"
+                  },
+                  "delta": {
+                    "type": "integer"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "STOCKTAKE",
+                      "DONOR_RETURN",
+                      "LOSS",
+                      "DAMAGE",
+                      "CORRECTION"
+                    ]
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "inventoryItemId",
+                  "delta",
+                  "reason",
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "inventoryItemId": {
+                      "type": "string"
+                    },
+                    "delta": {
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "STOCKTAKE",
+                        "DONOR_RETURN",
+                        "LOSS",
+                        "DAMAGE",
+                        "CORRECTION"
+                      ]
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countId": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "inventoryItemId",
+                    "delta",
+                    "reason",
+                    "occurredAt",
+                    "countId"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "409": {
+            "description": "Adjustment would leave stock below zero"
+          }
+        }
+      }
+    },
+    "/api/v1/inventory-adjustments/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "inventoryItemId": {
+                      "type": "string"
+                    },
+                    "delta": {
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "STOCKTAKE",
+                        "DONOR_RETURN",
+                        "LOSS",
+                        "DAMAGE",
+                        "CORRECTION"
+                      ]
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countId": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "inventoryItemId",
+                    "delta",
+                    "reason",
+                    "occurredAt",
+                    "countId"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Inventory adjustment not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inventoryItemId": {
+                    "type": "string"
+                  },
+                  "delta": {
+                    "type": "integer"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "STOCKTAKE",
+                      "DONOR_RETURN",
+                      "LOSS",
+                      "DAMAGE",
+                      "CORRECTION"
+                    ]
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "countId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "delta",
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "inventoryItemId": {
+                      "type": "string"
+                    },
+                    "delta": {
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "STOCKTAKE",
+                        "DONOR_RETURN",
+                        "LOSS",
+                        "DAMAGE",
+                        "CORRECTION"
+                      ]
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "nullable": true,
+                      "format": "date-time"
+                    },
+                    "countId": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "inventoryItemId",
+                    "delta",
+                    "reason",
+                    "occurredAt",
+                    "countId"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Inventory adjustment not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Inventory adjustment deleted successfully"
+          },
+          "404": {
+            "description": "Inventory adjustment not found"
+          }
+        }
+      }
+    },
+    "/api/v1/beneficiaries": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "cep": {
+                        "type": "string",
+                        "pattern": "^\\d{8}$"
+                      },
+                      "logradouro": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "numero": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "complemento": {
+                        "type": "string"
+                      },
+                      "bairro": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cidade": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uf": {
+                        "type": "string",
+                        "enum": [
+                          "AC",
+                          "AL",
+                          "AP",
+                          "AM",
+                          "BA",
+                          "CE",
+                          "DF",
+                          "ES",
+                          "GO",
+                          "MA",
+                          "MT",
+                          "MS",
+                          "MG",
+                          "PA",
+                          "PB",
+                          "PR",
+                          "PE",
+                          "PI",
+                          "RJ",
+                          "RN",
+                          "RS",
+                          "RO",
+                          "RR",
+                          "SC",
+                          "SP",
+                          "SE",
+                          "TO"
+                        ]
+                      },
+                      "tipoImovel": {
+                        "type": "string",
+                        "enum": [
+                          "ALUGADO",
+                          "PROPRIO"
+                        ]
+                      },
+                      "valorAluguel": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "estadoCivil": {
+                        "type": "string",
+                        "enum": [
+                          "SOLTEIRO",
+                          "CASADO",
+                          "DIVORCIADO",
+                          "VIUVO",
+                          "UNIAO_ESTAVEL"
+                        ]
+                      },
+                      "numeroAdultos": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "criancasPequenas": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "adolescentes": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "doentes": {
+                        "type": "boolean"
+                      },
+                      "bolsaFamilia": {
+                        "type": "boolean"
+                      },
+                      "aposentado": {
+                        "type": "boolean"
+                      },
+                      "pensao": {
+                        "type": "boolean"
+                      },
+                      "cestaBasica": {
+                        "type": "boolean"
+                      },
+                      "atividadeRemunerada": {
+                        "type": "boolean"
+                      },
+                      "renda": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "criancaEscola": {
+                        "type": "boolean"
+                      },
+                      "observacoes": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "phone",
+                      "bairro",
+                      "cidade",
+                      "uf",
+                      "tipoImovel",
+                      "estadoCivil",
+                      "observacoes"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$"
+                  },
+                  "logradouro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "numero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "complemento": {
+                    "type": "string"
+                  },
+                  "bairro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uf": {
+                    "type": "string",
+                    "enum": [
+                      "AC",
+                      "AL",
+                      "AP",
+                      "AM",
+                      "BA",
+                      "CE",
+                      "DF",
+                      "ES",
+                      "GO",
+                      "MA",
+                      "MT",
+                      "MS",
+                      "MG",
+                      "PA",
+                      "PB",
+                      "PR",
+                      "PE",
+                      "PI",
+                      "RJ",
+                      "RN",
+                      "RS",
+                      "RO",
+                      "RR",
+                      "SC",
+                      "SP",
+                      "SE",
+                      "TO"
+                    ]
+                  },
+                  "tipoImovel": {
+                    "type": "string",
+                    "enum": [
+                      "ALUGADO",
+                      "PROPRIO"
+                    ]
+                  },
+                  "valorAluguel": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "estadoCivil": {
+                    "type": "string",
+                    "enum": [
+                      "SOLTEIRO",
+                      "CASADO",
+                      "DIVORCIADO",
+                      "VIUVO",
+                      "UNIAO_ESTAVEL"
+                    ]
+                  },
+                  "numeroAdultos": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "criancasPequenas": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "adolescentes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "doentes": {
+                    "type": "boolean"
+                  },
+                  "bolsaFamilia": {
+                    "type": "boolean"
+                  },
+                  "aposentado": {
+                    "type": "boolean"
+                  },
+                  "pensao": {
+                    "type": "boolean"
+                  },
+                  "cestaBasica": {
+                    "type": "boolean"
+                  },
+                  "atividadeRemunerada": {
+                    "type": "boolean"
+                  },
+                  "renda": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "criancaEscola": {
+                    "type": "boolean"
+                  },
+                  "observacoes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "phone",
+                  "bairro",
+                  "cidade",
+                  "uf",
+                  "tipoImovel",
+                  "estadoCivil"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    },
+                    "tipoImovel": {
+                      "type": "string",
+                      "enum": [
+                        "ALUGADO",
+                        "PROPRIO"
+                      ]
+                    },
+                    "valorAluguel": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estadoCivil": {
+                      "type": "string",
+                      "enum": [
+                        "SOLTEIRO",
+                        "CASADO",
+                        "DIVORCIADO",
+                        "VIUVO",
+                        "UNIAO_ESTAVEL"
+                      ]
+                    },
+                    "numeroAdultos": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "criancasPequenas": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "adolescentes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "doentes": {
+                      "type": "boolean"
+                    },
+                    "bolsaFamilia": {
+                      "type": "boolean"
+                    },
+                    "aposentado": {
+                      "type": "boolean"
+                    },
+                    "pensao": {
+                      "type": "boolean"
+                    },
+                    "cestaBasica": {
+                      "type": "boolean"
+                    },
+                    "atividadeRemunerada": {
+                      "type": "boolean"
+                    },
+                    "renda": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "criancaEscola": {
+                      "type": "boolean"
+                    },
+                    "observacoes": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf",
+                    "tipoImovel",
+                    "estadoCivil",
+                    "observacoes"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/beneficiaries/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    },
+                    "tipoImovel": {
+                      "type": "string",
+                      "enum": [
+                        "ALUGADO",
+                        "PROPRIO"
+                      ]
+                    },
+                    "valorAluguel": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estadoCivil": {
+                      "type": "string",
+                      "enum": [
+                        "SOLTEIRO",
+                        "CASADO",
+                        "DIVORCIADO",
+                        "VIUVO",
+                        "UNIAO_ESTAVEL"
+                      ]
+                    },
+                    "numeroAdultos": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "criancasPequenas": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "adolescentes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "doentes": {
+                      "type": "boolean"
+                    },
+                    "bolsaFamilia": {
+                      "type": "boolean"
+                    },
+                    "aposentado": {
+                      "type": "boolean"
+                    },
+                    "pensao": {
+                      "type": "boolean"
+                    },
+                    "cestaBasica": {
+                      "type": "boolean"
+                    },
+                    "atividadeRemunerada": {
+                      "type": "boolean"
+                    },
+                    "renda": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "criancaEscola": {
+                      "type": "boolean"
+                    },
+                    "observacoes": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf",
+                    "tipoImovel",
+                    "estadoCivil",
+                    "observacoes"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Beneficiary not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$"
+                  },
+                  "logradouro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "numero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "complemento": {
+                    "type": "string"
+                  },
+                  "bairro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uf": {
+                    "type": "string",
+                    "enum": [
+                      "AC",
+                      "AL",
+                      "AP",
+                      "AM",
+                      "BA",
+                      "CE",
+                      "DF",
+                      "ES",
+                      "GO",
+                      "MA",
+                      "MT",
+                      "MS",
+                      "MG",
+                      "PA",
+                      "PB",
+                      "PR",
+                      "PE",
+                      "PI",
+                      "RJ",
+                      "RN",
+                      "RS",
+                      "RO",
+                      "RR",
+                      "SC",
+                      "SP",
+                      "SE",
+                      "TO"
+                    ]
+                  },
+                  "tipoImovel": {
+                    "type": "string",
+                    "enum": [
+                      "ALUGADO",
+                      "PROPRIO"
+                    ]
+                  },
+                  "valorAluguel": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "estadoCivil": {
+                    "type": "string",
+                    "enum": [
+                      "SOLTEIRO",
+                      "CASADO",
+                      "DIVORCIADO",
+                      "VIUVO",
+                      "UNIAO_ESTAVEL"
+                    ]
+                  },
+                  "numeroAdultos": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "criancasPequenas": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "adolescentes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "doentes": {
+                    "type": "boolean"
+                  },
+                  "bolsaFamilia": {
+                    "type": "boolean"
+                  },
+                  "aposentado": {
+                    "type": "boolean"
+                  },
+                  "pensao": {
+                    "type": "boolean"
+                  },
+                  "cestaBasica": {
+                    "type": "boolean"
+                  },
+                  "atividadeRemunerada": {
+                    "type": "boolean"
+                  },
+                  "renda": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "criancaEscola": {
+                    "type": "boolean"
+                  },
+                  "observacoes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "phone",
+                  "bairro",
+                  "cidade",
+                  "uf",
+                  "tipoImovel",
+                  "estadoCivil"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    },
+                    "tipoImovel": {
+                      "type": "string",
+                      "enum": [
+                        "ALUGADO",
+                        "PROPRIO"
+                      ]
+                    },
+                    "valorAluguel": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "estadoCivil": {
+                      "type": "string",
+                      "enum": [
+                        "SOLTEIRO",
+                        "CASADO",
+                        "DIVORCIADO",
+                        "VIUVO",
+                        "UNIAO_ESTAVEL"
+                      ]
+                    },
+                    "numeroAdultos": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "criancasPequenas": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "adolescentes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "doentes": {
+                      "type": "boolean"
+                    },
+                    "bolsaFamilia": {
+                      "type": "boolean"
+                    },
+                    "aposentado": {
+                      "type": "boolean"
+                    },
+                    "pensao": {
+                      "type": "boolean"
+                    },
+                    "cestaBasica": {
+                      "type": "boolean"
+                    },
+                    "atividadeRemunerada": {
+                      "type": "boolean"
+                    },
+                    "renda": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "criancaEscola": {
+                      "type": "boolean"
+                    },
+                    "observacoes": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf",
+                    "tipoImovel",
+                    "estadoCivil",
+                    "observacoes"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Beneficiary not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Beneficiary deleted successfully"
+          },
+          "404": {
+            "description": "Beneficiary not found"
+          }
+        }
+      }
+    },
+    "/api/v1/donors": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "cep": {
+                        "type": "string",
+                        "pattern": "^\\d{8}$"
+                      },
+                      "logradouro": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "numero": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "complemento": {
+                        "type": "string"
+                      },
+                      "bairro": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cidade": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uf": {
+                        "type": "string",
+                        "enum": [
+                          "AC",
+                          "AL",
+                          "AP",
+                          "AM",
+                          "BA",
+                          "CE",
+                          "DF",
+                          "ES",
+                          "GO",
+                          "MA",
+                          "MT",
+                          "MS",
+                          "MG",
+                          "PA",
+                          "PB",
+                          "PR",
+                          "PE",
+                          "PI",
+                          "RJ",
+                          "RN",
+                          "RS",
+                          "RO",
+                          "RR",
+                          "SC",
+                          "SP",
+                          "SE",
+                          "TO"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "phone",
+                      "bairro",
+                      "cidade",
+                      "uf"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$"
+                  },
+                  "logradouro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "numero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "complemento": {
+                    "type": "string"
+                  },
+                  "bairro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uf": {
+                    "type": "string",
+                    "enum": [
+                      "AC",
+                      "AL",
+                      "AP",
+                      "AM",
+                      "BA",
+                      "CE",
+                      "DF",
+                      "ES",
+                      "GO",
+                      "MA",
+                      "MT",
+                      "MS",
+                      "MG",
+                      "PA",
+                      "PB",
+                      "PR",
+                      "PE",
+                      "PI",
+                      "RJ",
+                      "RN",
+                      "RS",
+                      "RO",
+                      "RR",
+                      "SC",
+                      "SP",
+                      "SE",
+                      "TO"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "phone",
+                  "bairro",
+                  "cidade",
+                  "uf"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/donors/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Donor not found"
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$"
+                  },
+                  "logradouro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "numero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "complemento": {
+                    "type": "string"
+                  },
+                  "bairro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cidade": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uf": {
+                    "type": "string",
+                    "enum": [
+                      "AC",
+                      "AL",
+                      "AP",
+                      "AM",
+                      "BA",
+                      "CE",
+                      "DF",
+                      "ES",
+                      "GO",
+                      "MA",
+                      "MT",
+                      "MS",
+                      "MG",
+                      "PA",
+                      "PB",
+                      "PR",
+                      "PE",
+                      "PI",
+                      "RJ",
+                      "RN",
+                      "RS",
+                      "RO",
+                      "RR",
+                      "SC",
+                      "SP",
+                      "SE",
+                      "TO"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "phone",
+                  "bairro",
+                  "cidade",
+                  "uf"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "cep": {
+                      "type": "string",
+                      "pattern": "^\\d{8}$"
+                    },
+                    "logradouro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "numero": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "complemento": {
+                      "type": "string"
+                    },
+                    "bairro": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cidade": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uf": {
+                      "type": "string",
+                      "enum": [
+                        "AC",
+                        "AL",
+                        "AP",
+                        "AM",
+                        "BA",
+                        "CE",
+                        "DF",
+                        "ES",
+                        "GO",
+                        "MA",
+                        "MT",
+                        "MS",
+                        "MG",
+                        "PA",
+                        "PB",
+                        "PR",
+                        "PE",
+                        "PI",
+                        "RJ",
+                        "RN",
+                        "RS",
+                        "RO",
+                        "RR",
+                        "SC",
+                        "SP",
+                        "SE",
+                        "TO"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "bairro",
+                    "cidade",
+                    "uf"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Donor not found"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Donor deleted successfully"
+          },
+          "404": {
+            "description": "Donor not found"
+          }
+        }
+      }
+    }
+  }
+}

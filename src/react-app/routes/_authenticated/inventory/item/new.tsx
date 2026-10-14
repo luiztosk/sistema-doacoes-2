@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { InventoryItemForm } from "@/react-app/components/forms/inventory-item";
+import { InventoryItemForm } from "@/react-app/components/forms/inventory/item";
 import { createInventoryItemMutation } from "@/react-app/lib/queries/inventory/items";
 
 function NewInventoryItem() {
@@ -8,6 +8,6 @@ function NewInventoryItem() {
 	return <InventoryItemForm createMutation={create} />;
 }
 
-export const Route = createFileRoute("/_authenticated/inventory/items/new")({
+export const Route = createFileRoute("/_authenticated/inventory/item/new")({
 	component: NewInventoryItem,
 });

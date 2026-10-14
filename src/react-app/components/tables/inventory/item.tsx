@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { InventoryItemTableView, ItemCategorySelect } from "@/schemas/zod/inventory";
-import { inventoryItemsQuery } from "@/react-app/lib/queries/inventory/items";
+// import { inventoryItemsQuery } from "@/react-app/lib/queries/inventory/items";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -35,22 +35,22 @@ const unitOptions = UNITS.map((value) => ({
 	value,
 	label:
 		value === "KG" ? "Quilograma" :
-		value === "L" ? "Litro" :
-		value === "UNIT" ? "Unidade" :
-		value === "PACK" ? "Pacote" :
-		"Caixa",
+			value === "L" ? "Litro" :
+				value === "UNIT" ? "Unidade" :
+					value === "PACK" ? "Pacote" :
+						"Caixa",
 }));
 
-const columnHelper = createColumnHelper<DataTableFeatures, InventoryItemTableView>();
+const columnHelper = createColumnHelper<DataTableFeatures, InventoryItemTableView & { categoryName: string }>();
 const ListViewContext = createContext<TableViewState>({});
 
-function DetalhesLink({ id }: { id: string }) {
+function DetalhesLink({ iid }: { iid: string }) {
 	const view = useContext(ListViewContext);
 
 	return (
 		<Link
-			to="/inventory/items/id/$id"
-			params={{ id }}
+			to="/inventory/item/$id"
+			params={{ iid }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
@@ -66,8 +66,8 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor((row) => row.categoryId, {
-		id: "categoryId",
+	columnHelper.accessor((row) => row.categoryName, {
+		id: "categoryName",
 		header: ({ column }) => (
 			<SortableHeader column={column} label="Categoria" />
 		),
@@ -129,27 +129,43 @@ const columns = columnHelper.columns([
 	columnHelper.display({
 		id: "details",
 		header: "Detalhes",
-		cell: ({ row }) => <DetalhesLink id={row.id} />,
+		cell: ({ row }) =>
+			<Link
+				to="/inventory/item/$id"
+				params={{id: row.original.id }}
+				state={{ lista: useContext(ListViewContext) }}
+				onClick={(event) => event.stopPropagation()}
+				className={buttonVariants({ variant: "outline", size: "xs" })}
+			>
+				Mais detalhes
+			</Link>,
+			
+			// <DetalhesLink id={row.original.id} />,
 	}),
 ]);
 
-export function InventoryItemsTable({items, categories}: { items: InventoryItemTableView[], categories: ItemCategorySelect[] }) {
+export function ItemsTable({ items, categories }: { items: InventoryItemTableView[], categories: ItemCategorySelect[] }) {
+	const data = items.map((item) => ({
+		...item,
+		categoryName: categories.find(a => a.id === item.categoryId)?.name ?? ""
+	})
+	)
 	// const { data: queryData } = inventoryItemsQuery();
 	// items.forEach((item) => item.categoryId = categories.filter((a) => a.id == item.categoryId)[0].name)
-	items.forEach((item) => {
-		try {
-			item.categoryId = categories.filter((a) => a.id === item.categoryId)[0].name
-		}
-		catch {
-		}
-	})
+	// items.forEach((item) => {
+	// 	try {
+	// 		item.categoryName = categories.filter((a) => a.id === item.categoryId)[0].name
+	// 	}
+	// 	catch {
+	// 	}
+	// })
 
 
 	const table = useTable({
 		features,
 		columns: columns,
 		// data: data ?? queryData ?? [],
-		data: items,
+		data: data,
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
@@ -184,7 +200,8 @@ export function InventoryItemsTable({items, categories}: { items: InventoryItemT
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.map((row) => (
+					{table.getRowModel().rows.map((row) => {
+						console.log(table.getRowModel().rows); return (
 							<TableRow
 								key={row.id}
 							>
@@ -194,7 +211,8 @@ export function InventoryItemsTable({items, categories}: { items: InventoryItemT
 									</TableCell>
 								))}
 							</TableRow>
-						))
+						)
+					})
 					}
 				</TableBody>
 			</Table>

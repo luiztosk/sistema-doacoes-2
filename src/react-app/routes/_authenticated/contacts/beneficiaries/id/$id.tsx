@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { BeneficiaryForm } from "@/react-app/components/forms/beneficiary";
+import { BeneficiaryForm } from "@/react-app/components/forms/contacts/beneficiary";
 import { Spinner } from "@/react-app/components/ui/spinner";
 import { beneficiaryOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 

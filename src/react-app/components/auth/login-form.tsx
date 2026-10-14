@@ -11,7 +11,7 @@ import {
 	CardTitle,
 } from "@/react-app/components/ui/card";
 import { authClient } from "@/react-app/lib/auth-client";
-import { sessionOptions } from "@/react-app/lib/api/session";
+import { sessionOptions } from "@/react-app/lib/session";
 
 export function LoginForm() {
 	const router = useRouter();
@@ -38,7 +38,7 @@ export function LoginForm() {
 
 			await router.invalidate();
 
-			router.navigate({ to: "/painel" });
+			router.navigate({ to: "/panel" });
 		},
 	});
 

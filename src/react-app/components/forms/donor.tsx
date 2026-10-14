@@ -29,7 +29,7 @@ import {
 	createDonorOptions,
 	donorKeys,
 	updateDonorOptions,
-} from "@/react-app/lib/api/donors";
+} from "@/react-app/lib/queries/contacts/donors";
 import { UFS } from "@/schemas/db/contacts";
 import { donorInsertSchema, donorUpdateSchema } from "@/schemas/zod/contacts";
 import { ZodError } from "zod";
@@ -69,7 +69,7 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 
 			await queryClient.invalidateQueries({ queryKey: donorKeys.all });
 			await router.navigate({
-				to: "/donors",
+				to: "/contacts/donors",
 				search: donor && listView ? viewForUrl(listView) : {},
 			});
 		},
@@ -90,11 +90,11 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 						</Button>
 					) : null}
 					<Link
-						to="/donors"
+						to="/contacts/donors"
 						search={donor && listView ? viewForUrl(listView) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
-						Voltar para a lista
+						Back to list
 					</Link>
 			</div>
 		</div>

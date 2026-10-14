@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { DonorTableView } from "@/schemas/zod/contacts";
-import { donorOptions } from "@/react-app/lib/api/donors";
+import { donorOptions } from "@/react-app/lib/queries/contacts/donors";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -48,13 +48,13 @@ function DetailsLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link
-			to="/donors/id/$id"
+			to="/contacts/donors/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			Mais detalhes
+			More details
 		</Link>
 	);
 }
@@ -109,7 +109,7 @@ export function DonorsTable({ view }: DonorsTableProps) {
 
 	const navigateToView = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/donors", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/contacts/donors", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -166,7 +166,7 @@ export function DonorsTable({ view }: DonorsTableProps) {
 
 	const openDonor = (id: string) =>
 		navigate({
-			to: "/donors/id/$id",
+			to: "/contacts/donors/id/$id",
 			params: { id },
 			state: { lista: view },
 		});

@@ -15,7 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/react-app/components/ui/dropdown-menu";
-import { sessionOptions } from "@/react-app/lib/api/session";
+import { sessionOptions } from "@/react-app/lib/session";
 
 function initials(name: string | null | undefined): string {
 	const trimmed = (name ?? "").trim();
@@ -88,8 +88,8 @@ export function UserMenu() {
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem render={<Link to="/painel" />}>
-						Início
+					<DropdownMenuItem render={<Link to="/panel" />}>
+						Home
 					</DropdownMenuItem>
 					<ThemeToggle asMenuItem />
 					<DropdownMenuItem

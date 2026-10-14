@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/react-app/lib/auth-client";
-import { sessionOptions } from "@/react-app/lib/api/session";
+import { sessionOptions } from "@/react-app/lib/session";
 import { queryClient } from "@/react-app/lib/query-client";
 
 export const Route = createFileRoute("/auth/logout")({

@@ -5,17 +5,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField } from "@/react-app/components/forms/fields";
-import { beneficiaryTableOptions } from "@/react-app/lib/api/beneficiaries";
-import { fkOptions } from "@/react-app/lib/api/fk-factory";
+import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
+import { fkOptions } from "@/react-app/lib/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type { DeliveryCompleto, DeliveryFormValues } from "@/react-app/lib/api/deliveries";
+import type { DeliveryCompleto, DeliveryFormValues } from "@/react-app/lib/queries/inventory/deliveries";
 import {
 	deliveryKeys,
 	createDeliveryOptions,
 	updateDeliveryOptions,
-} from "@/react-app/lib/api/deliveries";
+} from "@/react-app/lib/queries/inventory/deliveries";
 import { deliveryInsertSchema } from "@/schemas/zod/inventory";
 
 type DeliveryFormProps = { delivery?: DeliveryCompleto };
@@ -53,7 +53,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 				else await create.mutateAsync(value);
 			} catch { return; }
 			await queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
-			await router.navigate({ to: "/deliveries", search: lista ? viewForUrl(lista) : {} });
+			await router.navigate({ to: "/inventory/deliveries", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
@@ -65,7 +65,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 				<h1 className="text-3xl font-bold">{delivery ? "Detalhes da entrega" : "Nova entrega"}</h1>
 				<div className="flex gap-2">
 					{delivery && !isEditing ? <Button size="sm" onClick={() => setIsEditing(true)}>Editar</Button> : null}
-					<Link to="/deliveries" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Voltar</Link>
+					<Link to="/inventory/deliveries" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Back</Link>
 				</div>
 			</div>
 			<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}>

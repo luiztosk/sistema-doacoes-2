@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { BeneficiaryTableView } from "@/schemas/zod/contacts";
-import { beneficiaryTableOptions } from "@/react-app/lib/api/beneficiaries";
+import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -69,13 +69,13 @@ function DetalhesLink({ id }: { id: string }) {
 
 	return (
 		<Link
-			to="/beneficiaries/id/$id"
+			to="/contacts/beneficiaries/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			Mais detalhes
+			More details
 		</Link>
 	);
 }
@@ -157,7 +157,7 @@ export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
 
 	const irPara = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/beneficiaries", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/contacts/beneficiaries", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -206,7 +206,7 @@ export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
 
 	const abrir = (id: string) =>
 		navigate({
-			to: "/beneficiaries/id/$id",
+			to: "/contacts/beneficiaries/id/$id",
 			params: { id },
 			state: { lista: view },
 		});

@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 import { AppHeader } from "@/react-app/components/layout/app-header";
 import { AppSidebar } from "@/react-app/components/layout/app-sidebar";
@@ -6,7 +6,6 @@ import {
 	SidebarInset,
 	SidebarProvider,
 } from "@/react-app/components/ui/sidebar";
-import { sessionOptions } from "@/react-app/lib/api/session";
 
 export const Route = createFileRoute("/_authenticated")({
 	// beforeLoad: async ({ context }) => {

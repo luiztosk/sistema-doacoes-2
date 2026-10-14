@@ -10,35 +10,35 @@ export type Resource = {
 
 export const resources: readonly Resource[] = [
 	{
-		path: "/beneficiaries",
+		path: "/contacts/beneficiaries",
 		label: "Beneficiaries",
-		description: "Cadastro das famílias e pessoas atendidas.",
+		description: "Register of assisted families and individuals.",
 	},
 	{
-		path: "/donors",
+		path: "/contacts/donors",
 		label: "Donors",
-		description: "Cadastro de quem faz as doações.",
+		description: "Register of donation sources.",
 	},
 	{
-		path: "/inventory-items",
-		label: "Itens de estoque",
-		description: "Catálogo de itens e controle de estoque.",
+		path: "/inventory/items",
+		label: "Inventory Items",
+		description: "Item catalog and stock control.",
 	},
 	{
-		path: "/item-categories",
-		label: "Categorias de item",
-		description: "Categorias para classificacao de itens.",
+		path: "/inventory/categories",
+		label: "Item Categories",
+		description: "Categories for item classification.",
 	},
 	{
-		path: "/donations",
-		label: "Doacoes",
-		description: "Registro e recebimento de doacoes.",
+		path: "/inventory/donations",
+		label: "Donations",
+		description: "Donation registration and receipt.",
 	},
 	{
-		path: "/deliveries",
-		label: "Entregas",
-		description: "Reservas e entregas de estoque.",
+		path: "/inventory/deliveries",
+		label: "Deliveries",
+		description: "Stock reservations and deliveries.",
 	},
 ];
 
-export const homePath: Path = "/painel";
+export const homePath: Path = "/panel";

@@ -1,15 +1,12 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
-
-import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { createContext, useContext } from "react";
+import { Link } from "@tanstack/react-router";
 import {
 	createColumnHelper,
-	functionalUpdate,
 	useTable,
 } from "@tanstack/react-table";
 
-import type { InventoryItemTableView } from "@/schemas/zod/inventory";
-import { inventoryItemOptions } from "@/react-app/lib/api/inventory-items";
+import type { InventoryItemTableView, ItemCategorySelect } from "@/schemas/zod/inventory";
+import { inventoryItemsQuery } from "@/react-app/lib/queries/inventory/items";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -19,12 +16,6 @@ import {
 	TableToolbar,
 } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
-import {
-	paginationFromView,
-	sortingFromView,
-	sortingToView,
-	viewForUrl,
-} from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -38,9 +29,7 @@ import { UNITS } from "@/schemas/db/inventory";
 
 const empty = "—";
 
-const emptyRows: InventoryItemTableView[] = [];
-
-const searchable = new Set(["name", "categoryName", "unit"]);
+const searchable = new Set(["name", "categoryId", "unit"]);
 
 const unitOptions = UNITS.map((value) => ({
 	value,
@@ -60,7 +49,7 @@ function DetalhesLink({ id }: { id: string }) {
 
 	return (
 		<Link
-			to="/inventory-items/id/$id"
+			to="/inventory/items/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -77,7 +66,7 @@ const columns = columnHelper.columns([
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
-	columnHelper.accessor("categoryName", {
+	columnHelper.accessor((row) => row.categoryId, {
 		id: "categoryId",
 		header: ({ column }) => (
 			<SortableHeader column={column} label="Categoria" />
@@ -144,129 +133,72 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-// type InventoryItemsTableProps = {
-// 	view: TableViewState;
-// };
+export function InventoryItemsTable({items, categories}: { items: InventoryItemTableView[], categories: ItemCategorySelect[] }) {
+	// const { data: queryData } = inventoryItemsQuery();
+	// items.forEach((item) => item.categoryId = categories.filter((a) => a.id == item.categoryId)[0].name)
+	items.forEach((item) => {
+		try {
+			item.categoryId = categories.filter((a) => a.id === item.categoryId)[0].name
+		}
+		catch {
+		}
+	})
 
-export function InventoryItemsTable(rows: InventoryItemTableView[]) {
-	// const { data, isPending } = useQuery(inventoryItemOptions);
-	// const navigate = useNavigate();
-
-	// const irPara = useCallback(
-	// 	(next: TableViewState) =>
-	// 		navigate({
-	// 			to: "/inventory-items",
-	// 			search: viewForUrl(next),
-	// 			replace: true,
-	// 		}),
-	// 	[navigate],
-	// );
 
 	const table = useTable({
 		features,
-		columns,
-		data: rows,
-		// data: data ?? emptyRows,
-		// getRowId: (row) => row.id,
-		// state: {
-		// 	pagination: paginationFromView(view),
-		// 	sorting: sortingFromView(view.sort),
-		// },
-		// onPaginationChange: (updater) => {
-		// 	const next = functionalUpdate(updater, paginationFromView(view));
-		// 	irPara({
-		// 		page: next.pageIndex,
-		// 		pageSize: next.pageSize,
-		// 		sort: view.sort,
-		// 	});
-		// },
-		// onSortingChange: (updater) => {
-		// 	const next = functionalUpdate(updater, sortingFromView(view.sort));
-		// 	irPara({
-		// 		page: 0,
-		// 		pageSize: view.pageSize,
-		// 		sort: sortingToView(next),
-		// 	});
-		// },
-		// autoResetPageIndex: false,
-		// autoResetSorting: false,
-		// globalFilterFn: "includesString",
-		// getColumnCanGlobalFilter: (column) => searchable.has(column.id),
+		columns: columns,
+		// data: data ?? queryData ?? [],
+		data: items,
+		autoResetPageIndex: false,
+		autoResetSorting: false,
+		globalFilterFn: "includesString",
+		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	// const { pageIndex, pageSize } = table.state.pagination;
-	// const total = table.getFilteredRowModel().rows.length;
-
-	// useEffect(() => {
-	// 	if (isPending) {
-	// 		return;
-	// 	}
-	// 	if (pageIndex > 0 && pageIndex * pageSize >= total) {
-	// 		irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
-	// 	}
-	// }, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
-
-	// const abrir = (id: string) =>
-	// 	navigate({
-	// 		to: "/inventory-items/id/$id",
-	// 		params: { id },
-	// 		state: { lista: view },
-	// 	});
-
-	// const rows = table.getRowModel().rows;
-
 	return (
-		// <ListViewContext value={data}>
-			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar item de estoque">
-					<TableColumnFilter
-						table={table}
-						columnId="unit"
-						label="Unidade"
-						options={unitOptions}
-					/>
-				</TableToolbar>
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((group) => (
-							<TableRow key={group.id}>
-								{group.headers.map((header) => (
-									<TableHead
-										key={header.id}
-										aria-sort={ariaSort(header.column.getIsSorted())}
-									>
-										{header.isPlaceholder ? null : (
-											<table.FlexRender header={header} />
-										)}
-									</TableHead>
+		<div className="space-y-4">
+			<TableToolbar table={table} searchLabel="Buscar item de estoque">
+				<TableColumnFilter
+					table={table}
+					columnId="unit"
+					label="Unidade"
+					options={unitOptions}
+				/>
+			</TableToolbar>
+			<Table>
+				<TableHeader>
+					{table.getHeaderGroups().map((group) => (
+						<TableRow key={group.id}>
+							{group.headers.map((header) => (
+								<TableHead
+									key={header.id}
+									aria-sort={ariaSort(header.column.getIsSorted())}
+								>
+									{header.isPlaceholder ? null : (
+										<table.FlexRender header={header} />
+									)}
+								</TableHead>
+							))}
+						</TableRow>
+					))}
+				</TableHeader>
+				<TableBody>
+					{table.getRowModel().rows.map((row) => (
+							<TableRow
+								key={row.id}
+							>
+								{row.getAllCells().map((cell) => (
+									<TableCell key={cell.id}>
+										<table.FlexRender cell={cell} />
+									</TableCell>
 								))}
 							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									// className="cursor-pointer"
-									// onClick={() => abrir(row.id)}
-									// onClick={() => navigate({
-									// 	to: "/inventory-items/id/$id",
-									// 	params: { id: row.id },
-									// 	state: { lista: data },
-									// })}
-								>
-									{row.getAllCells().map((cell) => (
-										<TableCell key={cell.id}>
-											<table.FlexRender cell={cell} />
-										</TableCell>
-									))}
-								</TableRow>
-							))
-						}
-					</TableBody>
-				</Table>
-				<TablePagination table={table} totalLabel="item" />
-			</div>
-		// </ListViewContext>
+						))
+					}
+				</TableBody>
+			</Table>
+			<TablePagination table={table} totalLabel="item" />
+		</div>
 	);
 }

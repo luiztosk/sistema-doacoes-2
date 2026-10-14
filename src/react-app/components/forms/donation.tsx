@@ -5,17 +5,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
-import { donorOptions } from "@/react-app/lib/api/donors";
-import { fkOptions } from "@/react-app/lib/api/fk-factory";
+import { donorOptions } from "@/react-app/lib/queries/contacts/donors";
+import { fkOptions } from "@/react-app/lib/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type { DonationCompleto, DonationFormValues } from "@/react-app/lib/api/donations";
+import type { DonationCompleto, DonationFormValues } from "@/react-app/lib/queries/inventory/donations";
 import {
 	donationKeys,
 	createDonationOptions,
 	updateDonationOptions,
-} from "@/react-app/lib/api/donations";
+} from "@/react-app/lib/queries/inventory/donations";
 import { donationInsertSchema } from "@/schemas/zod/inventory";
 
 // function errorFor(values: DonationFormValues, field: string) {
@@ -54,7 +54,7 @@ export function DonationForm({ donation }: DonationFormProps) {
 				else await create.mutateAsync(value);
 			} catch { return; }
 			await queryClient.invalidateQueries({ queryKey: donationKeys.all });
-			await router.navigate({ to: "/donations", search: lista ? viewForUrl(lista) : {} });
+			await router.navigate({ to: "/inventory/donations", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
@@ -66,7 +66,7 @@ export function DonationForm({ donation }: DonationFormProps) {
 				<h1 className="text-3xl font-bold">{donation ? "Detalhes da doacao" : "Nova doacao"}</h1>
 				<div className="flex gap-2">
 					{donation && !isEditing ? <Button size="sm" onClick={() => setIsEditing(true)}>Editar</Button> : null}
-					<Link to="/donations" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Voltar</Link>
+					<Link to="/inventory/donations" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Back</Link>
 				</div>
 			</div>
 			<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}>

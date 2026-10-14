@@ -5,7 +5,7 @@ import {
 } from "drizzle-orm/zod";
 import { z } from "zod";
 import type { infer as ZodInfer } from "zod";
-import { delivery, deliveryLine, donation, donationLine, inventoryAdjustment, inventoryCount, inventoryCountLine, inventoryItem, itemCategory } from "../db/inventory";
+import { delivery, deliveryLine, donation, donationLine, inventoryAdjustment, inventoryCount, inventoryCountLine, inventoryItem, itemCategory, UNITS } from "../db/inventory";
 
 export type ItemCategorySelect = ZodInfer<typeof itemCategorySelectSchema>;
 export type ItemCategoryInsert = ZodInfer<typeof itemCategoryInsertSchema>;
@@ -34,11 +34,12 @@ export type InventoryItemInsert = ZodInfer<typeof inventoryItemInsertSchema>;
 export type InventoryItemUpdate = ZodInfer<typeof inventoryItemUpdateSchema>;
 export type InventoryItemTableView = Pick<
     ZodInfer<typeof inventoryItemTableViewSchema>,
-    "id" | "name" | "categoryName" | "unit" | "onHand" | "reservedQuantity" | "available"
+    "id" | "name" | "categoryId" | "unit" | "onHand" | "reservedQuantity" | "available"
 >;
 
 const inventoryItemRefinements = {
     name: z.string().trim().min(1),
+    unit: z.enum(UNITS),
     onHand: z.number().int().nonnegative(),
     reservedQuantity: z.number().int().nonnegative(),
 };
@@ -60,10 +61,10 @@ export const inventoryItemSelectSchema = createSelectSchema(
 );
 
 export const inventoryItemTableViewSchema = inventoryItemSelectSchema
-    .omit({ categoryId: true })
-    .extend({
-        categoryName: itemCategorySelectSchema.array(),
-    });
+    // .omit({ categoryId: true })
+    // .extend({
+        // categoryName: itemCategorySelectSchema,
+    // });
 
 export const inventoryItemDetailsViewSchema = z.object({
     item: inventoryItemSelectSchema,

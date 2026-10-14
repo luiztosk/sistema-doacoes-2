@@ -8,8 +8,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Donation } from "@/react-app/lib/api/donations";
-import { donationOptions } from "@/react-app/lib/api/donations";
+import type { Donation } from "@/react-app/lib/queries/inventory/donations";
+import { donationOptions } from "@/react-app/lib/queries/inventory/donations";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -44,13 +44,13 @@ function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link
-			to="/donations/id/$id"
+			to="/inventory/donations/id/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(e) => e.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			Mais detalhes
+			More details
 		</Link>
 	);
 }
@@ -93,7 +93,7 @@ export function DonationsTable({ view }: DonationsTableProps) {
 
 	const irPara = useCallback(
 		(next: TableViewState) =>
-			navigate({ to: "/donations", search: viewForUrl(next), replace: true }),
+			navigate({ to: "/inventory/donations", search: viewForUrl(next), replace: true }),
 		[navigate],
 	);
 
@@ -131,7 +131,7 @@ export function DonationsTable({ view }: DonationsTableProps) {
 	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
 	const abrir = (id: string) =>
-		navigate({ to: "/donations/id/$id", params: { id }, state: { lista: view } });
+		navigate({ to: "/inventory/donations/id/$id", params: { id }, state: { lista: view } });
 
 	const rows = table.getRowModel().rows;
 

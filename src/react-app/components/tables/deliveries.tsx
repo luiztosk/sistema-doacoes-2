@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { createColumnHelper, functionalUpdate, useTable } from "@tanstack/react-table";
 
-import type { Delivery } from "@/react-app/lib/api/deliveries";
-import { deliveryOptions } from "@/react-app/lib/api/deliveries";
+import type { Delivery } from "@/react-app/lib/queries/inventory/deliveries";
+import { deliveryOptions } from "@/react-app/lib/queries/inventory/deliveries";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -26,8 +26,8 @@ const ListViewContext = createContext<TableViewState>({});
 function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
-		<Link to="/deliveries/id/$id" params={{ id }} state={{ lista: view }} onClick={(e) => e.stopPropagation()} className={buttonVariants({ variant: "outline", size: "xs" })}>
-			Mais detalhes
+		<Link to="/inventory/deliveries/id/$id" params={{ id }} state={{ lista: view }} onClick={(e) => e.stopPropagation()} className={buttonVariants({ variant: "outline", size: "xs" })}>
+			More details
 		</Link>
 	);
 }
@@ -45,7 +45,7 @@ export function DeliveriesTable({ view }: DeliveriesTableProps) {
 	const { data, isPending } = useQuery(deliveryOptions);
 	const navigate = useNavigate();
 
-	const irPara = useCallback((next: TableViewState) => navigate({ to: "/deliveries", search: viewForUrl(next), replace: true }), [navigate]);
+	const irPara = useCallback((next: TableViewState) => navigate({ to: "/inventory/deliveries", search: viewForUrl(next), replace: true }), [navigate]);
 
 	const table = useTable({
 		features, columns, data: data ?? emptyRows, getRowId: (row) => row.id,
@@ -59,7 +59,7 @@ export function DeliveriesTable({ view }: DeliveriesTableProps) {
 	const total = table.getFilteredRowModel().rows.length;
 	useEffect(() => { if (isPending) return; if (pageIndex > 0 && pageIndex * pageSize >= total) irPara({ page: 0, pageSize: view.pageSize, sort: view.sort }); }, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
-	const abrir = (id: string) => navigate({ to: "/deliveries/id/$id", params: { id }, state: { lista: view } });
+	const abrir = (id: string) => navigate({ to: "/inventory/deliveries/id/$id", params: { id }, state: { lista: view } });
 	const rows = table.getRowModel().rows;
 
 	return (

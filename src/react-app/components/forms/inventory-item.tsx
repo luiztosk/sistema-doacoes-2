@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider } from "@/react-app/components/forms/fields";
@@ -12,19 +11,10 @@ import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
 	InventoryItemSelect,
-	InventoryItemInsert,
 } from "@/schemas/zod/inventory";
 import { inventoryItemInsertSchema } from "@/schemas/zod/inventory";
 import { UNITS } from "@/schemas/db/inventory";
-import {
-	inventoryItemKeys,
-	createInventoryItemOptions,
-	updateInventoryItemOptions,
-} from "@/react-app/lib/api/inventory-items";
-
-type InventoryItemFormProps = {
-	inventoryItem?: InventoryItemSelect;
-};
+import { queryClient } from "@/react-app/lib/query-client";
 
 const unitOptions: SelectOption[] = UNITS.map((value) => ({
 	value,
@@ -36,35 +26,17 @@ const unitOptions: SelectOption[] = UNITS.map((value) => ({
 		"Caixa",
 }));
 
-function initialValues(record?: InventoryItemSelect): InventoryItemInsert {
-	return {
-		name: record?.name ?? "",
-		categoryId: record?.categoryId ?? "",
-		unit: record?.unit ?? "UNIT",
-	};
-}
-
-// function errorFor(values: InventoryItemInsert, field: string) {
-// 	const parsed = inventoryItemInsertSchema.safeParse(values);
-// 	if (parsed.success) {
-// 		return undefined;
-// 	}
-// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-// }
-
-export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
+export function InventoryItemForm({ inventoryItem, createMutation, updateMutation }: {
+	inventoryItem?: InventoryItemSelect;
+	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+}) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!inventoryItem);
 
-	const create = useMutation(createInventoryItemOptions);
-	const update = useMutation(
-		updateInventoryItemOptions(inventoryItem?.id ?? ""),
-	);
-
 	const form = useForm({
-		defaultValues: initialValues(inventoryItem),
+		defaultValues: inventoryItem,
 		onSubmit: async ({ value }) => {
 			if (!inventoryItemInsertSchema.safeParse(value).success) {
 				return;
@@ -72,26 +44,26 @@ export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
 
 			try {
 				if (inventoryItem) {
-					await update.mutateAsync(value);
+					await updateMutation?.mutateAsync({ body: value });
 				} else {
-					await create.mutateAsync(value);
+					await createMutation?.mutateAsync({ body: value });
 				}
 			} catch {
 				return;
 			}
 
 			await queryClient.invalidateQueries({
-				queryKey: inventoryItemKeys.all,
+				queryKey: ["inventory-items"],
 			});
 
 			await router.navigate({
-				to: "/inventory-items",
+				to: "/inventory/items",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = createMutation?.isPending || updateMutation?.isPending;
 
 	return (
 		<section className="space-y-6">
@@ -100,13 +72,13 @@ export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
 					{inventoryItem ? "Detalhes do item" : "Novo item de estoque"}
 				</h1>
 				<div className="flex flex-wrap items-center gap-2">
-					{inventoryItem && !isEditing ? (
+					{inventoryItem ? (
 						<Button size="sm" onClick={() => setIsEditing(true)}>
 							Editar
 						</Button>
 					) : null}
 					<Link
-						to="/inventory-items"
+						to="/inventory/items"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
@@ -128,10 +100,6 @@ export function InventoryItemForm({ inventoryItem }: InventoryItemFormProps) {
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
-								// validators={{
-								// 	onBlur: ({ fieldApi }) =>
-								// 		errorFor(fieldApi.form.state.values, "name"),
-								// }}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}

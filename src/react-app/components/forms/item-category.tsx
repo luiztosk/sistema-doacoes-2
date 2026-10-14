@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider } from "@/react-app/components/forms/fields";
@@ -10,44 +9,26 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
-	ItemCategoryCompleto,
+	ItemCategorySelect,
 	ItemCategoryFormValues,
-} from "@/react-app/lib/api/item-categories";
-import {
-	itemCategoryKeys,
-	createItemCategoryOptions,
-	updateItemCategoryOptions,
-} from "@/react-app/lib/api/item-categories";
+} from "@/schemas/zod/inventory";
 import { itemCategoryInsertSchema } from "@/schemas/zod/inventory";
+import { queryClient } from "@/react-app/lib/query-client";
 
-type ItemCategoryFormProps = {
-	itemCategory?: ItemCategoryCompleto;
-};
-
-function initialValues(record?: ItemCategoryCompleto): ItemCategoryFormValues {
+function initialValues(record?: ItemCategorySelect): ItemCategoryFormValues {
 	return {
 		name: record?.name ?? "",
 	};
 }
 
-// function errorFor(values: ItemCategoryFormValues, field: string) {
-// 	const parsed = itemCategoryInsertSchema.safeParse(values);
-// 	if (parsed.success) {
-// 		return undefined;
-// 	}
-// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-// }
-
-export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
+export function ItemCategoryForm({ itemCategory, createMutation, updateMutation }: {
+	itemCategory?: ItemCategorySelect;
+	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+}) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!itemCategory);
-
-	const create = useMutation(createItemCategoryOptions);
-	const update = useMutation(
-		updateItemCategoryOptions(itemCategory?.id ?? ""),
-	);
 
 	const form = useForm({
 		defaultValues: initialValues(itemCategory),
@@ -58,26 +39,26 @@ export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
 
 			try {
 				if (itemCategory) {
-					await update.mutateAsync(value);
+					await updateMutation?.mutateAsync({ body: value });
 				} else {
-					await create.mutateAsync(value);
+					await createMutation?.mutateAsync({ body: value });
 				}
 			} catch {
 				return;
 			}
 
 			await queryClient.invalidateQueries({
-				queryKey: itemCategoryKeys.all,
+				queryKey: ["item-categories"],
 			});
 
 			await router.navigate({
-				to: "/item-categories",
+				to: "/inventory/categories",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = createMutation?.isPending || updateMutation?.isPending;
 
 	return (
 		<section className="space-y-6">
@@ -92,7 +73,7 @@ export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
 						</Button>
 					) : null}
 					<Link
-						to="/item-categories"
+						to="/inventory/categories"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
@@ -114,10 +95,6 @@ export function ItemCategoryForm({ itemCategory }: ItemCategoryFormProps) {
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
-								// validators={{
-								// 	onBlur: ({ fieldApi }) =>
-								// 		errorFor(fieldApi.form.state.values, "name"),
-								// }}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}

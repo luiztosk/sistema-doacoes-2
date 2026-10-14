@@ -7,17 +7,17 @@ import router from "./router";
 import { queryClient } from "./lib/query-client";
 import "./styles.css";
 
-// createRoot(document.getElementById("root")!).render(
-// 	<StrictMode>
-// 		<ThemeProvider
-// 			attribute="class"
-// 			defaultTheme="system"
-// 			enableSystem
-// 			disableTransitionOnChange
-// 		>
-// 			<QueryClientProvider client={queryClient}>
-// 				<RouterProvider router={router} />
-// 			</QueryClientProvider>
-// 		</ThemeProvider>
-// 	</StrictMode>,
-// );
+createRoot(document.getElementById("root")!).render(
+	<StrictMode>
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="system"
+			enableSystem
+			disableTransitionOnChange
+		>
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider router={router} />
+			</QueryClientProvider>
+		</ThemeProvider>
+	</StrictMode>,
+);

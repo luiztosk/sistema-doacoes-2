@@ -51,6 +51,7 @@
 		"@cloudflare/workers-types": "^5.20260911.1",
 		"@eslint/js": "9.39.1",
 		"@faker-js/faker": "^10.6.0",
+		"@tanstack/react-query-devtools": "^5.104.2",
 		"@tanstack/router-plugin": "^1.168.40",
 		"@types/node": "^24.10.1",
 		"@types/react": "19.2.7",
@@ -95,7 +96,8 @@
 		"db-reset-remote": "node scripts/db-init.js --remote --force",
 		"local-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --local && wrangler types && npm run db-seed",
 		"remote-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
-		"preview": "npm run build && vite preview"
+		"preview": "npm run build && vite preview",
+		"update-openapi": "tsx scripts/update-openapi.ts"
 	},
 	"type": "module"
 }

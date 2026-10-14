@@ -1,0 +1,73 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Inventory Items API",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {},
+        "parameters": {}
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "categoryId": {
+                                            "type": "string"
+                                        },
+                                        "unit": {
+                                            "type": "string",
+                                            "enum": [
+                                                "KG",
+                                                "L",
+                                                "UNIT",
+                                                "PACK",
+                                                "BOX"
+                                            ]
+                                        },
+                                        "onHand": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "reservedQuantity": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "available": {
+                                            "type": "integer",
+                                            "nullable": true,
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "categoryId",
+                                        "unit",
+                                        "onHand",
+                                        "reservedQuantity",
+                                        "available"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}⏎   

@@ -34,7 +34,7 @@ import {
 	beneficiaryKeys,
 	createBeneficiaryOptions,
 	updateBeneficiaryOptions,
-} from "@/react-app/lib/api/beneficiaries";
+} from "@/react-app/lib/queries/contacts/beneficiaries";
 import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/db/contacts";
 import { ZodError } from "zod";
 
@@ -79,7 +79,7 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 			});
 
 			await router.navigate({
-				to: "/beneficiaries",
+				to: "/contacts/beneficiaries",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
@@ -100,11 +100,11 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 						</Button>
 					) : null}
 					<Link
-						to="/beneficiaries"
+						to="/contacts/beneficiaries"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
-						Voltar para a lista
+						Back to list
 					</Link>
 				</div>
 			</div>

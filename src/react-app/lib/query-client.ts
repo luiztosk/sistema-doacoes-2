@@ -6,7 +6,16 @@ export const queryClient = new QueryClient({
 	}),
 	defaultOptions: {
 		queries: {
-			staleTime: 5000,
+			// staleTime: 5000,
 		},
 	},
 });
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__:
+      import('@tanstack/query-core')
+        .QueryClient
+  }
+}
+
+window.__TANSTACK_QUERY_CLIENT__ = queryClient

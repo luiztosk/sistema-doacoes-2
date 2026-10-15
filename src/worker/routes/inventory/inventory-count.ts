@@ -2,7 +2,7 @@ import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { inventoryCount, inventoryCountLine, inventoryItem, inventoryAdjustment } from '../../../schemas/db/inventory';
+import { inventoryCount, inventoryCountLine, inventoryAdjustment } from '../../../schemas/db/inventory';
 import { 
   inventoryCountSelectSchema, 
   inventoryCountUpdateSchema,
@@ -70,7 +70,7 @@ const getInventoryCountRoute = defineOpenAPIRoute({
     
     const lines = await db
       .select({
-        inventoryItemId: inventoryCountLine.inventoryItemId,
+        itemId: inventoryCountLine.itemId,
         countedQuantity: inventoryCountLine.countedQuantity,
       })
       .from(inventoryCountLine)
@@ -116,7 +116,7 @@ const createInventoryCountRoute = defineOpenAPIRoute({
     const occurredAt = typeof countData.occurredAt === 'string' ? new Date(countData.occurredAt) : countData.occurredAt;
     
     // Check for duplicate items
-    const itemIds = lines.map((line) => line.inventoryItemId);
+    const itemIds = lines.map((line) => line.itemId);
     if (new Set(itemIds).size !== itemIds.length) {
       return c.json({ error: { code: 'INVALID_VALUE', message: 'An item cannot appear twice in the same count.' } }, 400);
     }
@@ -124,17 +124,17 @@ const createInventoryCountRoute = defineOpenAPIRoute({
     // Get current stock
     const stock = await db
       .select({
-        id: inventoryItem.id,
-        onHand: inventoryItem.onHand,
-        reservedQuantity: inventoryItem.reservedQuantity,
+        id: item.id,
+        onHand: item.onHand,
+        reservedQuantity: item.reservedQuantity,
       })
-      .from(inventoryItem)
-      .where(inArray(inventoryItem.id, itemIds));
+      .from(item)
+      .where(inArray(item.id, itemIds));
     
     const stockMap = new Map(stock.map(row => [row.id, row]));
     
     for (const line of lines) {
-      const item = stockMap.get(line.inventoryItemId);
+      const item = stockMap.get(line.itemId);
       if (!item) {
         return c.json({ error: { code: 'INVALID_REFERENCE', message: 'One of the references sent does not exist.' } }, 400);
       }
@@ -150,19 +150,19 @@ const createInventoryCountRoute = defineOpenAPIRoute({
         .insert(inventoryCountLine)
         .values({
           countId: id,
-          inventoryItemId: line.inventoryItemId,
+          itemId: line.itemId,
           countedQuantity: line.countedQuantity,
         })
     );
     
     const adjustmentInserts = lines.map((line) => {
-      const item = stockMap.get(line.inventoryItemId)!;
+      const item = stockMap.get(line.itemId)!;
       const delta = line.countedQuantity - item.onHand;
       return db
         .insert(inventoryAdjustment)
         .values({
           id: crypto.randomUUID(),
-          inventoryItemId: line.inventoryItemId,
+          itemId: line.itemId,
           delta,
           reason: 'STOCKTAKE',
           occurredAt,
@@ -172,9 +172,9 @@ const createInventoryCountRoute = defineOpenAPIRoute({
     
     const onHandUpdates = lines.map((line) =>
       db
-        .update(inventoryItem)
+        .update(item)
         .set({ onHand: line.countedQuantity })
-        .where(eq(inventoryItem.id, line.inventoryItemId))
+        .where(eq(item.id, line.itemId))
     );
     
     await db.batch([
@@ -193,7 +193,7 @@ const createInventoryCountRoute = defineOpenAPIRoute({
     const [data] = await db.select().from(inventoryCount).where(eq(inventoryCount.id, id)).limit(1);
     const createdLines = await db
       .select({
-        inventoryItemId: inventoryCountLine.inventoryItemId,
+        itemId: inventoryCountLine.itemId,
         countedQuantity: inventoryCountLine.countedQuantity,
       })
       .from(inventoryCountLine)

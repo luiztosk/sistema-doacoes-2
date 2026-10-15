@@ -2,8 +2,8 @@ import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { itemCategory } from '../../../schemas/db/inventory';
-import { itemCategorySelectSchema, itemCategoryInsertSchema, itemCategoryUpdateSchema, ItemCategorySelect } from "../../../schemas/zod/inventory";
+import { category } from '../../../schemas/db/inventory';
+import { categorySelectSchema, categoryInsertSchema, categoryUpdateSchema, CategorySelect } from "../../../schemas/zod/inventory";
 import { z } from 'zod';
 
 const getInventoryCategoriesRoute = defineOpenAPIRoute({
@@ -14,7 +14,7 @@ const getInventoryCategoriesRoute = defineOpenAPIRoute({
       200: {
         content: {
           'application/json': {
-            schema: itemCategorySelectSchema.array(),
+            schema: categorySelectSchema.array(),
           },
         },
       },
@@ -22,7 +22,7 @@ const getInventoryCategoriesRoute = defineOpenAPIRoute({
   }),
   handler: async (c: Context<{ Bindings: Env }>) => {
     const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const data = await db.select().from(itemCategory).all() as ItemCategorySelect[];
+    const data = await db.select().from(category).all() as CategorySelect[];
     return c.json(
       data,
       200
@@ -38,7 +38,7 @@ const createInventoryCategoryRoute = defineOpenAPIRoute({
       body: {
         content: {
           'application/json': {
-            schema: itemCategoryInsertSchema,
+            schema: categoryInsertSchema,
           },
         },
       },
@@ -47,7 +47,7 @@ const createInventoryCategoryRoute = defineOpenAPIRoute({
       201: {
         content: {
           'application/json': {
-            schema: itemCategorySelectSchema,
+            schema: categorySelectSchema,
           },
         },
       },
@@ -61,7 +61,7 @@ const createInventoryCategoryRoute = defineOpenAPIRoute({
     const payload = await c.req.json();
     
     const [data] = await db
-      .insert(itemCategory)
+      .insert(category)
       .values({
         id: crypto.randomUUID(),
         ...payload,
@@ -84,7 +84,7 @@ const getInventoryCategoryRoute = defineOpenAPIRoute({
       200: {
         content: {
           'application/json': {
-            schema: itemCategorySelectSchema,
+            schema: categorySelectSchema,
           },
         },
       },
@@ -97,13 +97,13 @@ const getInventoryCategoryRoute = defineOpenAPIRoute({
     const db = drizzle(c.env.prod_sistema_doacoes_2);
     const id = c.req.param('id')!;
     
-    const [category] = await db.select().from(itemCategory).where(eq(itemCategory.id, id)).limit(1);
+    const [cat] = await db.select().from(category).where(eq(category.id, id)).limit(1);
     
-    if (!category) {
+    if (!cat) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Category not found.' } }, 404);
     }
     
-    return c.json(category, 200);
+    return c.json(cat, 200);
   }
 });
 
@@ -116,7 +116,7 @@ const updateInventoryCategoryRoute = defineOpenAPIRoute({
       body: {
         content: {
           'application/json': {
-            schema: itemCategoryUpdateSchema,
+            schema: categoryUpdateSchema,
           },
         },
       },
@@ -125,7 +125,7 @@ const updateInventoryCategoryRoute = defineOpenAPIRoute({
       200: {
         content: {
           'application/json': {
-            schema: itemCategorySelectSchema,
+            schema: categorySelectSchema,
           },
         },
       },
@@ -141,7 +141,7 @@ const updateInventoryCategoryRoute = defineOpenAPIRoute({
     const db = drizzle(c.env.prod_sistema_doacoes_2);
     const id = c.req.param('id')!;
     
-    const [existing] = await db.select().from(itemCategory).where(eq(itemCategory.id, id)).limit(1);
+    const [existing] = await db.select().from(category).where(eq(category.id, id)).limit(1);
     
     if (!existing) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Category not found.' } }, 404);
@@ -150,9 +150,9 @@ const updateInventoryCategoryRoute = defineOpenAPIRoute({
     const payload = await c.req.json();
     
     const [data] = await db
-      .update(itemCategory)
+      .update(category)
       .set(payload)
-      .where(eq(itemCategory.id, id))
+      .where(eq(category.id, id))
       .returning();
 
     return c.json(data, 200);
@@ -180,9 +180,9 @@ const deleteInventoryCategoryRoute = defineOpenAPIRoute({
     const id = c.req.param('id')!;
     
     const [removed] = await db
-      .delete(itemCategory)
-      .where(eq(itemCategory.id, id))
-      .returning({ id: itemCategory.id });
+      .delete(category)
+      .where(eq(category.id, id))
+      .returning({ id: category.id });
 
     if (!removed) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Category not found.' } }, 404);

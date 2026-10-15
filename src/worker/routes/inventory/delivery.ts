@@ -2,7 +2,7 @@ import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq, sql, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { delivery, deliveryLine, inventoryItem } from '../../../schemas/db/inventory';
+import { delivery, deliveryLine } from '../../../schemas/db/inventory';
 import { 
   deliverySelectSchema, 
   deliveryUpdateSchema,
@@ -70,7 +70,7 @@ const getDeliveryRoute = defineOpenAPIRoute({
     
     const lines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)
@@ -116,7 +116,7 @@ const createDeliveryRoute = defineOpenAPIRoute({
     const occurredAt = typeof deliveryData.occurredAt === 'string' ? new Date(deliveryData.occurredAt) : deliveryData.occurredAt;
     
     // Check for duplicate items
-    const itemIds = lines.map((line) => line.inventoryItemId);
+    const itemIds = lines.map((line) => line.itemId);
     if (new Set(itemIds).size !== itemIds.length) {
       return c.json({ error: { code: 'INVALID_VALUE', message: 'An item cannot appear twice in the same delivery.' } }, 400);
     }
@@ -124,17 +124,17 @@ const createDeliveryRoute = defineOpenAPIRoute({
     // Check stock availability
     const stock = await db
       .select({
-        id: inventoryItem.id,
-        onHand: inventoryItem.onHand,
-        reservedQuantity: inventoryItem.reservedQuantity,
+        id: item.id,
+        onHand: item.onHand,
+        reservedQuantity: item.reservedQuantity,
       })
-      .from(inventoryItem)
-      .where(inArray(inventoryItem.id, itemIds));
+      .from(item)
+      .where(inArray(item.id, itemIds));
     
     const stockMap = new Map(stock.map(row => [row.id, row]));
     
     for (const line of lines) {
-      const item = stockMap.get(line.inventoryItemId);
+      const item = stockMap.get(line.itemId);
       if (!item) {
         return c.json({ error: { code: 'INVALID_REFERENCE', message: 'One of the references sent does not exist.' } }, 400);
       }
@@ -151,16 +151,16 @@ const createDeliveryRoute = defineOpenAPIRoute({
         .insert(deliveryLine)
         .values({
           deliveryId: id,
-          inventoryItemId: line.inventoryItemId,
+          itemId: line.itemId,
           quantity: line.quantity,
         })
     );
     
     const reserveUpdates = lines.map((line) =>
       db
-        .update(inventoryItem)
-        .set({ reservedQuantity: sql`${inventoryItem.reservedQuantity} + ${line.quantity}` })
-        .where(eq(inventoryItem.id, line.inventoryItemId))
+        .update(item)
+        .set({ reservedQuantity: sql`${item.reservedQuantity} + ${line.quantity}` })
+        .where(eq(item.id, line.itemId))
     );
     
     await db.batch([
@@ -178,7 +178,7 @@ const createDeliveryRoute = defineOpenAPIRoute({
     const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
     const createdLines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)
@@ -231,38 +231,38 @@ const completeDeliveryRoute = defineOpenAPIRoute({
     
     const lines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)
       .where(eq(deliveryLine.deliveryId, id));
     
     // Check reserved quantities
-    const itemIds = lines.map(l => l.inventoryItemId);
+    const itemIds = lines.map(l => l.itemId);
     const reserved = await db
       .select({
-        id: inventoryItem.id,
-        reservedQuantity: inventoryItem.reservedQuantity,
+        id: item.id,
+        reservedQuantity: item.reservedQuantity,
       })
-      .from(inventoryItem)
-      .where(inArray(inventoryItem.id, itemIds));
+      .from(item)
+      .where(inArray(item.id, itemIds));
     
     const reservedMap = new Map(reserved.map(row => [row.id, row.reservedQuantity]));
     
     for (const line of lines) {
-      if ((reservedMap.get(line.inventoryItemId) ?? 0) < line.quantity) {
+      if ((reservedMap.get(line.itemId) ?? 0) < line.quantity) {
         return c.json({ error: { code: 'CONFLICT', message: 'The reserved stock no longer covers this operation.' } }, 409);
       }
     }
     
     const consumeUpdates = lines.map((line) =>
       db
-        .update(inventoryItem)
+        .update(item)
         .set({ 
-          onHand: sql`${inventoryItem.onHand} - ${line.quantity}`,
-          reservedQuantity: sql`${inventoryItem.reservedQuantity} - ${line.quantity}`,
+          onHand: sql`${item.onHand} - ${line.quantity}`,
+          reservedQuantity: sql`${item.reservedQuantity} - ${line.quantity}`,
         })
-        .where(eq(inventoryItem.id, line.inventoryItemId))
+        .where(eq(item.id, line.itemId))
     );
     
     const batchOps = [
@@ -279,7 +279,7 @@ const completeDeliveryRoute = defineOpenAPIRoute({
     const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
     const updatedLines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)
@@ -331,35 +331,35 @@ const cancelDeliveryRoute = defineOpenAPIRoute({
     
     const lines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)
       .where(eq(deliveryLine.deliveryId, id));
     
     // Check reserved quantities
-    const itemIds = lines.map(l => l.inventoryItemId);
+    const itemIds = lines.map(l => l.itemId);
     const reserved = await db
       .select({
-        id: inventoryItem.id,
-        reservedQuantity: inventoryItem.reservedQuantity,
+        id: item.id,
+        reservedQuantity: item.reservedQuantity,
       })
-      .from(inventoryItem)
-      .where(inArray(inventoryItem.id, itemIds));
+      .from(item)
+      .where(inArray(item.id, itemIds));
     
     const reservedMap = new Map(reserved.map(row => [row.id, row.reservedQuantity]));
     
     for (const line of lines) {
-      if ((reservedMap.get(line.inventoryItemId) ?? 0) < line.quantity) {
+      if ((reservedMap.get(line.itemId) ?? 0) < line.quantity) {
         return c.json({ error: { code: 'CONFLICT', message: 'The reserved stock no longer covers this operation.' } }, 409);
       }
     }
     
     const releaseUpdates = lines.map((line) =>
       db
-        .update(inventoryItem)
-        .set({ reservedQuantity: sql`${inventoryItem.reservedQuantity} - ${line.quantity}` })
-        .where(eq(inventoryItem.id, line.inventoryItemId))
+        .update(item)
+        .set({ reservedQuantity: sql`${item.reservedQuantity} - ${line.quantity}` })
+        .where(eq(item.id, line.itemId))
     );
     
     const batchOps = [
@@ -376,7 +376,7 @@ const cancelDeliveryRoute = defineOpenAPIRoute({
     const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
     const updatedLines = await db
       .select({
-        inventoryItemId: deliveryLine.inventoryItemId,
+        itemId: deliveryLine.itemId,
         quantity: deliveryLine.quantity,
       })
       .from(deliveryLine)

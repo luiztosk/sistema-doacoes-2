@@ -9,20 +9,20 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
-	ItemCategorySelect,
+	CategorySelect,
 	// ItemCategoryFormValues,
 } from "@/schemas/zod/inventory";
-import { itemCategoryInsertSchema } from "@/schemas/zod/inventory";
+import { categoryInsertSchema } from "@/schemas/zod/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
 
-// function initialValues(record?: ItemCategorySelect): ItemCategoryFormValues {
+// function initialValues(record?: CategorySelect): CategoryFormValues {
 // 	return {
 // 		name: record?.name ?? "",
 // 	};
 // }
 
 export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
-	itemCategory?: ItemCategorySelect;
+	itemCategory?: CategorySelect;
 	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 }) {
@@ -34,7 +34,7 @@ export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 		// defaultValues: initialValues(itemCategory),
 		defaultValues: itemCategory,
 		onSubmit: async ({ value }) => {
-			if (!itemCategoryInsertSchema.safeParse(value).success) {
+			if (!categoryInsertSchema.safeParse(value).success) {
 				return;
 			}
 
@@ -53,7 +53,7 @@ export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 			});
 
 			await router.navigate({
-				to: "/inventory/categories",
+				to: "/inventory/category",
 				search: lista ? viewForUrl(lista) : {},
 			});
 		},
@@ -74,7 +74,7 @@ export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 						</Button>
 					) : null}
 					<Link
-						to="/inventory/categories"
+						to="/inventory/category"
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>

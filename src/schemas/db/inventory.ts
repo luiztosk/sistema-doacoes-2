@@ -20,7 +20,7 @@ export const REASONS_ADJUSTMENT = [
 	"CORRECTION",
 ] as const;
 
-export const itemCategory = sqliteTable(
+export const category = sqliteTable(
 	"item_category",
 	{
 		id: text("id").primaryKey(),
@@ -29,14 +29,14 @@ export const itemCategory = sqliteTable(
 	(t) => [uniqueIndex("item_category_name_uniq").on(sql`lower(${t.name})`)],
 );
 
-export const inventoryItem = sqliteTable(
+export const item = sqliteTable(
 	"inventory_item",
 	{
 		id: text("id").primaryKey(),
 		name: text("name").notNull(),
 		categoryId: text("category_id")
 			.notNull()
-			.references(() => itemCategory.id, { onDelete: "no action" }),
+			.references(() => category.id, { onDelete: "no action" }),
 		unit: text("unit", { enum: UNITS }).notNull(),
 		onHand: integer("on_hand").notNull().default(0),
 		reservedQuantity: integer("reserved_quantity").notNull().default(0),
@@ -78,7 +78,7 @@ export const donationLine = sqliteTable(
 			.references(() => donation.id, { onDelete: "no action" }),
 		inventoryItemId: text("inventory_item_id")
 			.notNull()
-			.references(() => inventoryItem.id, { onDelete: "no action" }),
+			.references(() => item.id, { onDelete: "no action" }),
 		quantity: integer("quantity").notNull(),
 	},
 	(t) => [
@@ -112,7 +112,7 @@ export const deliveryLine = sqliteTable(
 			.references(() => delivery.id, { onDelete: "no action" }),
 		inventoryItemId: text("inventory_item_id")
 			.notNull()
-			.references(() => inventoryItem.id, { onDelete: "no action" }),
+			.references(() => item.id, { onDelete: "no action" }),
 		quantity: integer("quantity").notNull(),
 	},
 	(t) => [
@@ -136,7 +136,7 @@ export const inventoryCountLine = sqliteTable(
 			.references(() => inventoryCount.id, { onDelete: "no action" }),
 		inventoryItemId: text("inventory_item_id")
 			.notNull()
-			.references(() => inventoryItem.id, { onDelete: "no action" }),
+			.references(() => item.id, { onDelete: "no action" }),
 		countedQuantity: integer("counted_quantity").notNull(),
 	},
 	(t) => [
@@ -151,7 +151,7 @@ export const inventoryAdjustment = sqliteTable(
 		id: text("id").primaryKey(),
 		inventoryItemId: text("inventory_item_id")
 			.notNull()
-			.references(() => inventoryItem.id, { onDelete: "no action" }),
+			.references(() => item.id, { onDelete: "no action" }),
 		delta: integer("delta").notNull(),
 		reason: text("reason", { enum: REASONS_ADJUSTMENT }).notNull(),
 		occurredAt: integer("occurred_at", { mode: "timestamp" }).notNull(),

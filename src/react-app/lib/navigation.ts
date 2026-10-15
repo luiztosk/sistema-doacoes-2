@@ -20,12 +20,12 @@ export const resources: readonly Resource[] = [
 		description: "Register of donation sources.",
 	},
 	{
-		path: "/inventory/items",
+		path: "/inventory/item",
 		label: "Inventory Items",
 		description: "Item catalog and stock control.",
 	},
 	{
-		path: "/inventory/categories",
+		path: "/inventory/category",
 		label: "Item Categories",
 		description: "Categories for item classification.",
 	},
@@ -35,7 +35,7 @@ export const resources: readonly Resource[] = [
 		description: "Donation registration and receipt.",
 	},
 	{
-		path: "/inventory/deliveries",
+		path: "/inventory/delivery",
 		label: "Deliveries",
 		description: "Stock reservations and deliveries.",
 	},

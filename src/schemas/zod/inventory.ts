@@ -5,73 +5,54 @@ import {
 } from "drizzle-orm/zod";
 import { z } from "zod";
 import type { infer as ZodInfer } from "zod";
-import { delivery, deliveryLine, donation, donationLine, inventoryAdjustment, inventoryCount, inventoryCountLine, inventoryItem, itemCategory, UNITS } from "../db/inventory";
+import { delivery, deliveryLine, donation, donationLine, inventoryAdjustment, inventoryCount, inventoryCountLine, item, category, UNITS } from "../db/inventory";
 
-export type ItemCategorySelect = ZodInfer<typeof itemCategorySelectSchema>;
-export type ItemCategoryInsert = ZodInfer<typeof itemCategoryInsertSchema>;
-export type ItemCategoryUpdate = ZodInfer<typeof itemCategoryUpdateSchema>;
+export type CategorySelect = ZodInfer<typeof categorySelectSchema>;
+export type CategoryInsert = ZodInfer<typeof categoryInsertSchema>;
+export type CategoryUpdate = ZodInfer<typeof categoryUpdateSchema>;
 
-const itemCategoryRefinements = { name: z.string().trim().min(1) };
-export const itemCategoryInsertSchema = createInsertSchema(
-    itemCategory,
-    itemCategoryRefinements,
+const categoryRefinements = { name: z.string().trim().min(1) };
+export const categoryInsertSchema = createInsertSchema(
+    category,
+    categoryRefinements,
 )
     .omit({ id: true })
     .strict();
-export const itemCategoryUpdateSchema = createUpdateSchema(
-    itemCategory,
-    itemCategoryRefinements,
+export const categoryUpdateSchema = createUpdateSchema(
+    category,
+    categoryRefinements,
 )
     .omit({ id: true })
     .strict();
-export const itemCategorySelectSchema = createSelectSchema(
-    itemCategory,
-    itemCategoryRefinements,
+export const categorySelectSchema = createSelectSchema(
+    category,
+    categoryRefinements,
 );
 
-export type InventoryItemSelect = ZodInfer<typeof inventoryItemSelectSchema>;
-export type InventoryItemInsert = ZodInfer<typeof inventoryItemInsertSchema>;
-export type InventoryItemUpdate = ZodInfer<typeof inventoryItemUpdateSchema>;
-export type InventoryItemTableView = Pick<
-    ZodInfer<typeof inventoryItemTableViewSchema>,
-    "id" | "name" | "categoryId" | "unit" | "onHand" | "reservedQuantity" | "available"
->;
+export type ItemSelect = ZodInfer<typeof itemSelectSchema>;
+export type ItemInsert = ZodInfer<typeof itemInsertSchema>;
+export type ItemUpdate = ZodInfer<typeof itemUpdateSchema>;
 
-const inventoryItemRefinements = {
+const itemRefinements = {
     name: z.string().trim().min(1),
     unit: z.enum(UNITS),
     onHand: z.number().int().nonnegative(),
     reservedQuantity: z.number().int().nonnegative(),
 };
-export const inventoryItemInsertSchema = createInsertSchema(
-    inventoryItem,
-    inventoryItemRefinements,
+export const itemInsertSchema = createInsertSchema(
+    item,
+    itemRefinements,
 )
-    .omit({ id: true, onHand: true, reservedQuantity: true })
-    .strict();
-export const inventoryItemUpdateSchema = createUpdateSchema(
-    inventoryItem,
-    inventoryItemRefinements,
+    .omit({ id: true, onHand: true, reservedQuantity: true });
+export const itemUpdateSchema = createUpdateSchema(
+    item,
+    itemRefinements,
 )
-    .omit({ id: true, onHand: true, reservedQuantity: true })
-    .strict();
-export const inventoryItemSelectSchema = createSelectSchema(
-    inventoryItem,
-    inventoryItemRefinements,
+    .omit({ onHand: true, reservedQuantity: true });
+export const itemSelectSchema = createSelectSchema(
+    item,
+    itemRefinements,
 );
-
-export const inventoryItemTableViewSchema = inventoryItemSelectSchema
-    // .omit({ categoryId: true })
-    // .extend({
-        // categoryName: itemCategorySelectSchema,
-    // });
-
-// export const inventoryItemDetailsViewSchema = z.object({
-//     item: inventoryItemSelectSchema,
-//     categories: z.array(
-//         itemCategorySelectSchema,
-//     )
-// });
 
 export type DonationSelect = ZodInfer<typeof donationSelectSchema>;
 export type DonationInsert = ZodInfer<typeof donationInsertSchema>;

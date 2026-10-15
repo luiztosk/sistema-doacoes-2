@@ -8,7 +8,6 @@ import {
 	beneficiary,
 } from "../src/schemas/db/contacts";
 import {
-	inventoryItem,
 	UNITS,
 } from "../src/schemas/db/inventory";
 

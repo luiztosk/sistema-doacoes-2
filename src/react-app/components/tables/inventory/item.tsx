@@ -5,8 +5,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { InventoryItemTableView, ItemCategorySelect } from "@/schemas/zod/inventory";
-// import { inventoryItemsQuery } from "@/react-app/lib/queries/inventory/items";
+import type { ItemSelect, CategorySelect } from "@/schemas/zod/inventory";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -41,16 +40,16 @@ const unitOptions = UNITS.map((value) => ({
 						"Caixa",
 }));
 
-const columnHelper = createColumnHelper<DataTableFeatures, InventoryItemTableView & { categoryName: string }>();
+const columnHelper = createColumnHelper<DataTableFeatures, ItemSelect & { categoryName: string }>();
 const ListViewContext = createContext<TableViewState>({});
 
-function DetalhesLink({ iid }: { iid: string }) {
+function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 
 	return (
 		<Link
 			to="/inventory/item/$id"
-			params={{ iid }}
+			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
@@ -129,22 +128,11 @@ const columns = columnHelper.columns([
 	columnHelper.display({
 		id: "details",
 		header: "Detalhes",
-		cell: ({ row }) =>
-			<Link
-				to="/inventory/item/$id"
-				params={{id: row.original.id }}
-				state={{ lista: useContext(ListViewContext) }}
-				onClick={(event) => event.stopPropagation()}
-				className={buttonVariants({ variant: "outline", size: "xs" })}
-			>
-				Mais detalhes
-			</Link>,
-			
-			// <DetalhesLink id={row.original.id} />,
+		cell: ({ row }) => <DetalhesLink id={row.original.id} />,
 	}),
 ]);
 
-export function ItemsTable({ items, categories }: { items: InventoryItemTableView[], categories: ItemCategorySelect[] }) {
+export function ItemsTable({ items, categories }: { items: ItemSelect[], categories: CategorySelect[] }) {
 	const data = items.map((item) => ({
 		...item,
 		categoryName: categories.find(a => a.id === item.categoryId)?.name ?? ""
@@ -200,8 +188,10 @@ export function ItemsTable({ items, categories }: { items: InventoryItemTableVie
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.map((row) => {
-						console.log(table.getRowModel().rows); return (
+					{table.getRowModel().rows.map((row) => 
+					// {
+						// console.log(table.getRowModel().rows);
+						//  return (
 							<TableRow
 								key={row.id}
 							>
@@ -212,7 +202,7 @@ export function ItemsTable({ items, categories }: { items: InventoryItemTableVie
 								))}
 							</TableRow>
 						)
-					})
+					// })
 					}
 				</TableBody>
 			</Table>

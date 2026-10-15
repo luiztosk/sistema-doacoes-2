@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
@@ -9,7 +8,6 @@ import {
 } from "@tanstack/react-table";
 
 import type { Donation } from "@/react-app/lib/queries/inventory/donations";
-import { donationOptions } from "@/react-app/lib/queries/inventory/donations";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -44,7 +42,7 @@ function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link
-			to="/inventory/donations/id/$id"
+			to="/inventory/donations/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(e) => e.stopPropagation()}
@@ -85,10 +83,9 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-type DonationsTableProps = { view: TableViewState };
+type DonationsTableProps = { data: Donation[]; view: TableViewState };
 
-export function DonationsTable({ view }: DonationsTableProps) {
-	const { data, isPending } = useQuery(donationOptions);
+export function DonationsTable({ data, view }: DonationsTableProps) {
 	const navigate = useNavigate();
 
 	const irPara = useCallback(
@@ -124,14 +121,13 @@ export function DonationsTable({ view }: DonationsTableProps) {
 	const total = table.getFilteredRowModel().rows.length;
 
 	useEffect(() => {
-		if (isPending) return;
 		if (pageIndex > 0 && pageIndex * pageSize >= total) {
 			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
 		}
-	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	}, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
 	const abrir = (id: string) =>
-		navigate({ to: "/inventory/donations/id/$id", params: { id }, state: { lista: view } });
+		navigate({ to: "/inventory/donations/$id", params: { id }, state: { lista: view } });
 
 	const rows = table.getRowModel().rows;
 

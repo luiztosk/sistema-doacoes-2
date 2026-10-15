@@ -1,13 +1,13 @@
 import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq } from 'drizzle-orm';
 import {
-  InventoryItemTableView,
-  inventoryItemTableViewSchema,
-  inventoryItemSelectSchema,
+  itemInsertSchema,
+  itemSelectSchema,
+  itemUpdateSchema,
 } from "../../../schemas/zod/inventory";
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { inventoryItem } from '../../../schemas/db/inventory';
+import { item } from '../../../schemas/db/inventory';
 import { z } from 'zod';
 
 const getInventoryItemsTableRoute = defineOpenAPIRoute({
@@ -18,7 +18,7 @@ const getInventoryItemsTableRoute = defineOpenAPIRoute({
       200: {
         content: {
           'application/json': {
-            schema: inventoryItemTableViewSchema.array(),
+            schema: itemSelectSchema.array(),
           },
         },
       },
@@ -26,7 +26,7 @@ const getInventoryItemsTableRoute = defineOpenAPIRoute({
   }),
   handler: async (c: Context<{ Bindings: Env }>) => {
     const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const data = await db.select().from(inventoryItem).all() as InventoryItemTableView[];
+    const data = await db.select().from(item).all();
     return c.json(
       data,
       200
@@ -45,7 +45,7 @@ const getInventoryItemRoute = defineOpenAPIRoute({
       200: {
         content: {
           'application/json': {
-            schema: inventoryItemSelectSchema,
+            schema: itemSelectSchema,
           },
         },
       },
@@ -59,13 +59,13 @@ const getInventoryItemRoute = defineOpenAPIRoute({
     const id = c.req.param('id')!;
     
     // Get the inventory item
-    const [item] = await db.select().from(inventoryItem).where(eq(inventoryItem.id, id)).limit(1);
+    const [res] = await db.select().from(item).where(eq(item.id, id)).limit(1);
     
-    if (!item) {
+    if (!res) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Inventory item not found.' } }, 404);
     }
     
-    return c.json(item, 200);
+    return c.json(res, 200);
   }
 });
 
@@ -73,11 +73,20 @@ const createInventoryItemRoute = defineOpenAPIRoute({
   route: createRoute({
     method: 'post',
     path: '/api/v1/inventory/items',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: itemInsertSchema,
+          },
+        },
+      },
+    },
     responses: {
       201: {
         content: {
           'application/json': {
-            schema: inventoryItemSelectSchema,
+            schema: itemSelectSchema,
           },
         },
       },
@@ -91,7 +100,7 @@ const createInventoryItemRoute = defineOpenAPIRoute({
     const payload = await c.req.json();
     
     const [data] = await db
-      .insert(inventoryItem)
+      .insert(item)
       .values({
         id: crypto.randomUUID(),
         ...payload,
@@ -109,12 +118,19 @@ const updateInventoryItemRoute = defineOpenAPIRoute({
     path: '/api/v1/inventory/items/{id}',
     request: {
       params: z.object({ id: z.string() }),
+      body: {
+        content: {
+          'application/json': {
+            schema: itemUpdateSchema,
+          },
+        },
+      },
     },
     responses: {
       200: {
         content: {
           'application/json': {
-            schema: inventoryItemSelectSchema,
+            schema: itemSelectSchema,
           },
         },
       },
@@ -131,7 +147,7 @@ const updateInventoryItemRoute = defineOpenAPIRoute({
     const id = c.req.param('id')!;
     
     // Check if item exists
-    const [existing] = await db.select().from(inventoryItem).where(eq(inventoryItem.id, id)).limit(1);
+    const [existing] = await db.select().from(item).where(eq(item.id, id)).limit(1);
     
     if (!existing) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Inventory item not found.' } }, 404);
@@ -140,9 +156,9 @@ const updateInventoryItemRoute = defineOpenAPIRoute({
     const payload = await c.req.json();
     
     const [data] = await db
-      .update(inventoryItem)
+      .update(item)
       .set(payload)
-      .where(eq(inventoryItem.id, id))
+      .where(eq(item.id, id))
       .returning();
 
     return c.json(data, 200);
@@ -170,9 +186,9 @@ const deleteInventoryItemRoute = defineOpenAPIRoute({
     const id = c.req.param('id')!;
     
     const [removed] = await db
-      .delete(inventoryItem)
-      .where(eq(inventoryItem.id, id))
-      .returning({ id: inventoryItem.id });
+      .delete(item)
+      .where(eq(item.id, id))
+      .returning({ id: item.id });
 
     if (!removed) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Inventory item not found.' } }, 404);

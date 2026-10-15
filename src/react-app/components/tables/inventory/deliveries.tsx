@@ -1,11 +1,9 @@
 import { createContext, useCallback, useContext, useEffect } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { createColumnHelper, functionalUpdate, useTable } from "@tanstack/react-table";
 
 import type { Delivery } from "@/react-app/lib/queries/inventory/deliveries";
-import { deliveryOptions } from "@/react-app/lib/queries/inventory/deliveries";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -26,7 +24,7 @@ const ListViewContext = createContext<TableViewState>({});
 function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
-		<Link to="/inventory/deliveries/id/$id" params={{ id }} state={{ lista: view }} onClick={(e) => e.stopPropagation()} className={buttonVariants({ variant: "outline", size: "xs" })}>
+		<Link to="/inventory/delivery/$id" params={{ id }} state={{ lista: view }} onClick={(e) => e.stopPropagation()} className={buttonVariants({ variant: "outline", size: "xs" })}>
 			More details
 		</Link>
 	);
@@ -39,13 +37,12 @@ const columns = columnHelper.columns([
 	columnHelper.display({ id: "details", header: "Detalhes", cell: ({ row }) => <DetalhesLink id={row.id} /> }),
 ]);
 
-type DeliveriesTableProps = { view: TableViewState };
+type DeliveriesTableProps = { data: Delivery[]; view: TableViewState };
 
-export function DeliveriesTable({ view }: DeliveriesTableProps) {
-	const { data, isPending } = useQuery(deliveryOptions);
+export function DeliveriesTable({ data, view }: DeliveriesTableProps) {
 	const navigate = useNavigate();
 
-	const irPara = useCallback((next: TableViewState) => navigate({ to: "/inventory/deliveries", search: viewForUrl(next), replace: true }), [navigate]);
+	const irPara = useCallback((next: TableViewState) => navigate({ to: "/inventory/delivery", search: viewForUrl(next), replace: true }), [navigate]);
 
 	const table = useTable({
 		features, columns, data: data ?? emptyRows, getRowId: (row) => row.id,
@@ -57,9 +54,9 @@ export function DeliveriesTable({ view }: DeliveriesTableProps) {
 
 	const { pageIndex, pageSize } = table.state.pagination;
 	const total = table.getFilteredRowModel().rows.length;
-	useEffect(() => { if (isPending) return; if (pageIndex > 0 && pageIndex * pageSize >= total) irPara({ page: 0, pageSize: view.pageSize, sort: view.sort }); }, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	useEffect(() => { if (pageIndex > 0 && pageIndex * pageSize >= total) irPara({ page: 0, pageSize: view.pageSize, sort: view.sort }); }, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
-	const abrir = (id: string) => navigate({ to: "/inventory/deliveries/id/$id", params: { id }, state: { lista: view } });
+	const abrir = (id: string) => navigate({ to: "/inventory/delivery/$id", params: { id }, state: { lista: view } });
 	const rows = table.getRowModel().rows;
 
 	return (

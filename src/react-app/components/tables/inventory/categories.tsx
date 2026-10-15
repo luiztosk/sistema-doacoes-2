@@ -1,7 +1,6 @@
 import { createColumnHelper, useTable } from "@tanstack/react-table";
 
-import type { ItemCategorySelect } from "@/schemas/zod/inventory";
-import { itemCategoriesQuery } from "@/react-app/lib/queries/inventory/categories";
+import type { CategorySelect } from "@/schemas/zod/inventory";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -20,7 +19,7 @@ import {
 
 const searchable = new Set(["name"]);
 
-const columnHelper = createColumnHelper<DataTableFeatures, ItemCategorySelect>();
+const columnHelper = createColumnHelper<DataTableFeatures, CategorySelect>();
 
 const columns = columnHelper.columns([
 	columnHelper.accessor("name", {
@@ -30,13 +29,11 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-export function ItemCategoriesTable({ data }: { data: ItemCategorySelect[] }) {
-	const { data: queryData } = itemCategoriesQuery();
-
+export function ItemCategoriesTable({ data }: { data: CategorySelect[] }) {
 	const table = useTable({
 		features,
 		columns: columns,
-		data: data ?? queryData ?? [],
+		data: data ?? [],
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",

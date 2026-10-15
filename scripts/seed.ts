@@ -7,8 +7,8 @@ import {
 	donor,
 } from "../src/schemas/db/contacts";
 import {
-	itemCategory,
-	inventoryItem,
+	category,
+	item,
 	donation,
 	donationLine,
 	delivery,
@@ -30,11 +30,11 @@ async function seed() {
 	const tableNames = [
 		{ name: "beneficiary", tableName: beneficiary, rows: dados.beneficiary },
 		{ name: "doador", tableName: donor, rows: dados.donor },
-		{ name: "item_category", tableName: itemCategory, rows: dados.itemCategory },
+		{ name: "item_category", tableName: category, rows: dados.category },
 		{
 			name: "inventory_item",
-			tableName: inventoryItem,
-			rows: dados.inventoryItem.map(withoutGenerated),
+			tableName: item,
+			rows: dados.item.map(withoutGenerated),
 		},
 		{ name: "donation", tableName: donation, rows: dados.donation },
 		{ name: "donation_line", tableName: donationLine, rows: dados.donationLine },

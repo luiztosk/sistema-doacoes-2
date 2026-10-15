@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
@@ -9,7 +8,6 @@ import {
 } from "@tanstack/react-table";
 
 import type { BeneficiaryTableView } from "@/schemas/zod/contacts";
-import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -69,7 +67,7 @@ function DetalhesLink({ id }: { id: string }) {
 
 	return (
 		<Link
-			to="/contacts/beneficiaries/id/$id"
+			to="/contacts/beneficiaries/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -148,11 +146,11 @@ const columns = columnHelper.columns([
 ]);
 
 type BeneficiariesTableProps = {
+	data: BeneficiaryTableView[];
 	view: TableViewState;
 };
 
-export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
-	const { data, isPending } = useQuery(beneficiaryTableOptions);
+export function BeneficiariesTable({ data, view }: BeneficiariesTableProps) {
 	const navigate = useNavigate();
 
 	const irPara = useCallback(
@@ -196,17 +194,14 @@ export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
 	const total = table.getFilteredRowModel().rows.length;
 
 	useEffect(() => {
-		if (isPending) {
-			return;
-		}
 		if (pageIndex > 0 && pageIndex * pageSize >= total) {
 			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
 		}
-	}, [isPending, irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	}, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
 
 	const abrir = (id: string) =>
 		navigate({
-			to: "/contacts/beneficiaries/id/$id",
+			to: "/contacts/beneficiaries/$id",
 			params: { id },
 			state: { lista: view },
 		});
@@ -258,7 +253,7 @@ export function BeneficiariesTable({ view }: BeneficiariesTableProps) {
 									{row.getAllCells().map((cell) => (
 										<TableCell key={cell.id}>
 											<table.FlexRender cell={cell} />
-											</TableCell>
+										</TableCell>
 									))}
 								</TableRow>
 							))

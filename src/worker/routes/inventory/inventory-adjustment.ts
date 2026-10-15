@@ -2,7 +2,7 @@ import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { inventoryAdjustment, inventoryItem } from '../../../schemas/db/inventory';
+import { inventoryAdjustment } from '../../../schemas/db/inventory';
 import { 
   inventoryAdjustmentSelectSchema, 
   inventoryAdjustmentInsertSchema, 
@@ -115,9 +115,9 @@ const createInventoryAdjustmentRoute = defineOpenAPIRoute({
           ...payload,
         }),
       db
-        .update(inventoryItem)
-        .set({ onHand: sql`${inventoryItem.onHand} + ${payload.delta}` })
-        .where(eq(inventoryItem.id, payload.inventoryItemId)),
+        .update(item)
+        .set({ onHand: sql`${item.onHand} + ${payload.delta}` })
+        .where(eq(item.id, payload.itemId)),
     ]);
     
     if (results[1].meta.changes === 0) {

@@ -2,7 +2,7 @@ import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Context } from 'hono';
-import { donation, donationLine, inventoryItem } from '../../../schemas/db/inventory';
+import { donation, donationLine } from '../../../schemas/db/inventory';
 import { 
   donationSelectSchema, 
   donationUpdateSchema,
@@ -70,7 +70,7 @@ const getDonationRoute = defineOpenAPIRoute({
     
     const lines = await db
       .select({
-        inventoryItemId: donationLine.inventoryItemId,
+        itemId: donationLine.itemId,
         quantity: donationLine.quantity,
       })
       .from(donationLine)
@@ -113,7 +113,7 @@ const createDonationRoute = defineOpenAPIRoute({
     const occurredAt = typeof donationData.occurredAt === 'string' ? new Date(donationData.occurredAt) : donationData.occurredAt;
     
     // Check for duplicate items
-    const itemIds = lines.map((line) => line.inventoryItemId);
+    const itemIds = lines.map((line) => line.itemId);
     if (new Set(itemIds).size !== itemIds.length) {
       return c.json({ error: { code: 'INVALID_VALUE', message: 'An item cannot appear twice in the same donation.' } }, 400);
     }
@@ -125,7 +125,7 @@ const createDonationRoute = defineOpenAPIRoute({
         .insert(donationLine)
         .values({
           donationId: id,
-          inventoryItemId: line.inventoryItemId,
+          itemId: line.itemId,
           quantity: line.quantity,
         })
     );
@@ -188,7 +188,7 @@ const receiveDonationRoute = defineOpenAPIRoute({
     // Get lines to credit inventory
     const lines = await db
       .select({
-        inventoryItemId: donationLine.inventoryItemId,
+        itemId: donationLine.itemId,
         quantity: donationLine.quantity,
       })
       .from(donationLine)
@@ -201,16 +201,16 @@ const receiveDonationRoute = defineOpenAPIRoute({
         .where(eq(donation.id, id)),
       ...lines.map((line) =>
         db
-          .update(inventoryItem)
-          .set({ onHand: sql`${inventoryItem.onHand} + ${line.quantity}` })
-          .where(eq(inventoryItem.id, line.inventoryItemId))
+          .update(item)
+          .set({ onHand: sql`${item.onHand} + ${line.quantity}` })
+          .where(eq(item.id, line.itemId))
       ),
     ]);
     
     const [data] = await db.select().from(donation).where(eq(donation.id, id)).limit(1);
     const updatedLines = await db
       .select({
-        inventoryItemId: donationLine.inventoryItemId,
+        itemId: donationLine.itemId,
         quantity: donationLine.quantity,
       })
       .from(donationLine)

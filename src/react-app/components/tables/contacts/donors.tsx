@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
@@ -9,7 +8,6 @@ import {
 } from "@tanstack/react-table";
 
 import type { DonorTableView } from "@/schemas/zod/contacts";
-import { donorOptions } from "@/react-app/lib/queries/contacts/donors";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -48,7 +46,7 @@ function DetailsLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link
-			to="/contacts/donors/id/$id"
+			to="/contacts/donors/$id"
 			params={{ id }}
 			state={{ lista: view }}
 			onClick={(event) => event.stopPropagation()}
@@ -100,11 +98,11 @@ const columns = columnHelper.columns([
 ]);
 
 type DonorsTableProps = {
+	data: DonorTableView[];
 	view: TableViewState;
 };
 
-export function DonorsTable({ view }: DonorsTableProps) {
-	const { data, isPending, isError } = useQuery(donorOptions);
+export function DonorsTable({ data, view }: DonorsTableProps) {
 	const navigate = useNavigate();
 
 	const navigateToView = useCallback(
@@ -148,14 +146,10 @@ export function DonorsTable({ view }: DonorsTableProps) {
 	const total = table.getFilteredRowModel().rows.length;
 
 	useEffect(() => {
-		if (isPending) {
-			return;
-		}
 		if (pageIndex > 0 && pageIndex * pageSize >= total) {
 			navigateToView({ page: 0, pageSize: view.pageSize, sort: view.sort });
 		}
 	}, [
-		isPending,
 		navigateToView,
 		pageIndex,
 		pageSize,
@@ -166,16 +160,12 @@ export function DonorsTable({ view }: DonorsTableProps) {
 
 	const openDonor = (id: string) =>
 		navigate({
-			to: "/contacts/donors/id/$id",
+			to: "/contacts/donors/$id",
 			params: { id },
 			state: { lista: view },
 		});
 
 	const rows = table.getRowModel().rows;
-
-	if (isError) {
-		return <p>Não foi possível carregar os doadores.</p>;
-	}
 
 	return (
 			<ListViewContext value={view}>
@@ -230,9 +220,7 @@ export function DonorsTable({ view }: DonorsTableProps) {
 										colSpan={columns.length - 1}
 										className="h-24 text-center"
 									>
-										{isPending
-											? "Carregando donors..."
-											: "Nenhum donor encontrado."}
+										Nenhum donor encontrado.
 									</TableCell>
 								</TableRow>
 							)}

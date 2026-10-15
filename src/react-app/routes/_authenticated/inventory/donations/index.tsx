@@ -3,21 +3,36 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { DonationsTable } from "@/react-app/components/tables/inventory/donations";
 import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { donationOptions } from "@/react-app/lib/queries/inventory/donations";
 
 function Donations() {
 	const view = Route.useSearch();
+	const donations = useQuery(donationOptions);
+
+	if (donations.isLoading) {
+		return <div>Loading...</div>;
+	}
+
+	if (donations.isError) {
+		return <div>Error: {String(donations.error)}</div>;
+	}
+
 	return (
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold">Donations</h1>
 				<Link to="/inventory/donations/new" className={buttonVariants({ size: "sm" })}>New donation</Link>
 			</div>
-			<DonationsTable view={view} />
+			<DonationsTable data={donations.data ?? []} view={view} />
 		</section>
 	);
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/donations/")({
 	validateSearch: tableViewSchema,
+	loader: ({ context }) => {
+		context.queryClient.query({ ...donationOptions });
+	},
 	component: Donations,
 });

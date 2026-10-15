@@ -53,7 +53,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 				else await create.mutateAsync(value);
 			} catch { return; }
 			await queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
-			await router.navigate({ to: "/inventory/deliveries", search: lista ? viewForUrl(lista) : {} });
+			await router.navigate({ to: "/inventory/delivery", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
@@ -65,7 +65,7 @@ export function DeliveryForm({ delivery }: DeliveryFormProps) {
 				<h1 className="text-3xl font-bold">{delivery ? "Detalhes da entrega" : "Nova entrega"}</h1>
 				<div className="flex gap-2">
 					{delivery && !isEditing ? <Button size="sm" onClick={() => setIsEditing(true)}>Editar</Button> : null}
-					<Link to="/inventory/deliveries" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Back</Link>
+					<Link to="/inventory/delivery" search={lista ? viewForUrl(lista) : {}} className={buttonVariants({ variant: "outline", size: "sm" })}>Back</Link>
 				</div>
 			</div>
 			<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}>

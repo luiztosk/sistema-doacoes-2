@@ -72,6 +72,39 @@
         }
       },
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "categoryId": {
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "KG",
+                      "L",
+                      "UNIT",
+                      "PACK",
+                      "BOX"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "categoryId",
+                  "unit"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "content": {
@@ -216,6 +249,41 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "categoryId": {
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "KG",
+                      "L",
+                      "UNIT",
+                      "PACK",
+                      "BOX"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "unit"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {

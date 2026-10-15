@@ -10,28 +10,31 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
-	InventoryItemSelect,
-	ItemCategorySelect,
+	ItemSelect,
+	CategorySelect,
+	ItemInsert,
+	ItemUpdate,
 } from "@/schemas/zod/inventory";
-import { inventoryItemInsertSchema } from "@/schemas/zod/inventory";
+import { itemInsertSchema, itemUpdateSchema } from "@/schemas/zod/inventory";
 import { UNITS } from "@/schemas/db/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
+import { useMutation } from "@tanstack/react-query";
 
 const unitLabels: SelectOption[] = UNITS.map((value) => ({
-	value,
+	value: value,
 	label:
 		value === "KG" ? "Quilograma" :
-		value === "L" ? "Litro" :
-		value === "UNIT" ? "Unidade" :
-		value === "PACK" ? "Pacote" :
-		"Caixa",
+			value === "L" ? "Litro" :
+				value === "UNIT" ? "Unidade" :
+					value === "PACK" ? "Pacote" :
+						"Caixa",
 }));
 
 export function InventoryItemForm({ item, categories, createMutation, updateMutation }: {
-	item?: InventoryItemSelect;
-	categories: ItemCategorySelect[];
-	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
-	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+	item?: ItemSelect;
+	categories: CategorySelect[];
+	createMutation?: ReturnType<typeof useMutation<ItemSelect, Error, ItemInsert>>;
+	updateMutation?: ReturnType<typeof useMutation<ItemSelect, Error, ItemUpdate>>;
 }) {
 	const categoryLabels: SelectOption[] = categories.map((category) => ({
 		value: category.id,
@@ -44,17 +47,24 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 	const form = useForm({
 		defaultValues: item,
 		onSubmit: async ({ value }) => {
-			if (!inventoryItemInsertSchema.safeParse(value).success) {
-				return;
-			}
-
 			try {
 				if (item) {
-					await updateMutation?.mutateAsync({ body: value });
+					const validation = itemUpdateSchema.safeParse(value);
+					if (!validation.success) {
+						console.error('update validation failed:', validation.error.message);
+						return;
+					}
+					await updateMutation?.mutateAsync(validation.data);
 				} else {
-					await createMutation?.mutateAsync({ body: value });
+					const validation = itemInsertSchema.safeParse(value);
+					if (!validation.success) {
+						console.error('insert validation failed:', validation.error.message);
+						return;
+					}
+					await createMutation?.mutateAsync(validation.data);
 				}
-			} catch {
+			} catch (error) {
+				console.error('Mutation failed:', error)
 				return;
 			}
 
@@ -68,8 +78,7 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 			});
 		},
 	});
-
-	const isPending = createMutation?.isPending || updateMutation?.isPending;
+	const isPending = (createMutation?.isPending ?? false) || (updateMutation?.isPending ?? false);
 
 	return (
 		<section className="space-y-6">
@@ -152,7 +161,9 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 													: "Cadastrar item"
 											}
 											pendingLabel={
-												item ? "Salvando..." : "Cadastrando..."
+												item
+													? "Salvando..."
+													: "Cadastrando..."
 											}
 											canSubmit={canSubmit}
 											isPending={isPending}

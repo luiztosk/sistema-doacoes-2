@@ -1,15 +1,14 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { ItemCategoriesTable } from "@/react-app/components/tables/inventory/categories";
-// import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
-import type { ItemCategorySelect } from "@/schemas/zod/inventory";
+import type { CategorySelect } from "@/schemas/zod/inventory";
 import { useQuery } from "@tanstack/react-query";
 import { categoriesOptions } from "@/react-app/lib/queries/inventory";
 
-
 function CategoriesTablePage() {
-	const categories = useQuery(categoriesOptions)
+	const categories = useQuery(categoriesOptions);
+
 	if (categories.isLoading) {
 		return <div>Loading...</div>;
 	}
@@ -29,15 +28,14 @@ function CategoriesTablePage() {
 					New category
 				</Link>
 			</div>
-			<ItemCategoriesTable data={categories.data as ItemCategorySelect[]} />
+			<ItemCategoriesTable data={categories.data as CategorySelect[]} />
 		</section>
 	);
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/category/")({
-	// validateSearch: tableViewSchema,
 	loader: ({ context }) => {
-		context.queryClient.query({ ...categoriesOptions })
+		context.queryClient.query({ ...categoriesOptions });
 	},
 	component: CategoriesTablePage,
 });

@@ -73,13 +73,13 @@ async function main() {
 
 		// Generate types
 		const { spawnSync } = await import("node:child_process");
-		const result = spawnSync("npx", ["openapi-typescript", "./openapi.json", "-o", "./src/openapi/schema.d.ts"], {
+		const result = spawnSync("npx", ["openapi-typescript", "./openapi.json", "-o", "./src/schemas/openapi/schema.d.ts"], {
 			stdio: "inherit",
 		});
 		if (result.status !== 0) {
 			throw new Error("openapi-typescript failed");
 		}
-		console.log("Generated src/openapi/schema.d.ts");
+		console.log("Generated src/schemas/openapi/schema.d.ts");
 	} finally {
 		dev.kill("SIGTERM");
 	}

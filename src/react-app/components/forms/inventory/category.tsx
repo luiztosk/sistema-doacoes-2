@@ -11,17 +11,18 @@ import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/fie
 import type {
 	CategorySelect,
 } from "@/schemas/zod/inventory";
+import { $api } from "@/react-app/lib/queries/fetch-client";
 import { categoryInsertSchema } from "@/schemas/zod/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
 
-export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
+export function CategoryForm({ itemCategory }: {
 	itemCategory?: CategorySelect;
-	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
-	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 }) {
 	const router = useRouter();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!itemCategory);
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/categories");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/categories/{id}");
 
 	const form = useForm({
 		// defaultValues: initialValues(itemCategory),
@@ -33,9 +34,9 @@ export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 
 			try {
 				if (itemCategory) {
-					await updateMutation?.mutateAsync({ body: value });
+					await updateMutateAsync({ params: { path: { id: itemCategory.id } }, body: value });
 				} else {
-					await createMutation?.mutateAsync({ body: value });
+					await createMutateAsync({ body: value });
 				}
 			} catch {
 				return;
@@ -52,7 +53,7 @@ export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 		},
 	});
 
-	const isPending = createMutation?.isPending || updateMutation?.isPending;
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

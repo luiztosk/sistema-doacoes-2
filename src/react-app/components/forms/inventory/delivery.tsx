@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField } from "@/react-app/components/forms/fields";
@@ -11,11 +11,8 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type { DeliveryCompleto, DeliveryFormValues } from "@/react-app/lib/queries/inventory/deliveries";
-import {
-	deliveryKeys,
-	createDeliveryOptions,
-	updateDeliveryOptions,
-} from "@/react-app/lib/queries/inventory/deliveries";
+import { $api } from "@/react-app/lib/queries/fetch-client";
+import { queryClient } from "@/react-app/lib/query-client";
 import { deliveryInsertSchema } from "@/schemas/zod/inventory";
 
 type DeliveryFormProps = { delivery?: DeliveryCompleto };
@@ -36,28 +33,27 @@ function initialValues(record?: DeliveryCompleto): DeliveryFormValues {
 
 export function DeliveryForm({ delivery }: DeliveryFormProps) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!delivery);
 	const { data: beneficiariesData } = useQuery(beneficiaryTableOptions);
 
-	const create = useMutation({ ...createDeliveryOptions, mutationKey: [...deliveryKeys.all, "create"] });
-	const update = useMutation({ ...updateDeliveryOptions(delivery?.id ?? ""), mutationKey: [...deliveryKeys.all, "update"] });
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/deliveries");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/deliveries/{id}");
 
 	const form = useForm({
 		defaultValues: initialValues(delivery),
 		onSubmit: async ({ value }) => {
 			if (!deliveryInsertSchema.safeParse(value).success) return;
 			try {
-				if (delivery) await update.mutateAsync(value);
-				else await create.mutateAsync(value);
+				if (delivery) await updateMutateAsync({ params: { path: { id: delivery.id } }, body: value });
+				else await createMutateAsync({ body: value });
 			} catch { return; }
-			await queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
+			await queryClient.invalidateQueries({ queryKey: ["deliveries"] });
 			await router.navigate({ to: "/inventory/delivery", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

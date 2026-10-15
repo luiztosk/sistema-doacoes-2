@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider } from "@/react-app/components/forms/fields";
@@ -22,60 +21,61 @@ import {
 	FieldSet,
 } from "@/react-app/components/ui/field";
 import type {
-	BeneficiaryInsert,
 	BeneficiarySelect,
-	BeneficiaryUpdate,
 } from "@/schemas/zod/contacts";
 import {
 	beneficiaryInsertSchema,
 	beneficiaryUpdateSchema,
 } from "@/schemas/zod/contacts";
-import {
-	beneficiaryKeys,
-	createBeneficiaryOptions,
-	updateBeneficiaryOptions,
-} from "@/react-app/lib/queries/contacts/beneficiaries";
 import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/db/contacts";
-import { ZodError } from "zod";
+import { queryClient } from "@/react-app/lib/query-client";
+import { $api } from "@/react-app/lib/queries/fetch-client";
 
 const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
 
-export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySelect }) {
+export function BeneficiaryForm({ 
+	beneficiary, 
+}: { 
+	beneficiary?: BeneficiarySelect;
+}) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
+	// const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!beneficiary);
-
-	const create = useMutation(createBeneficiaryOptions);
-	const update = useMutation(updateBeneficiaryOptions(beneficiary?.id ?? ""));
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/beneficiaries");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/beneficiaries/{id}");
 
 	const form = useForm({
 		defaultValues: beneficiary,
-		onSubmit: async ({ value }: { value: BeneficiaryUpdate }) => {
+		onSubmit: async ({ value }) => {
 			try {
-				if (beneficiary) {
-					try {
-						beneficiaryUpdateSchema.parse(value);
-					} catch (error) {
-						console.log("Update Beneficiary form validation failed", (error as ZodError).issues);
+				if (updateMutateAsync && beneficiary) {
+					const validation = beneficiaryUpdateSchema.safeParse(value);
+					if (!validation.success) {
+						console.error('update validation failed:', validation.error.message);
 						return;
 					}
-					await update.mutateAsync(value as BeneficiaryUpdate);
-				} else {
-					try {
-						beneficiaryInsertSchema.parse(value);
-					} catch (error) {
-						console.log("Create Beneficiary form validation failed", (error as ZodError).issues);
+					await updateMutateAsync({
+						params: {
+							path: { id: beneficiary.id }
+						},
+						body: validation.data,
+					});
+				} else if (createMutateAsync) {
+					const validation = beneficiaryInsertSchema.safeParse(value);
+					if (!validation.success) {
+						console.error('insert validation failed:', validation.error.message);
 						return;
 					}
-					await create.mutateAsync(value as BeneficiaryInsert);
+					await createMutateAsync({ body: validation.data });
 				}
-			} catch {
+			} catch (error) {
+				console.error('Mutation failed:', error)
 				return;
 			}
 
 			await queryClient.invalidateQueries({
-				queryKey: beneficiaryKeys.all,
+				queryKey: ["beneficiaries"]
 			});
 
 			await router.navigate({
@@ -85,7 +85,7 @@ export function BeneficiaryForm({ beneficiary }: { beneficiary?: BeneficiarySele
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

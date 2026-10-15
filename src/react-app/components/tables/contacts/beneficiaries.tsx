@@ -1,9 +1,7 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
-
-import { Link, useNavigate } from "@tanstack/react-router";
+import { createContext, useContext } from "react";
+import { Link } from "@tanstack/react-router";
 import {
 	createColumnHelper,
-	functionalUpdate,
 	useTable,
 } from "@tanstack/react-table";
 
@@ -17,12 +15,6 @@ import {
 	TableToolbar,
 } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
-import {
-	paginationFromView,
-	sortingFromView,
-	sortingToView,
-	viewForUrl,
-} from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -36,13 +28,11 @@ import { TIPOS_IMOVEL } from "@/schemas/db/contacts";
 
 const empty = "—";
 
-const emptyRows: BeneficiaryTableView[] = [];
-
 const cityLabel = (row: BeneficiaryTableView) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 
 const searchable = new Set([
-	"nome",
+	"name",
 	"cityLabel",
 	"telefone",
 	"email",
@@ -141,133 +131,72 @@ const columns = columnHelper.columns([
 	columnHelper.display({
 		id: "details",
 		header: "Detalhes",
-		cell: ({ row }) => <DetalhesLink id={row.id} />,
+		cell: ({ row }) => <DetalhesLink id={row.original.id} />,
 	}),
 ]);
 
-type BeneficiariesTableProps = {
-	data: BeneficiaryTableView[];
-	view: TableViewState;
-};
-
-export function BeneficiariesTable({ data, view }: BeneficiariesTableProps) {
-	const navigate = useNavigate();
-
-	const irPara = useCallback(
-		(next: TableViewState) =>
-			navigate({ to: "/contacts/beneficiaries", search: viewForUrl(next), replace: true }),
-		[navigate],
-	);
+export function BeneficiariesTable({ beneficiaries }: { beneficiaries: BeneficiaryTableView[] }) {
+	const data = beneficiaries;
 
 	const table = useTable({
 		features,
 		columns,
-		data: data ?? emptyRows,
-		getRowId: (row) => row.id,
-		state: {
-			pagination: paginationFromView(view),
-			sorting: sortingFromView(view.sort),
-		},
-		onPaginationChange: (updater) => {
-			const next = functionalUpdate(updater, paginationFromView(view));
-			irPara({
-				page: next.pageIndex,
-				pageSize: next.pageSize,
-				sort: view.sort,
-			});
-		},
-		onSortingChange: (updater) => {
-			const next = functionalUpdate(updater, sortingFromView(view.sort));
-			irPara({
-				page: 0,
-				pageSize: view.pageSize,
-				sort: sortingToView(next),
-			});
-		},
+		data: data,
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	const { pageIndex, pageSize } = table.state.pagination;
-	const total = table.getFilteredRowModel().rows.length;
-
-	useEffect(() => {
-		if (pageIndex > 0 && pageIndex * pageSize >= total) {
-			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
-		}
-	}, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
-
-	const abrir = (id: string) =>
-		navigate({
-			to: "/contacts/beneficiaries/$id",
-			params: { id },
-			state: { lista: view },
-		});
-
-	const rows = table.getRowModel().rows;
-
 	return (
-		<ListViewContext value={view}>
-			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar beneficiary">
-					<TableColumnFilter
-						table={table}
-						columnId="tipoImovel"
-						label="Tipo de imóvel"
-						options={tipoImovelOptions}
-					/>
-					<TableColumnFilter
-						table={table}
-						columnId="cestaBasica"
-						label="Cesta básica"
-						options={cestaBasicaOptions}
-					/>
-				</TableToolbar>
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((group) => (
-							<TableRow key={group.id}>
-								{group.headers.map((header) => (
-									<TableHead
-										key={header.id}
-										aria-sort={ariaSort(header.column.getIsSorted())}
-									>
-										{header.isPlaceholder ? null : (
-											<table.FlexRender header={header} />
-										)}
-									</TableHead>
-								))}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{rows.length ? (
-							rows.map((row) => (
-								<TableRow
-									key={row.id}
-									className="cursor-pointer"
-									onClick={() => abrir(row.id)}
+		<div className="space-y-4">
+			<TableToolbar table={table} searchLabel="Buscar beneficiary">
+				<TableColumnFilter
+					table={table}
+					columnId="tipoImovel"
+					label="Tipo de imóvel"
+					options={tipoImovelOptions}
+				/>
+				<TableColumnFilter
+					table={table}
+					columnId="cestaBasica"
+					label="Cesta básica"
+					options={cestaBasicaOptions}
+				/>
+			</TableToolbar>
+			<Table>
+				<TableHeader>
+					{table.getHeaderGroups().map((group) => (
+						<TableRow key={group.id}>
+							{group.headers.map((header) => (
+								<TableHead
+									key={header.id}
+									aria-sort={ariaSort(header.column.getIsSorted())}
 								>
-									{row.getAllCells().map((cell) => (
-										<TableCell key={cell.id}>
-											<table.FlexRender cell={cell} />
-										</TableCell>
-									))}
-								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									Nenhum beneficiary encontrado.
+									{header.isPlaceholder ? null : (
+										<table.FlexRender header={header} />
+									)}
+								</TableHead>
+							))}
+						</TableRow>
+					))}
+				</TableHeader>
+				<TableBody>
+					{table.getRowModel().rows.map((row) => 
+						<TableRow
+							key={row.id}
+							className="cursor-pointer"
+						>
+							{row.getAllCells().map((cell) => (
+								<TableCell key={cell.id}>
+									<table.FlexRender cell={cell} />
 								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-				<TablePagination table={table} totalLabel="beneficiary" />
-			</div>
-		</ListViewContext>
+							))}
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+			<TablePagination table={table} totalLabel="beneficiary" />
+		</div>
 	);
 }

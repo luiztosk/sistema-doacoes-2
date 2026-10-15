@@ -28,6 +28,8 @@ As três mutations, espelhando o nome do guia de `queryOptions` do TanStack:
 `createAssistidoOptions`, `updateAssistidoOptions(id)` e
 `assistidoDetailOptions(id)`.
 
+> **Regra dos hooks com `$api.useMutation`.** O `useMutation` é um hook e deve ser chamado incondicionalmente no topo do componente — nunca dentro de uma expressão JSX após um `return` condicional (`if (loading) return ...`). Se o hook for chamado só no render que não retorna, o número de hooks muda entre renders e quebra (`Rendered fewer hooks than expected`). O padrão correto: chamar `$api.useMutation(...)` diretamente no componente do formulário (`components/forms/<recurso>.tsx`), extrair `mutateAsync` e `isPending`, e chamar `mutateAsync` no `onSubmit`. Não passe o hook como prop pelo `route` para evitar chamá-lo depois dos `return`.
+
 ```ts
 export type AssistidoFormValues = RequiredNullable<
 	ZodInfer<typeof assistidoInsertSchema>
@@ -155,3 +157,7 @@ UI não resolve sozinho:
 - Não crie `create-<recurso>.tsx`, `view-<recurso>.tsx` nem `edit-<recurso>.tsx`:
   é um componente só, com o modo interno.
 - Não desabilite uma regra do eslint para o lint passar. Ajuste o código.
+
+## Padrão de mutation com `$api`
+
+`item` e `beneficiary` já operam com `$api.useMutation` chamado diretamente no componente do formulário (`components/forms/<recurso>.tsx`), sem passar mutation como prop pelo `route`. Os outros formulários (`donor`, `category`, `donation`, `delivery`) ainda precisam ser migrados para esse mesmo padrão: chamar `$api.useMutation(...)` no topo do componente, extrair `mutateAsync` e `isPending`, e usar `mutateAsync` no `onSubmit`. Não passe `mutateAsync`/`isPending` como prop pelo componente de rota — isso evita o risco de chamar o hook depois de um `return` condicional e quebrar as regras dos hooks (`Rendered fewer hooks than expected`).

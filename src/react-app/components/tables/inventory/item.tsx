@@ -138,21 +138,10 @@ export function ItemsTable({ items, categories }: { items: ItemSelect[], categor
 		categoryName: categories.find(a => a.id === item.categoryId)?.name ?? ""
 	})
 	)
-	// const { data: queryData } = inventoryItemsQuery();
-	// items.forEach((item) => item.categoryId = categories.filter((a) => a.id == item.categoryId)[0].name)
-	// items.forEach((item) => {
-	// 	try {
-	// 		item.categoryName = categories.filter((a) => a.id === item.categoryId)[0].name
-	// 	}
-	// 	catch {
-	// 	}
-	// })
-
 
 	const table = useTable({
 		features,
 		columns: columns,
-		// data: data ?? queryData ?? [],
 		data: data,
 		autoResetPageIndex: false,
 		autoResetSorting: false,

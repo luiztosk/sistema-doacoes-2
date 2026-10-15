@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CategorySelect } from "@/schemas/zod/inventory";
 
 function NewItemPage() {
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = createItemMutation();
 	const categories = useQuery(categoriesOptions);
 	if (categories.isLoading) {
 		return <div>Loading...</div>;
@@ -15,7 +16,8 @@ function NewItemPage() {
 		return <div>Error: {String(categories.error)}</div>;
 	}
 	return <InventoryItemForm
-		createMutation={createItemMutation}
+		createMutateAsync={createMutateAsync}
+		createIsPending={createIsPending}
 		categories={categories.data as CategorySelect[]}
 	/>;
 }

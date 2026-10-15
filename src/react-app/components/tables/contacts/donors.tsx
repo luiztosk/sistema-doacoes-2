@@ -38,7 +38,7 @@ const empty = "—";
 const emptyRows: DonorTableView[] = [];
 const cityLabel = (row: DonorTableView) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
-const searchable = new Set(["nome", "cityLabel", "telefone", "email"]);
+const searchable = new Set(["name", "cityLabel", "telefone", "email"]);
 const columnHelper = createColumnHelper<DataTableFeatures, DonorTableView>();
 const ListViewContext = createContext<TableViewState>({});
 

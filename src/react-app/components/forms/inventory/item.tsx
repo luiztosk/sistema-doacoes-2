@@ -16,6 +16,7 @@ import type {
 import { itemInsertSchema, itemUpdateSchema } from "@/schemas/zod/inventory";
 import { UNITS } from "@/schemas/db/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
+import { $api } from "@/react-app/lib/queries/fetch-client";
 
 const unitLabels: SelectOption[] = UNITS.map((value) => ({
 	value: value,
@@ -27,11 +28,12 @@ const unitLabels: SelectOption[] = UNITS.map((value) => ({
 						"Caixa",
 }));
 
-export function InventoryItemForm({ item, categories, createMutation, updateMutation }: {
+export function InventoryItemForm({ 
+	item, 
+	categories, 
+}: {
 	item?: ItemSelect;
 	categories: CategorySelect[];
-	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
-	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 }) {
 	const categoryLabels: SelectOption[] = categories.map((category) => ({
 		value: category.id,
@@ -40,34 +42,41 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 	const router = useRouter();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!item);
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/items");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/items/{id}");
 
 	const form = useForm({
 		defaultValues: item,
 		onSubmit: async ({ value }) => {
-			try {
-				if (item) {
-					const validation = itemUpdateSchema.safeParse(value);
-					if (!validation.success) {
-						console.error('update validation failed:', validation.error.message);
-						return;
-					}
-					await updateMutation?.mutateAsync({
-						params: {
-							path: {id: validation.data.id}
-						},
+			if (updateMutateAsync && item) {
+				const validation = itemUpdateSchema.safeParse(value);
+				if (!validation.success) {
+					console.error('update validation failed:', validation.error.message);
+					return;
+				}
+				try {
+					await updateMutateAsync({
+						params: { path: { id: item.id } },
 						body: validation.data,
 					});
-				} else {
-					const validation = itemInsertSchema.safeParse(value);
-					if (!validation.success) {
-						console.error('insert validation failed:', validation.error.message);
-						return;
-					}
-					await createMutation?.mutateAsync(validation.data);
+					console.log('sucess mutated')
+				} catch (error) {
+					console.error('Mutation failed:', error)
+					return;
 				}
-			} catch (error) {
-				console.error('Mutation failed:', error)
-				return;
+			} else if (createMutateAsync) {
+				const validation = itemInsertSchema.safeParse(value);
+				if (!validation.success) {
+					console.error('insert validation failed:', validation.error.message);
+					return;
+				}
+				try {
+					await createMutateAsync({ body: validation.data });
+					console.log('sucess mutated')
+				} catch (error) {
+					console.error('Mutation failed:', error)
+					return;
+				}
 			}
 
 			await queryClient.invalidateQueries({
@@ -80,7 +89,7 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 			});
 		},
 	});
-	const isPending = (createMutation?.isPending ?? false) || (updateMutation?.isPending ?? false);
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

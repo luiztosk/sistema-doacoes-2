@@ -1,8 +1,9 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
+
+import { $api } from "@/react-app/lib/queries/fetch-client";
 
 import {
 	EditableProvider,
@@ -25,22 +26,18 @@ import type {
 	DonorSelect,
 	DonorUpdate,
 } from "@/schemas/zod/contacts";
-import {
-	createDonorOptions,
-	donorKeys,
-	updateDonorOptions,
-} from "@/react-app/lib/queries/contacts/donors";
+
 import { UFS } from "@/schemas/db/contacts";
 import { donorInsertSchema, donorUpdateSchema } from "@/schemas/zod/contacts";
+import { queryClient } from "@/react-app/lib/query-client";
 import { ZodError } from "zod";
 
 export function DonorForm({ donor }: { donor?: DonorSelect }) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const listView = useListView();
 	const [isEditing, setIsEditing] = useState(!donor);
-	const create = useMutation(createDonorOptions);
-	const update = useMutation(updateDonorOptions(donor?.id ?? ""));
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/donors");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/donors/{id}");
 
 	const form = useForm({
 		defaultValues: donor,
@@ -53,7 +50,10 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 						console.log("Update Donor form validation failed", (error as ZodError).issues);
 						return;
 					}
-					await update.mutateAsync(value as DonorUpdate);
+					await updateMutateAsync({
+						params: { path: { id: donor?.id ?? "" } },
+						body: value as DonorUpdate,
+					});
 				} else {
 					try {
 						donorInsertSchema.parse(value);
@@ -61,13 +61,13 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 						console.log("Create Donor form validation failed", (error as ZodError).issues);
 						return;
 					}
-					await create.mutateAsync(value as DonorInsert);
+					await createMutateAsync({ body: value as DonorInsert });
 				}
 			} catch {
 				return;
 			}
 
-			await queryClient.invalidateQueries({ queryKey: donorKeys.all });
+			await queryClient.invalidateQueries({ queryKey: ["donors"] });
 			await router.navigate({
 				to: "/contacts/donors",
 				search: donor && listView ? viewForUrl(listView) : {},
@@ -75,7 +75,7 @@ export function DonorForm({ donor }: { donor?: DonorSelect }) {
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

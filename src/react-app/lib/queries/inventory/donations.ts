@@ -1,4 +1,4 @@
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { $api } from "../fetch-client";
 import type { infer as ZodInfer } from "zod";
 
 import type {
@@ -16,10 +16,14 @@ export type Donation = Pick<
 	"id" | "donorId" | "occurredAt" | "status" | "note"
 > & {
 	lines?: DonationLineItem[];
+} & {
+	occurredAt: string | null;
 };
 
 export type DonationCompleto = ZodInfer<typeof donationSelectSchema> & {
 	lines?: DonationLineItem[];
+} & {
+	occurredAt: string | Date | null;
 };
 
 type RequiredNullable<TForm> = {
@@ -37,80 +41,18 @@ export const donationKeys = {
 	detail: (id: string) => [...donationKeys.all, id] as const,
 };
 
-const endpoint = "/api/v1/donations";
+export const donationOptions = $api.queryOptions(
+	"get", "/api/v1/donations"
+);
 
-type ApiError = { code: string; message: string };
-
-async function request<T>(
-	path: string,
-	init: RequestInit,
-): Promise<{ data: T }> {
-	const res = await fetch(path, {
-		credentials: "include",
-		...init,
-		headers: { "content-type": "application/json", ...init.headers },
+export function donationDetailOptions(id: string) {
+	return $api.queryOptions("get", "/api/v1/donations/{id}", {
+		params: { path: { id } },
 	});
-
-	if (!res.ok) {
-		const body = (await res.json().catch(() => null)) as {
-			error?: ApiError;
-		} | null;
-		throw Object.assign(
-			new Error(body?.error?.message ?? `Request failed with ${res.status}`),
-			{ code: body?.error?.code ?? "UNKNOWN" },
-		);
-	}
-
-	return (await res.json()) as { data: T };
 }
 
-export const donationOptions = queryOptions({
-	queryKey: donationKeys.all,
-	queryFn: async (): Promise<Donation[]> => {
-		const { data } = await request<Donation[]>(endpoint, { method: "GET" });
-		return data;
-	},
-	staleTime: 1000 * 30,
-});
+export const createDonationMutation = () =>
+	$api.useMutation("post", "/api/v1/donations");
 
-export const donationDetailOptions = (id: string) =>
-	queryOptions({
-		queryKey: donationKeys.detail(id),
-		queryFn: async (): Promise<DonationCompleto> => {
-			const { data } = await request<DonationCompleto>(
-				`${endpoint}/${id}`,
-				{ method: "GET" },
-			);
-			return data;
-		},
-	});
-
-export const createDonationOptions = mutationOptions({
-	mutationKey: [...donationKeys.all, "create"],
-	mutationFn: async (
-		payload: DonationFormValues,
-	): Promise<DonationCompleto> => {
-		const { data } = await request<DonationCompleto>(endpoint, {
-			method: "POST",
-			body: JSON.stringify(payload),
-		});
-		return data;
-	},
-});
-
-export const updateDonationOptions = (id: string) =>
-	mutationOptions({
-		mutationKey: [...donationKeys.all, "update"],
-		mutationFn: async (
-			payload: DonationFormValues,
-		): Promise<DonationCompleto> => {
-			const { data } = await request<DonationCompleto>(
-				`${endpoint}/${id}`,
-				{
-					method: "PATCH",
-					body: JSON.stringify(payload),
-				},
-			);
-			return data;
-		},
-	});
+export const updateDonationMutation = () =>
+	$api.useMutation("patch", "/api/v1/donations/{id}");

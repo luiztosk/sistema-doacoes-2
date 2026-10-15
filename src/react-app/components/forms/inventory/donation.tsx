@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField, TextField } from "@/react-app/components/forms/fields";
@@ -11,11 +11,8 @@ import { useListView, viewForUrl } from "@/react-app/components/tables/utils/tab
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type { DonationCompleto, DonationFormValues } from "@/react-app/lib/queries/inventory/donations";
-import {
-	donationKeys,
-	createDonationOptions,
-	updateDonationOptions,
-} from "@/react-app/lib/queries/inventory/donations";
+import { $api } from "@/react-app/lib/queries/fetch-client";
+import { queryClient } from "@/react-app/lib/query-client";
 import { donationInsertSchema } from "@/schemas/zod/inventory";
 
 // function errorFor(values: DonationFormValues, field: string) {
@@ -36,13 +33,12 @@ function initialValues(record?: DonationCompleto): DonationFormValues {
 
 export function DonationForm({ donation }: DonationFormProps) {
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!donation);
 	const { data: doadoresData } = useQuery(donorOptions);
 
-	const create = useMutation({ ...createDonationOptions, mutationKey: [...donationKeys.all, "create"] });
-	const update = useMutation({ ...updateDonationOptions(donation?.id ?? ""), mutationKey: [...donationKeys.all, "update"] });
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/donations");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/donations/{id}");
 
 
 	const form = useForm({
@@ -50,15 +46,15 @@ export function DonationForm({ donation }: DonationFormProps) {
 		onSubmit: async ({ value }) => {
 			if (!donationInsertSchema.safeParse(value).success) return;
 			try {
-				if (donation) await update.mutateAsync(value);
-				else await create.mutateAsync(value);
+				if (donation) await updateMutateAsync({ params: { path: { id: donation.id } }, body: value });
+				else await createMutateAsync({ body: value });
 			} catch { return; }
-			await queryClient.invalidateQueries({ queryKey: donationKeys.all });
+			await queryClient.invalidateQueries({ queryKey: ["donations"] });
 			await router.navigate({ to: "/inventory/donations", search: lista ? viewForUrl(lista) : {} });
 		},
 	});
 
-	const isPending = create.isPending || update.isPending;
+	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
 
 	return (
 		<section className="space-y-6">

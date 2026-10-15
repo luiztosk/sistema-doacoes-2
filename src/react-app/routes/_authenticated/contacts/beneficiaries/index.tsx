@@ -8,7 +8,6 @@ import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/benefi
 import { BeneficiarySelect } from "@/schemas/zod/contacts";
 
 function Beneficiaries() {
-	const view = Route.useSearch();
 	const beneficiaries = useQuery(beneficiaryTableOptions);
 
 	if (beneficiaries.isLoading) {
@@ -30,7 +29,7 @@ function Beneficiaries() {
 					New beneficiary
 				</Link>
 			</div>
-			<BeneficiariesTable data={beneficiaries.data as BeneficiarySelect[]} view={view} />
+			<BeneficiariesTable beneficiaries={beneficiaries.data as BeneficiarySelect[]} />
 		</section>
 	);
 }

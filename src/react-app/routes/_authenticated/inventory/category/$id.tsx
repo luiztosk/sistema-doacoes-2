@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { CategoryForm } from "@/react-app/components/forms/inventory/category";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { categoryOptions, updateCategoryMutation } from "@/react-app/lib/queries/inventory/categories";
+import { categoryOptions } from "@/react-app/lib/queries/inventory/categories";
 import { useQuery } from "@tanstack/react-query";
 import { CategorySelect } from "@/schemas/zod/inventory";
 
@@ -28,8 +28,7 @@ function CategoryPage() {
 	// const categoryData = category.data as CategorySelect | undefined;
 
 	return <CategoryForm
-		itemCategory={category.data}
-		updateMutation={updateCategoryMutation}
+		itemCategory={category.data as CategorySelect}
 	/>;
 }
 

@@ -10,16 +10,9 @@ import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
 import type {
 	CategorySelect,
-	// ItemCategoryFormValues,
 } from "@/schemas/zod/inventory";
 import { categoryInsertSchema } from "@/schemas/zod/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
-
-// function initialValues(record?: CategorySelect): CategoryFormValues {
-// 	return {
-// 		name: record?.name ?? "",
-// 	};
-// }
 
 export function CategoryForm({ itemCategory, createMutation, updateMutation }: {
 	itemCategory?: CategorySelect;

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { CategoryForm } from "@/react-app/components/forms/inventory/category";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { categoryOptions } from "@/react-app/lib/queries/inventory/categories";
+import { categoryOptions, updateCategoryMutation } from "@/react-app/lib/queries/inventory/categories";
 import { useQuery } from "@tanstack/react-query";
 import { CategorySelect } from "@/schemas/zod/inventory";
 
@@ -25,10 +25,11 @@ function CategoryPage() {
 
 	// The categoryOptions response type is not correctly inferred due to missing OpenAPI schema
 	// Cast to the expected type
-	const categoryData = category.data as CategorySelect | undefined;
+	// const categoryData = category.data as CategorySelect | undefined;
 
 	return <CategoryForm
-		itemCategory={categoryData}
+		itemCategory={category.data}
+		updateMutation={updateCategoryMutation}
 	/>;
 }
 

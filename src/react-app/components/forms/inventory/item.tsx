@@ -12,13 +12,10 @@ import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/fie
 import type {
 	ItemSelect,
 	CategorySelect,
-	ItemInsert,
-	ItemUpdate,
 } from "@/schemas/zod/inventory";
 import { itemInsertSchema, itemUpdateSchema } from "@/schemas/zod/inventory";
 import { UNITS } from "@/schemas/db/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
 
 const unitLabels: SelectOption[] = UNITS.map((value) => ({
 	value: value,
@@ -33,8 +30,8 @@ const unitLabels: SelectOption[] = UNITS.map((value) => ({
 export function InventoryItemForm({ item, categories, createMutation, updateMutation }: {
 	item?: ItemSelect;
 	categories: CategorySelect[];
-	createMutation?: UseMutationResult<ItemSelect, Error, ItemInsert>;
-	updateMutation?: UseMutationResult<ItemSelect, Error, ItemUpdate>;
+	createMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
+	updateMutation?: ReturnType<typeof import("@/react-app/lib/queries/fetch-client").$api.useMutation>;
 }) {
 	const categoryLabels: SelectOption[] = categories.map((category) => ({
 		value: category.id,
@@ -54,7 +51,12 @@ export function InventoryItemForm({ item, categories, createMutation, updateMuta
 						console.error('update validation failed:', validation.error.message);
 						return;
 					}
-					await updateMutation?.mutateAsync(validation.data);
+					await updateMutation?.mutateAsync({
+						params: {
+							path: {id: validation.data.id}
+						},
+						body: validation.data,
+					});
 				} else {
 					const validation = itemInsertSchema.safeParse(value);
 					if (!validation.success) {

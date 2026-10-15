@@ -34,6 +34,7 @@ export type ItemInsert = ZodInfer<typeof itemInsertSchema>;
 export type ItemUpdate = ZodInfer<typeof itemUpdateSchema>;
 
 const itemRefinements = {
+    id: z.uuid(),
     name: z.string().trim().min(1),
     unit: z.enum(UNITS),
     onHand: z.number().int().nonnegative(),

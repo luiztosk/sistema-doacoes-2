@@ -1,21 +1,16 @@
 import { $api } from "../fetch-client";
 
-// Use type assertions to bypass OpenAPI schema validation
-// The endpoints exist in the worker but the schema hasn't been regenerated
-const categoriesPath = "/inventory/categories" as unknown as "/inventory/categories";
-const categoryByIdPath = "/inventory/categories/{id}" as unknown as "/inventory/categories/{id}";
-
 export const categoriesOptions = $api.queryOptions(
-	"get", categoriesPath
+	"get", "/api/v1/inventory/categories"
 );
 
 export const categoryOptions = (id: string) =>
-	$api.queryOptions("get", categoryByIdPath, {
+	$api.queryOptions("get", "/api/v1/inventory/categories/{id}", {
 		params: { path: { id } },
 	});
 
 export const createCategoryMutation = () =>
-	$api.useMutation("post", categoriesPath);
+	$api.useMutation("post", "/api/v1/inventory/categories");
 
 export const updateCategoryMutation = () =>
-	$api.useMutation("patch", categoryByIdPath);
+	$api.useMutation("patch", "/api/v1/inventory/categories/{id}");

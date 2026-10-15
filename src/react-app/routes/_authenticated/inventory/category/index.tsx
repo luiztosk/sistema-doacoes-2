@@ -4,7 +4,7 @@ import { ItemCategoriesTable } from "@/react-app/components/tables/inventory/cat
 import { buttonVariants } from "@/react-app/components/ui/button";
 import type { CategorySelect } from "@/schemas/zod/inventory";
 import { useQuery } from "@tanstack/react-query";
-import { categoriesOptions } from "@/react-app/lib/queries/inventory/items";
+import { categoriesOptions } from "@/react-app/lib/queries/inventory/categories";
 
 function CategoriesTablePage() {
 	const categories = useQuery(categoriesOptions);

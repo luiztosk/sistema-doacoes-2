@@ -348,6 +348,11 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `tests/inventory.ts` falha se alguma coluna `id`/`*_id` divergir de
     `lower()`. Não é preference: é padronização, e o custo de descobrir isso
     depois é uma migration de dados.
+23. **Não use `.strict()` em esquemas Zod que são usados tanto para validação de formulário quanto para operações de API.** Remover o `.strict()` permite que o esquema aceite campos extras (que são simplesmente ignorados durante a validação) enquanto ainda impõe campos obrigatórios e tipos de dados. Isso é particularmente útil quando:
+    - Formulários podem enviar campos adicionais não registrados (como IDs gerados pelo servidor ou campos virtuais)
+    - Você quer reutilizar o mesmo esquema para validação de entrada de API e validação de formulário
+    - Você tem lógica de filtragem de payload que garante que apenas os campos apropriados sejam enviados ao backend
+    As mensagens de validação do Zod em `schema.ts` estão em português e servem à validação de campo do formulário, enquanto a API responde em inglês via `errors.ts` — esses são públicos distintos e não se traduz o mesmo texto.
 
 ## Branches e commits
 

@@ -2,16 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { InventoryItemForm } from "@/react-app/components/forms/inventory/item";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { categoriesOptions, itemOptions } from "@/react-app/lib/queries/inventory";
+import { itemOptions } from "@/react-app/lib/queries/inventory/items";
+import { categoriesOptions } from "@/react-app/lib/queries/inventory/items";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { updateItemMutation } from "@/react-app/lib/queries/inventory/items";
+import { updateItemMutationOptions } from "@/react-app/lib/queries/inventory/items";
 import { ItemSelect, CategorySelect } from "@/schemas/zod/inventory";
 
 function ItemPage() {
 	const { id } = Route.useParams();
 	const item = useQuery(itemOptions(id))
 	const categories = useQuery(categoriesOptions)
-	const updateMutation = useMutation(updateItemMutation(id))
+	const updateMutation = useMutation(updateItemMutationOptions(id))
 
 	if (item.isLoading || categories.isLoading) {
 		return (

@@ -18,7 +18,7 @@ import type {
 import { itemInsertSchema, itemUpdateSchema } from "@/schemas/zod/inventory";
 import { UNITS } from "@/schemas/db/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 
 const unitLabels: SelectOption[] = UNITS.map((value) => ({
 	value: value,
@@ -33,8 +33,8 @@ const unitLabels: SelectOption[] = UNITS.map((value) => ({
 export function InventoryItemForm({ item, categories, createMutation, updateMutation }: {
 	item?: ItemSelect;
 	categories: CategorySelect[];
-	createMutation?: ReturnType<typeof useMutation<ItemSelect, Error, ItemInsert>>;
-	updateMutation?: ReturnType<typeof useMutation<ItemSelect, Error, ItemUpdate>>;
+	createMutation?: UseMutationResult<ItemSelect, Error, ItemInsert>;
+	updateMutation?: UseMutationResult<ItemSelect, Error, ItemUpdate>;
 }) {
 	const categoryLabels: SelectOption[] = categories.map((category) => ({
 		value: category.id,

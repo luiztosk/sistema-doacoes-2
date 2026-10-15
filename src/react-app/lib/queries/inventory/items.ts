@@ -4,6 +4,7 @@ import type {
   ItemInsert,
   ItemUpdate,
 } from "@/schemas/zod/inventory";
+import { $api } from "../fetch-client";
 
 const endpoint = "/api/v1/inventory/items";
 
@@ -57,6 +58,21 @@ export const deleteItemMutationOptions = (id: string) =>
   });
 
 // Alternative exports for backward compatibility with existing code
-export const createItemMutation = () => createItemMutationOptions;
-export const updateItemMutation = (id: string) => updateItemMutationOptions(id);
-export const deleteItemMutation = (id: string) => deleteItemMutationOptions(id);
+// export const createItemMutationOptions = () => createItemMutationOptions;
+// export const updateItemMutationOptions = (id: string) => updateItemMutationOptions(id);
+// export const deleteItemMutationOptions = (id: string) => deleteItemMutationOptions(id);
+
+export const itemsOptions = $api.queryOptions(
+	"get", "/inventory/items"
+);export const categoriesOptions = $api.queryOptions(
+	"get", "/inventory/categories"
+)
+export function itemOptions(id: string) {
+	return ($api.queryOptions("get", "/inventory/items/{id}", {
+		params: {
+			path: { id: id }
+		},
+	})
+	)
+}
+

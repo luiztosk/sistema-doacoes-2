@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { InventoryItemForm } from "@/react-app/components/forms/inventory/item";
-import { createItemMutation } from "@/react-app/lib/queries/inventory/items";
-import { categoriesOptions } from "@/react-app/lib/queries/inventory";
+import { createItemMutationOptions } from "@/react-app/lib/queries/inventory/items";
+import { categoriesOptions } from "@/react-app/lib/queries/inventory/items";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CategorySelect } from "@/schemas/zod/inventory";
 
 function NewItemPage() {
-	const createMutation = useMutation(createItemMutation())
+	const createMutation = useMutation(createItemMutationOptions)
 	const categories = useQuery(categoriesOptions);
 
 	if (categories.isLoading) {

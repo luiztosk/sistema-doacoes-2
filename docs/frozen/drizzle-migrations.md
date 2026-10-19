@@ -1,7 +1,7 @@
 # Migrations do Drizzle no D1
 
 Como gerar e aplicar migrations neste projeto. O banco é **Cloudflare D1** e o
-schema fica em `src/worker/db/schema.ts`.
+schema fica em `src/schemas/db/`.
 
 > Este arquivo substitui um template em inglês com nomes de placeholder
 > (`YOUR_DB_NAME`, `seeds/baseline.sql`, tabelas `users`/`roles` que não existem
@@ -14,7 +14,7 @@ sozinho:
 
 ```typescript
 export default defineConfig({
-  schema: './src/worker/db/schema.ts',
+  schema: './src/schemas/db/schemas.ts',
   out: './drizzle/migrations',
   dialect: 'sqlite', // D1 é SQLite
 });
@@ -32,9 +32,9 @@ npm run gen-drizzle     # npx drizzle-kit generate
 ```
 
 O drizzle-kit cria uma pasta nova em `drizzle/migrations/`, com `migration.sql` e
-`snapshot.json`. Faça commit dos dois arquivos junto com o `schema.ts`.
+`snapshot.json`. Faça commit dos dois arquivos junto com o schema.
 
-> A pasta `20260926213838_lucky_karma` é a baseline e já está aplicada — não
+> A pasta `20260929215055_crazy_harrier` é a baseline e já está aplicada — não
 > edite migration que já foi aplicada em algum ambiente. Migrations são
 > imutáveis; para desfazer algo, escreva uma migration nova.
 
@@ -80,9 +80,9 @@ escreve sempre no local, porque usa `getPlatformProxy()`.
 
 Ordem ao mexer no schema:
 
-1. edite `src/worker/db/schema.ts`
+1. edite `src/schemas/db/`
 2. `npm run gen-drizzle` e confira o `migration.sql` que saiu
-3. commit do `schema.ts` **e** da pasta da migration
+3. commit do schema **e** da pasta da migration
 4. `rm -rf .wrangler/state && npm run local-db-init` para validar do zero
 5. só depois aplique no remoto
 
@@ -92,11 +92,11 @@ Não existe `seeds/baseline.sql`. O seed é um script que **gera** os dados ante
 gravar, a partir dos schemas zod:
 
 ```bash
-npm run db-seed          # npx tsx src/worker/db/seed.ts
+npm run db-seed          # npx tsx scripts/seed.ts
 ```
 
 Ele usa `getPlatformProxy()`, então escreve **sempre no banco local**, mesmo sem
-`--remote`. Quem gera é `src/worker/db/generate.ts`, que valida **cada linha** com
+`--remote`. Quem gera é `scripts/generate.ts`, que valida **cada linha** com
 o `*SelectSchema` da tabela antes de inserir — se o gerador produzir algo fora do
 schema, o seed para e diz qual campo e qual linha. Não é mais possível o banco
 divergir do que o gerador afirmou, que era a raiz dos bugs da
@@ -109,7 +109,7 @@ a cada execução. Os dados de entrada do gerador são dois JSONs versionados em
 | Arquivo | O que é |
 |---|---|
 | `municipios.json` | Pares cidade/UF do IBGE, capital mais três municípios por UF |
-| `catalogo.json` | As 9 categorias e os 114 nomes de item do catálogo |
+| `catalogo.json` | As 9 categorias e os 130 nomes de item do catálogo |
 
 **O insert é sem tolerância a conflito.** Não há mais `onConflictDoNothing()`: um
 id repetido ou um nome de catálogo repetido estoura o `UNIQUE` e o seed sai com
@@ -126,8 +126,8 @@ npm run local-db-init    # migration + tipos + seed, tudo local
 
 1. **Nunca use `drizzle-kit push`.** Ele ignora os arquivos de migration e quebra
    a paridade entre local e remoto. Sempre `generate`.
-2. **`auth-schema.ts` é gerado.** Não edite à mão: rode `npm run gen-auth`, que
-   chama o gerador do Better Auth e escreve o arquivo. É ele que produz as tabelas
+2. **`src/schemas/db/auth.ts` é gerado.** Não edite à mão: rode `npm run gen-auth`,
+   que chama o gerador do Better Auth e escreve o arquivo. É ele que produz as tabelas
    `user`, `session`, `account`, `organization`, `member`, `invitation` e
    `verification`.
 3. **Migrations aplicadas não se editam.** Se algo está errado, escreva outra.

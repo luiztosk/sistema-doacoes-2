@@ -1,26 +1,31 @@
 # Como adicionar a tabela de um recurso
 
-`assistidos` é a referência: ela já está com a linha clicável, o botão de
-detalhe e o `Pick` que a tela carrega, e é o que o build e o PR validam.
-`doadores` aplica a mesma receita com Nome, Cidade, Telefone, E-mail e Detalhes.
-O accessor auxiliar `uf` alimenta o filtro exato por estado e não é renderizado:
-a sigla continua aparecendo junto da cidade, sem uma coluna visível adicional.
+`contacts/beneficiaries` é a referência de uma tabela de **contato**: ela já
+está com a linha clicável, o botão de detalhe e o `Pick` que a tela carrega, e
+é o que o build e o PR validam. `contacts/donors` aplica a mesma receita com
+Nome, Cidade, Telefone, E-mail e Detalhes. O accessor auxiliar `uf` alimenta o
+filtro exato por estado e não é renderizado: a sigla continua aparecendo junto
+da cidade, sem uma coluna visível adicional.
 
-`lib/api/<recurso>.ts` é o **mesmo arquivo** que o formulário vai completar —
-um recurso lê e escreve em um arquivo só. A tabela precisa dele antes de
-existir, porque é daí que sai a lista.
+`inventory/item` é a referência de uma tabela de **catálogo**: tem a coluna
+derivada, o filtro e o `sortUndefined` numa coluna anulável. As duas são
+referências de formas diferentes de coluna, e o resto da receita é igual.
+
+`lib/queries/<area>/<recurso>.ts` é o **mesmo arquivo** que o formulário vai
+completar — um recurso lê e escreve em um arquivo só. A tabela precisa dele
+antes de existir, porque é daí que sai a lista.
 
 | Arquivo | Copiar de |
 |---|---|
-| `lib/api/<recurso>.ts` | `lib/api/assistidos.ts` |
-| `components/tables/<recurso>.tsx` | `components/tables/assistidos.tsx` |
-| `routes/_authenticated/<recurso>/index.tsx` | `.../assistidos/index.tsx` |
+| `lib/queries/<area>/<recurso>.ts` | `lib/queries/contacts/beneficiaries.ts` |
+| `components/tables/<area>/<recurso>.tsx` | `components/tables/contacts/beneficiaries.tsx` |
+| `routes/_authenticated/<area>/<recurso>/index.tsx` | `.../contacts/beneficiaries/index.tsx` |
 | `lib/navigation.ts` | a entrada em `resources` |
 
 O nome do arquivo segue o recurso e o da pasta: `tables/` para lista,
-`lib/api/` para o servidor. Sem sufixo `-table`, porque a pasta já diz.
+`lib/queries/` para o servidor. Sem sufixo `-table`, porque a pasta já diz.
 
-`components/tables/` também tem os arquivos **genéricos**, que não são de um
+`components/tables/utils/` tem os arquivos **genéricos**, que não são de um
 recurso e não se copiam: `table-features.ts`, `table-sortable-header.tsx`,
 `table-toolbar.tsx`, `table-pagination.tsx` e `table-view-state.ts`. É a mesma
 separação de `components/ui/`: o que é do recurso fica no arquivo do recurso, o
@@ -28,20 +33,21 @@ que é de tabela fica num arquivo com o nome da tabela.
 
 ## Ordenação, filtro e paginação são do cliente
 
-`GET /api/v1/{recurso}` devolve a tabela inteira e não lê nenhum query param
-(`src/worker/api/v1.ts:83-86`). Então as três capacidades nascem no cliente, sobre
-o array que já está no cache — **zero requisição a mais**, e nenhuma mudança no
-backend, que está congelado.
+`GET /api/v1/{recurso}` devolve a tabela inteira e não lê nenhum query param.
+Então as três capacidades nascem no cliente, sobre o array que já está no cache —
+**zero requisição a mais**, e nenhuma mudança no backend, que está congelado.
 
 A consequência que amarra tudo: **estado de tabela não entra no `queryKey`**.
-`assistidoKeys.all` continua `["assistidos"]`. Se `page`, `q` ou `sort` fossem
-para a chave, cada tecla e cada clique de página abriria uma entrada de cache e
-dispararia uma requisição — o oposto do objetivo.
+`beneficiaryKeys.all` continua `["beneficiaries"]`. Se `page`, `q` ou `sort`
+fossem para a chave, cada tecla e cada clique de página abriria uma entrada de
+cache e dispararia uma requisição — o oposto do objetivo.
 
-Para virar a decisão: paginação no servidor só compensa se `donation` e
-`delivery` — os dois recursos que crescem sem limite no tempo — passarem de
-alguns MB por resposta. Aí são duas queries por página (a página e a contagem),
-e vale o custo de mexer no contrato.
+**A exceção é o ledger.** `GET /api/v1/ledger` pagina no servidor, porque é a
+única tabela que cresce sem limite no tempo: um histórico de movimentos tem uma
+linha por operação, para sempre. A tela do ledger é a **única** do app que não
+busca a tabela inteira. As outras continuam buscando a tabela toda, e a
+justificativa de por que o ledger foggiu do padrão está em
+[`arquitetura.md`](arquitetura.md#o-modelo-de-estoque-virou-ledger).
 
 ## Página e ordenação moram na URL
 
@@ -78,7 +84,7 @@ do novo `sort`. `TableColumnFilter` e a busca fazem o mesmo chamando
 `setPageIndex(0)`.
 
 A rota do registro **não** tem `validateSearch` — e é por isso que ela é
-`routes/.../<recurso>/id/$id.tsx` e não `<recurso>/$id.tsx`: assim o drill-down
+`routes/.../<recurso>/$id.tsx`, sem o segmento `id` no meio: assim o drill-down
 não precisa carregar `tableViewSchema` só para devolver a página de onde a
 pessoa veio. O contexto de volta viaja no `state` da navegação
 (`state: { lista: view }`), que é estado de histórico e não vai para a URL. A
@@ -87,8 +93,9 @@ da lista.
 
 Duas consequências honestas desse desenho:
 
-- `viewForUrl` remove o que é o padrão, então `/assistidos` sem param é a visão
-  padrão e `?page=2` é a terceira página. O param é **índice**, não número.
+- `viewForUrl` remove o que é o padrão, então `/contacts/beneficiaries` sem
+  param é a visão padrão e `?page=2` é a terceira página. O param é **índice**,
+  não número.
 - Cada escrita usa `replace: true`, porque página e ordenação são estado de
   visualização e não navegação. Back do navegador volta da tela de registro para
   a página de onde saiu, mas não "desfaz" um clique de página.
@@ -100,11 +107,12 @@ e o `?page=2` da URL é apagado no primeiro render. Ver a armadilha 6.
 
 ## Reutilizar, não reescrever
 
-- `assistidoOptions` e o tipo `Assistido` de `lib/api/assistidos.ts`. `Assistido`
-  é um `Pick` de propósito, para a tela não carregar as ~25 colunas: para
-  mostrar mais um campo, acrescente o nome na lista do `Pick`.
-- `features` e `DataTableFeatures` de `table-features.ts`. Coluna de display
-  não é feature, então nenhuma coluna nova exige mexer nisso.
+- `beneficiariesOptions` e o tipo `BeneficiaryTableView` de
+  `lib/queries/contacts/beneficiaries.ts`. O tipo é um `Pick` de propósito, para
+  a tela não carregar as ~25 colunas: para mostrar mais um campo, acrescente o
+  nome na lista do `Pick`.
+- `features` e `DataTableFeatures` de `utils/table-features.ts`. Coluna de
+  display não é feature, então nenhuma coluna nova exige mexer nisso.
 - `SortableHeader`, `TableToolbar`, `TableColumnFilter`, `TablePagination`,
   `tableViewSchema`, `paginationFromView`, `sortingFromView`, `sortingToView`,
   `viewForUrl` e `useListView`. Todos genéricos: só a coluna, o rótulo, as
@@ -198,24 +206,29 @@ primeira — o `pageSize` novo se perde. `TablePagination` faz
 
 | Recurso | Situação |
 |---|---|
-| `doador` | **Implementado** (`main`, 3 modos). Nome morre no rename `donor` (item 9 do backlog). |
-| `donation`, `delivery`, `inventory-item`, `item-category` | **Implementados** na branch (`feat/redesenho-estoque`, 01/10/2026). Verbo próprio, não CRUD — ver `frozen/api.md`. |
+| `beneficiary`, `donor` | **Implementados** (`main` e branch), 3 modos, em `tables/contacts/`. |
+| `inventory/item`, `inventory/category` | **Implementados** na branch, em `tables/inventory/`. |
+| `inventory/donations`, `inventory/delivery` | **Implementados** na branch, em `tables/inventory/`. Verbo próprio, não CRUD — ver `frozen/api.md`. |
+| `stock`, `ledger` | **A fazer**: a tela do saldo (`GET /api/v1/stock`) e a do histórico (`GET /api/v1/ledger`, com paginação no servidor). |
 
-**Não construa tela para `coleta`, `entrega` ou `item`: saíram do banco.** O modelo de estoque já
-foi decidido — `inventory_item` com dois contadores e uma coluna gerada, `donation`
-com `donation_line`, `delivery` com `delivery_line` como reserva, e ajuste
-registrado. Tela feita contra `coleta`/`entrega`/`item` morre no rename, porque os
-nomes novos são em inglês. O desenho inteiro está em
-[`future/README.md`](future/README.md).
+**Não construa tela para `coleta`, `entrega` ou `item`: saíram do banco.** E
+**não construa tela para `donation_line` nem `delivery_line`: também saíram**, no
+redesenho para ledger — o conteúdo de um documento se lê no ledger filtrando
+por `ref_id`. Tela feita contra `coleta`/`entrega`/`item` morre no rename, porque
+os nomes novos são em inglês. O desenho do modelo anterior está em
+[`future/README.md`](future/README.md) e o novo, em
+[`frozen/modelos-db.md`](frozen/modelos-db.md).
 
-`item-category` e `inventory-item` **não ganham tela de catálogo separada**: a deduplicação de nome foi fundida em `inventory_item.name`, e `item-category` é o único catálogo remanescente. A única exceção ao congelamento (`registerResources` para catálogo aditivo) é inoperante enquanto `nome_item` e `categoria_item` não existem — e não existem mais no banco.
+`item-category` e `inventory-item` **não ganham tela de catálogo separada**: a
+deduplicação de nome foi fundida em `inventory_item.name`, e `item-category` é o
+único catálogo remanescente.
 
 ## Fora de escopo
 
-- **Não mexa em `src/worker/`.** Esquema, `registerResources` e migrations estão
-  congelados nesta rodada. Se a tela precisa de um campo que não existe, pare e
-  pergunte. Ordenação, filtro e paginação são justamente o caso em que a
-  resposta é "no cliente", e não "crie o endpoint".
+- **Não mexa em `src/worker/`.** Esquema, rotas e migrations estão congelados
+  nesta rodada. Se a tela precisa de um campo que não existe, pare e pergunte.
+  Ordenação, filtro e paginação são justamente o caso em que a resposta é "no
+  cliente", e não "crie o endpoint".
 - **Não crie a linha inteira como `<a>`, e não "conserte" o desenho depois.**
   Motivo duplo: `<a>` não envolve `<td>`, o parser de HTML tira o elemento para
   fora da tabela, então a linha não pode ser âncora; e o link interno é o que dá
@@ -224,7 +237,8 @@ nomes novos são em inglês. O desenho inteiro está em
   qualquer das duas formas: `state.lista` é estado de sessão da aba, e a aba nova
   não o recebe.
 - Não crie teste automatizado de tela. O runner é de API e não cobre React.
-- Não mova `components/tables/` para perto do recurso: agrupamento é por tipo.
+- Não mova `components/tables/` para perto do recurso: agrupamento é por tipo
+  e, dentro do tipo, por área.
 - Não use o componente `Pagination` do shadcn aqui. Ele renderiza `<a href>`, o
   que só faz sentido com estado de página na URL. O guia de data table do
   shadcn para Base UI monta o paginador com `Button` e `Select`, que é o que

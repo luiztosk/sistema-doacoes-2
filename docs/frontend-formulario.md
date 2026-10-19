@@ -1,20 +1,23 @@
 # Como adicionar o formulário de um recurso
 
-`assistido` é a referência: ele já está nos três modos, valida com o mesmo
-schema que a API usa, e é o que o build e o PR validam.
+`contacts/beneficiary` é a referência: ele já está nos três modos, valida com o
+mesmo schema que a API usa, e é o que o build e o PR validam.
+`inventory/item` é a referência de um formulário de **catálogo**, com coluna
+derivada.
 
-`lib/api/<recurso>.ts` é o **mesmo arquivo** que a tabela criou — um recurso lê
-e escreve em um arquivo só. Aqui é só a metade que escreve.
+`lib/queries/<area>/<recurso>.ts` é o **mesmo arquivo** que a tabela criou — um
+recurso lê e escreve em um arquivo só. Aqui é só a metade que escreve.
 
 | Arquivo | Copiar de |
 |---|---|
-| `lib/api/<recurso>.ts` | `lib/api/assistidos.ts` (as 3 mutations que faltam) |
-| `components/forms/<recurso>.tsx` | `components/forms/assistido.tsx` |
-| `routes/_authenticated/<recurso>/novo.tsx` | `.../assistidos/novo.tsx` |
-| `routes/_authenticated/<recurso>/id/$id.tsx` | `.../assistidos/id/$id.tsx` |
+| `lib/queries/<area>/<recurso>.ts` | `lib/queries/contacts/beneficiaries.ts` (as mutations que faltam) |
+| `components/forms/<area>/<recurso>.tsx` | `components/forms/contacts/beneficiary.tsx` |
+| `routes/_authenticated/<area>/<recurso>/new.tsx` | `.../contacts/beneficiaries/new.tsx` |
+| `routes/_authenticated/<area>/<recurso>/$id.tsx` | `.../contacts/beneficiaries/$id.tsx` |
 
 Comece por [`frontend-tabela.md`](frontend-tabela.md): a lista é o que dá de
-acesso ao registro, e `lib/api/<recurso>.ts` já existe quando você chegar aqui.
+acesso ao registro, e `lib/queries/<area>/<recurso>.ts` já existe quando você
+chegar aqui.
 
 ## Reutilizar, não reescrever
 
@@ -24,35 +27,39 @@ coerção do `onChange`, o `aria-invalid` e a mensagem de erro, e o `EditablePro
 trava todos os campos de uma vez. **Não escreva um `<Input>` solto dentro do
 formulário.**
 
-As três mutations, espelhando o nome do guia de `queryOptions` do TanStack:
-`createAssistidoOptions`, `updateAssistidoOptions(id)` e
-`assistidoDetailOptions(id)`.
+As mutations, espelhando o nome do guia de `queryOptions` do TanStack:
+`createBeneficiaryMutation()`, `updateBeneficiaryMutation()` e
+`beneficiaryOptions(id)`. As duas primeiras são **hooks** (`$api.useMutation`),
+então não são "options" — e é por isso que o `useMutation` é chamado no topo do
+componente, nunca dentro de um `return` condicional.
 
 > **Regra dos hooks com `$api.useMutation`.** O `useMutation` é um hook e deve ser chamado incondicionalmente no topo do componente — nunca dentro de uma expressão JSX após um `return` condicional (`if (loading) return ...`). Se o hook for chamado só no render que não retorna, o número de hooks muda entre renders e quebra (`Rendered fewer hooks than expected`). O padrão correto: chamar `$api.useMutation(...)` diretamente no componente do formulário (`components/forms/<recurso>.tsx`), extrair `mutateAsync` e `isPending`, e chamar `mutateAsync` no `onSubmit`. Não passe o hook como prop pelo `route` para evitar chamá-lo depois dos `return`.
 
 ```ts
-export type AssistidoFormValues = RequiredNullable<
-	ZodInfer<typeof assistidoInsertSchema>
+export type BeneficiaryFormValues = RequiredNullable<
+	ZodInfer<typeof beneficiaryInsertSchema>
 >;
 ```
 
 `RequiredNullable` tira o `undefined` do schema para nenhum campo virar
-`value={undefined}` num input controlado. Copie a definição; ela está em
-`lib/api/assistidos.ts`.
+`value={undefined}` num input controlado. A definição é local ao arquivo de
+queries do recurso — copie dali.
 
 ## Pontos que precisam espelhar
 
 - **O estado do formulário é o payload.** Não existe passo de tradução no
   `onSubmit`: quem converte é o `onChange` da primitiva. É por isso que dá para
   validar com `*InsertSchema` direto, sem duplicar regra.
-- **Valide com o `*InsertSchema` nos dois modos**, nunca com o `*UpdateSchema`:
-  o de update torna `nome` opcional, então um `nome` vazio passaria no cliente e
-  tomaria `400` no servidor.
+- **Valide com o schema do modo**: `*InsertSchema` para criar, `*UpdateSchema`
+  para editar. O de update é mais leniente — `name` fica opcional — e é por isso
+  que o formulário **manda todos os campos sempre** (veja o item "Mande os N
+  campos sempre" abaixo). Quem valida com o `*InsertSchema` nos dois modos
+  resolve o mesmo problema, mas diverge do que o código faz.
 - **A mensagem do zod é lida na tela, então vai em português** — e isso *não*
   muda a API. `errorFromIssue` só embute `issue.message` no ramo `custom`, que
   exige um issue de `z.refine()`; `too_small` e `invalid_format` caem no
   `default` e viram `Field 'x' has an invalid value.`.
-- `updateAssistidoOptions` recebe o `id` como **argumento separado** do payload.
+- A mutation de update recebe o `id` como **argumento separado** do payload.
   `parseBody` rejeita `id` no corpo com `READ_ONLY_FIELD` antes mesmo do zod.
 - **`mutateAsync` com `await`, e só depois o `invalidateQueries`.** A ordem é
   load-bearing. Com `mutate` (sem `await`), o `PATCH` sai e a invalidação marca a
@@ -87,17 +94,16 @@ export type AssistidoFormValues = RequiredNullable<
 - Três modos num componente só: `assistido` ausente cria, presente visualiza, e
   `isEditing` interno libera a edição. `Cancelar` faz `form.reset()` antes de
   voltar, senão a tela mostraria alteração não salva.
-- Mande os 25 campos sempre. A API aceita `PATCH` parcial, mas um corpo vazio é
-  `400 EMPTY_UPDATE`.
+- Mande todos os campos sempre. A API aceita `PATCH` parcial, mas um corpo vazio
+  é `400 EMPTY_UPDATE`.
 - Enums: `UFS`, `TIPOS_IMOVEL` e `ESTADOS_CIVIS` já são exportados de
-  `schema.ts`. O *rótulo* em português é interface e fica no frontend; o valor
-  `UPPER_SNAKE` é o contrato com o servidor.
+  `src/schemas/db/contacts.ts`. O *rótulo* em português é interface e fica no
+  frontend; o valor `UPPER_SNAKE` é o contrato com o servidor.
 - `Button` com `render={<Link />}` precisa de `nativeButton={false}`, senão o
   Base UI reclama que espera um `<button>` nativo.
-- A rota do registro tem um segmento `id` antes do parâmetro, então
-  `/assistidos/novo` e `/assistidos/id/<uuid>` são duas rotas estáticas irmãs e
-  não competem pelo mesmo segmento. Sem ele, `novo` só não caía em `$id` porque
-  o roteador ranqueia estática acima de dinâmica.
+- A rota do registro é `<area>/<recurso>/$id.tsx` e a de criação é
+  `<area>/<recurso>/new.tsx`. As duas são irmãs estáticas e não competem pelo
+  mesmo segmento, porque o roteador ranqueia a estática acima da dinâmica.
 - Não edite `route-tree.tsx`, ele é gerado.
 
 ## O que vem depois
@@ -106,32 +112,27 @@ export type AssistidoFormValues = RequiredNullable<
 com texto e o enum `uf`, nos modos de criação, visualização e edição. O retorno
 do detalhe preserva página e ordenação; após criar, a lista abre na página 1.
 
-`coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**: o modelo já foi implementado e virou
-`donation`, `delivery` e `inventory_item`, com `donation_line` e `delivery_line`
-abaixo. Não escreva nem o formulário deles: o estado do formulário é o payload, e
-o payload muda de forma. O desenho está em
-[`future/README.md`](future/README.md).
+`coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**, e
+`donation_line` e `delivery_line` **também saíram** no redesenho para ledger: o
+conteúdo de um documento se lê no ledger filtrando por `ref_id`. O desenho
+novo está em [`frozen/modelos-db.md`](frozen/modelos-db.md).
 
-Duas coisas que só aparecem nesses formulários e que valem lembrar quando o
-redesenho for implementado:
+Duas coisas que só aparecem nesses formulários e que valem lembrar:
 
-- **Nenhuma primitiva faz data.** As duas fichas têm `occurred_at`, que é
-  `z.coerce.date()`, então o estado do formulário é `Date | null` e não `string`
-  — um `DateField` precisa ser escrito, e não é um `TextField` com
-  `type="date"`, porque o `value` do input é `"AAAA-MM-DD"`.
+- **Data tem primitiva.** `DateField` existe em `forms/fields.tsx`, e é o que
+  o `occurred_at` usa — o estado do formulário é `Date | null` e não `string`,
+  porque o `value` de um `<input type="date">` é `"AAAA-MM-DD"`.
 - **A ficha tem a tabela de filhos abaixo do formulário**, com adicionar, ver e
-  remover, e a linha de filho carrega `quantity`. Nada no código exemplifica esse
-  padrão ainda: o `assistido` não tem filho, então ele **não** serve de
-  referência aqui.
+  remover. No modelo novo, a linha de filho é `{ itemId, quantity }` e o
+  formulário de entrega e o de doação **precisam** dela — é o que faz a entrega
+  reservar estoque.
 
-## Sem exemplo ainda
+## `SelectField` alimentado por outra lista
 
-`SelectField` **alimentado por outra lista** não tem exemplo, e não vai ter até o
-redesenho de coleta e entrega: os únicos recursos com chave estrangeira são os que
-não ganharam tela. `doador`, já implementado, só tem texto e o enum `uf`.
-
-Quando o caso aparecer, a query da tabela de origem já existe e as opções são o
-array dela (`{ value: linha.id, label: linha.nome }` — o `value` é o que vai no
+**Já tem exemplo**: `forms/inventory/delivery.tsx` usa o `SelectField` com as
+opções vindas de `fkOptions("beneficiaries", beneficiariesData ?? [])`, que está
+em `lib/fk-factory.ts`. A query da tabela de origem já existe, e as opções são
+o array dela (`{ value: linha.id, label: linha.name }` — o `value` é o que vai no
 corpo, e é o `id` que a coluna espera). Cuide de três coisas que o `Select` do Base
 UI não resolve sozinho:
 
@@ -144,12 +145,11 @@ UI não resolve sozinho:
 
 ## Fora de escopo
 
-- **Não mexa em `src/worker/`.** Esquema, `registerResources` e migrations estão
-  congelados nesta rodada. A única exceção é registrar `nome-itens` e
-  `categoria-itens`, para o catálogo ser aditivo.
-- **Não escreva tela de `coleta`, `entrega` ou `item`.** Eles saíram do banco em 01/10/2026. O modelo de estoque já
-  foi decidido e vira `donation`, `delivery` e `inventory_item`, com `donation_line`
-  e `delivery_line`; ver [`future/README.md`](future/README.md).
+- **Não mexa em `src/worker/`.** Esquema, rotas e migrations estão congelados
+  nesta rodada.
+- **Não escreva tela de `coleta`, `entrega` ou `item`.** Eles saíram do banco em
+  01/10/2026, e `donation_line` e `delivery_line` saíram no redesenho para
+  ledger; ver [`frozen/modelos-db.md`](frozen/modelos-db.md).
 - Não exibia erro de mutation na tela. Não há `Alert`, nem `toast`, nem
   `errorMap` por campo: o `MutationCache` em `lib/query-client.ts` joga no
   `console` e pronto.
@@ -160,4 +160,9 @@ UI não resolve sozinho:
 
 ## Padrão de mutation com `$api`
 
-`item` e `beneficiary` já operam com `$api.useMutation` chamado diretamente no componente do formulário (`components/forms/<recurso>.tsx`), sem passar mutation como prop pelo `route`. Os outros formulários (`donor`, `category`, `donation`, `delivery`) ainda precisam ser migrados para esse mesmo padrão: chamar `$api.useMutation(...)` no topo do componente, extrair `mutateAsync` e `isPending`, e usar `mutateAsync` no `onSubmit`. Não passe `mutateAsync`/`isPending` como prop pelo componente de rota — isso evita o risco de chamar o hook depois de um `return` condicional e quebrar as regras dos hooks (`Rendered fewer hooks than expected`).
+Todos os formulários operam com `$api.useMutation` chamado diretamente no
+componente do formulário (`components/forms/<area>/<recurso>.tsx`), sem passar
+mutation como prop pelo `route`. **Não passe `mutateAsync`/`isPending` como prop
+pelo componente de rota** — isso evita o risco de chamar o hook depois de um
+`return` condicional e quebrar as regras dos hooks (`Rendered fewer hooks than
+expected`).

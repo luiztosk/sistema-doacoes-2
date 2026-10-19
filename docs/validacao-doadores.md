@@ -1,5 +1,10 @@
 # Validação de doadores — #60 e #62
 
+> **Registro de uma verificação passada.** As telas de `doador` foram renomeadas
+> para `donor` e movidas para `components/tables/contacts/` e
+> `components/forms/contacts/`. O texto abaixo descreve a verificação como foi
+> feita em 03/10/2026, com os nomes de então.
+
 Verificação realizada em 03/10/2026, na branch `feat/doadores-60-62`.
 Base: `feat/tabela-filtro-paginacao`, commit `4777cd1`. As duas issues foram
 implementadas juntas conforme o alinhamento com Luiz, reaproveitando os

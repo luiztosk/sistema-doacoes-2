@@ -11,19 +11,20 @@ Estado conferido em 05/10/2026.
 | Requisito | Status | Onde/como |
 |---|---|---|
 | Framework web | ✅ | Hono (backend) + React (frontend) |
-| Banco de dados | ✅ | D1 + Drizzle, 7 tabelas. O backend está congelado nesta rodada |
+| Banco de dados | ✅ | D1 + Drizzle. O estoque é um **ledger** de movimentos; o saldo é cache reconstruível |
 | JavaScript/TypeScript | ✅ | Todo o código novo é TS, com `strict` e `noUnusedLocals` |
 | Hospedagem em nuvem | ✅ | Cloudflare Workers, deploy automático na `main` |
 | Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
-| Testes | ✅ | `npm test` (`tsx tests/api.ts`, 28 casos da API) + Insomnia (manual) |
+| Testes | ⚠️ | `npm test` (`tsx tests/api.ts`) e `npm run test:inventory` — as duas suítes estão **desligadas** no meio da migração para o ledger |
 | Consumo de API externa | ⏳ | ViaCEP — ver [`future/`](future/README.md) |
 | Acessibilidade | ⏳ | Parcial: `label` associado e foco visível nas telas; falta teste com axe |
 
 ## O que falta fazer
 
-1. ✅ **Banco e API** — as 7 tabelas e os 25 endpoints existem. A tabela
-   `instituicao` não foi criada de propósito: instituição é a `organization` do
-   Better Auth.
+1. ✅ **Banco e API** — as tabelas de domínio e os endpoints existem. A tabela
+   `instituicao` não foi criada de propósito: **a instituição é a instância** —
+   um deployment, um D1, uma instituição. Ver
+   [`frozen/seguranca.md`](frozen/seguranca.md).
 2. ✅ **Autenticação** — Better Auth com plugin Organization, login e cadastro
    funcionando.
 3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
@@ -63,9 +64,16 @@ Estado conferido em 05/10/2026.
    [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não
    existir, a API não deve receber dados reais. Não implementado nesta rodada:
    ver [`future/`](future/README.md).
-8. ⏳ **Redesenho do estoque** — o modelo está decidido e escrito por inteiro em
-   [`future/README.md`](future/README.md), e **não está implementado na `main`**:
-   as tabelas de lá continuam `coleta`, `entrega` e `item`. Nesta branch (`feat/redesenho-estoque`) a implementação já entrou: `coleta`/`entrega`/`item` saíram do banco e viraram `donation`/`delivery`/`inventory_item`. A branch está liberada do congelamento. As três dúvidas que o desenho tinha sobre o D1 foram medidas localmente, e as três passaram:
+8. ✅ **Redesenho do estoque** — **decidido e em implementação**. A primeira
+   versão (contadores `on_hand` / `reserved_quantity` e tabelas de linha) saiu;
+   o modelo final é um **ledger de movimentos**, com o saldo como cache
+   reconstruível e a guarda num trigger do D1. `coleta`/`entrega`/`item` já
+   saíram do banco, e `donation_line`/`delivery_line` saíram com a troca. O
+   contrato está em [`frozen/modelos-db.md`](frozen/modelos-db.md) e
+   [`frozen/api.md`](frozen/api.md); o raciocínio, em
+   [`arquitetura.md`](arquitetura.md#o-modelo-de-estoque-virou-ledger). As três
+   dúvidas que o desenho original tinha sobre o D1 foram medidas localmente, e
+   as três passaram:
 
    | Dúvida | Resultado |
    |---|---|
@@ -92,75 +100,60 @@ Estado conferido em 05/10/2026.
    que o `handleApiError` não traduz — a mesma classe do `CHECK constraint failed`.
    Não é problema enquanto ninguém escreve nela.
 
-   O próximo passo é a migration, e ela carrega **o rename das 7 tabelas**:
-   `assistido` vira `beneficiary` e `doador` vira `donor`, junto com
-   `coleta`/`entrega`/`item`. Isso toca a tela de `assistido`, já mergeada, e a de
-   `doador`, que é a próxima da lista. Ainda não está decidido se o rename entra na
-   mesma migration do estoque ou se vira migration própria.
+   O rename já foi aplicado, pela migration `20261006192118_mushy_karen_page`:
+   `assistido` vira `beneficiary` e `doador` vira `donor`. A migration do ledger
+   vem depois, e é a que tira `donation_line` e `delivery_line`.
 
 ### O que já está feito na branch
 
-1. **As 9 tabelas novas** no `schema.ts`, com migration, e o DDL do drizzle
-   conferido contra o D1 real.
-2. **As sete operações** em `src/worker/api/stock.ts`, com o SQL do
-   `future/README.md` e os schemas fechados contra escrita de contador e status.
-   Endpoints: `POST /donations`, `POST /donations/:id/receive`,
-   `POST /deliveries`, `POST /deliveries/:id/complete`,
-   `POST /deliveries/:id/cancel`, `POST /inventory-counts` e
-   `POST /inventory-adjustments`, mais o CRUD de `item-categories` e
-   `inventory-items`. Os verbos são em inglês; a interface do React fica em
-   português.
-3. **`tests/inventory.ts`**: as sete operações contra o D1 local, com as duas
-   invariantes verificadas depois de cada passo. É a única camada que consegue
-   provar a aritmética dos contadores, porque o stub de `tests/api.ts` é sem
-   estado. Ver [`arquitetura.md`](arquitetura.md).
-4. **`tests/api.ts`** com `batch()` e `meta.changes`, cobrindo os códigos novos.
-
-5. **Modelo antigo removido** — `coleta`, `entrega`, `item`, `nome_item` e
-   `categoria_item` saíram do schema, dos endpoints e dos casos de teste. A
-   migration `20261001222515_remarkable_wendell_rand` derruba as cinco e o
-   histórico de migrations foi preservado, para servir de caminho ao banco remoto.
-6. **Seed reescrito** — `generate.ts` deriva `on_hand` e `reserved_quantity`
-   das movimentações, numa simulação em memória, e valida as duas invariantes
-   antes de devolver; `mock_data/catalogo.json` ganhou a `unit` dos 130 itens.
-7. **Esquema Zod compartilhado** — criado `inventoryItemTableViewSchema` em
-   `src/worker/db/schema.ts` que substitui `categoryId` por `categoryName` e é
-   usado tanto no backend (para validação de resposta) quanto no frontend
-   (para validação de dados recebidos), garantindo consistência entre camadas.
-8. **Migrado para Hono Groups** — as rotas de `inventory-items` foram movidas
-   para `src/worker/routes/inventory-items.ts` usando instâncias explícitas de
-   `Hono()` em vez do padrão `registerResource`, permitindo maior flexibilidade
-   para personalizar queries (como o join com `itemCategory` para obter
-   `categoryName`) e seguindo as melhores práticas do Hono para agrupamento de
-   rotas.
-9. **Corrigidos imports de utilitários de tabela** — movidos os componentes de
-   tabela (`table-features.ts`, `table-pagination.tsx`, `table-sortable-header.tsx`,
-   `table-toolbar.tsx`, `table-view-state.ts`) de `src/react-app/components/tables/`
-   para `src/react-app/components/tables/utils/` e atualizados todos os imports
-   correspondentes em componentes de tabela e formulários para refletir a nova
-   estrutura, eliminando erros de "Cannot find module".
-10. **Estender padrão categoryName para outras tabelas** — aplicar o mesmo processo
-    usado para inventory-items (substituir IDs estrangeiros por nomes legíveis) às
-    tabelas `/donations` e `/deliveries`:
-    - Criar schemas de visualização compartilhados (ex: donationTableViewSchema,
-      deliveryTableViewSchema) em `src/worker/db/schema.ts`
-    - Substituir `donorId` por `donorName`, `beneficiaryId` por `beneficiaryName`,
-      `inventoryItemId` por `inventoryItemName` onde apropriado
-    - Atualizar rotas explícitas para usar esses schemas e fazer os joins necessários
-    - Atualizar tipos e queries do frontend para usar os novos schemas de visualização
+1. **O modelo de estoque como ledger** — `ledger` é a fonte da verdade, e o
+   saldo em `inventory_item` é cache reconstruível. As duas invariantes
+   (cache bate com o ledger; o estoque nunca overcommitou) estão em
+   [`frozen/modelos-db.md`](frozen/modelos-db.md#as-duas-invariantes).
+2. **A guarda num trigger do D1** — `ledger_guard` aborta a escrita com
+   `RAISE(ABORT, 'INSUFFICIENT_STOCK')`, que o D1 devolve como
+   `SQLITE_CONSTRAINT_TRIGGER` com a mensagem intacta, e o lote inteiro reverte.
+3. **A reconciliação diária** — cron no Worker, duas consultas, e **avisa sem
+   bloquear** quando acha divergência. O reparo é reconstruir o cache a partir
+   do ledger.
+4. **O modelo antigo removido** — `coleta`, `entrega`, `item`, `nome_item` e
+   `categoria_item` saíram do schema, dos endpoints e dos casos de teste, pela
+   migration `20261001222515_remarkable_wendell_rand`; `assistido` e `doador`
+   viraram `beneficiary` e `donor`, pela `20261006192118_mushy_karen_page`.
+5. **Seed reescrito** — `scripts/generate.ts` deriva o saldo das movimentações,
+   numa simulação em memória, e valida as invariantes antes de devolver;
+   `mock_data/catalogo.json` ganhou a `unit` dos 130 itens.
+6. **Contrato OpenAPI** — `@hono/zod-openapi` nas rotas, `openapi.json` gerado
+   pelo servidor, `schema.d.ts` pelo `openapi-typescript`, e o frontend falando
+   com o `openapi-react-query`. O tipo da resposta vem do contrato, não de
+   arquivo escrito à mão.
+7. **Hono Groups** — as rotas de estoque e de contatos estão em
+   `src/worker/routes/{contacts,inventory}/`, uma por recurso, explícitas.
+8. **Utilitários de tabela movidos** — `table-features.ts`,
+   `table-pagination.tsx`, `table-sortable-header.tsx`, `table-toolbar.tsx` e
+   `table-view-state.ts` foram para `src/react-app/components/tables/utils/`.
+9. **Telas** — `beneficiaries`, `donors`, `inventory/item`,
+   `inventory/category`, `inventory/donations` e `inventory/delivery` existem,
+   em `components/tables/{contacts,inventory}/`.
 
 ### O que falta
 
-1. **O rename de `assistido` e `doador`** para `beneficiary` e `donor`, depois
-   que a branch da tela de doador entrar. É o único que falta para o desenho do
-   `future/README.md` fechar.
-2. **Telas do estoque** — `inventory-item`, `item-category`, `donation` e
-   `delivery`. As receitas estão em [`frontend-tabela.md`](frontend-tabela.md) e
-   [`frontend-formulario.md`](frontend-formulario.md), mas as transições de
-   estoque não são CRUD: `receive`, `complete` e `cancel` são botões de ação com
-   a `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
-
-9. ⏳ **`db-seed` e o caminho do `getPlatformProxy()`** — `wrangler d1 migrations
+1. **A implementação do ledger** — a migration que troca as tabelas de linha
+   pelo `ledger`, o trigger, a reconciliação, as rotas novas (`/stock`,
+   `/ledger`, `/donations/:id/void`) e a reescrita das duas suítes de teste. O
+   plano está em [`estado-atual.md`](estado-atual.md).
+2. **A tela do saldo e a do histórico** — `GET /api/v1/stock` (item, em estoque,
+   reservado, disponível) e `GET /api/v1/ledger`, que é a **primeira tela com
+   paginação no servidor** do app.
+3. **A tabela de itens no formulário de entrega e no de doação** — o que faz a
+   entrega reservar estoque. É o item 4 e o 5 do [`TODO.md`](../TODO.md), ainda
+   abertos.
+4. **Os botões de ação** — concluir entrega, cancelar entrega e estornar
+   doação. As transições de estoque não são CRUD: são verbos com a
+   `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
+5. ⏳ **O `npm test` de volta ao gate do build** — hoje `package.json` tem
+   `lint && tsc -b && vite build`, e o teste não roda no build.
+6. ⏳ **`db-seed` e o caminho do `getPlatformProxy()`** — `wrangler d1 migrations
    apply --local` e o `getPlatformProxy()` do seed não compartilharam o estado
    numa execução limpa: com o diretório de estado apagado, `apply` não criou as
    tabelas e o seed morreu com `no such table`. O contorno foi rodar a migration

@@ -3,42 +3,53 @@
 Índice de `docs/`. Confira o estado antes de confiar num documento como
 descrição do código.
 
-| Documento | Estado | Do que trata |
+| Documento | Estado | O que trata |
 |---|---|---|
-| [`frontend-tabela.md`](frontend-tabela.md) | **ativo** | Como criar a lista de um recurso, espelhando `components/tables/assistidos.tsx` |
+| [`frontend-tabela.md`](frontend-tabela.md) | **ativo** | Como criar a lista de um recurso, espelhando `components/tables/contacts/beneficiaries.tsx` |
 | [`frontend-formulario.md`](frontend-formulario.md) | **ativo** | Como criar o formulário de um recurso, nos três modos |
-| [`validacao-doadores.md`](validacao-doadores.md) | **ativo** | Escopo e verificação local das telas de doador (#60 e #62) |
-| [`arquitetura.md`](arquitetura.md) | **ativo** | Stack, o gate de build e o fluxo de branch |
+| [`arquitetura.md`](arquitetura.md) | **ativo** | Stack, o gate de build, o fluxo de branch e as decisões de modelo |
 | [`backlog-pi2.md`](backlog-pi2.md) | **ativo** | O que falta, só deste trimestre |
+| [`estado-atual.md`](estado-atual.md) | **ativo** | A branch `mess/but-in-a-good-way`: o que mudou, o que está quebrado e as pendências |
+| [`validacao-doadores.md`](validacao-doadores.md) | **ativo** | Registro da verificação local das telas de doador (#60 e #62) |
 | [`frozen/`](frozen/README.md) | **congelado** | Contrato da API e modelo do banco. Leitura obrigatória, **não mexa** |
-| [`future/`](future/README.md) | **previsto** | Isolamento por organização, ViaCEP, papéis, acessibilidade. Também guarda o desenho do modelo de estoque, que já foi implementado e é leitura histórica |
+| [`future/`](future/README.md) | **previsto** | ViaCEP, papéis, acessibilidade. Também guarda o desenho do modelo de estoque **anterior**, substituído pelo ledger — é leitura histórica |
 | [`archive/`](archive/README.md) | **histórico** | O que já aconteceu. Não use como referência do estado atual |
 
 ## Estado, em uma linha
 
 - **ativo** — descreve o que está em andamento agora; atualize ao mudar.
-- **congelado** — funciona e não deve ser tocado nesta rodada; leia, não edite.
+- **congelado** — é o **contrato** em que o código opera. Não se arrasta com o
+  código: muda por decisão explícita, e a decisão fica registrada em
+  [`arquitetura.md`](arquitetura.md).
 - **previsto** — não existe ainda e vai ser feito; não implemente agora.
 - **histórico** — já aconteceu; não atualize e não use como referência.
+
+> ⚠️ **O contrato de estoque está em transição.** O modelo de contadores virou
+> **ledger** em 19/10/2026, e [`frozen/api.md`](frozen/api.md) e
+> [`frozen/modelos-db.md`](frozen/modelos-db.md) já descrevem o contrato novo,
+> que está **em implementação** na branch `mess/but-in-a-good-way`. O desenho
+> anterior está em [`future/README.md`](future/README.md), como histórico.
 
 ## Se você está aqui para criar uma tela
 
 1. [`frontend-tabela.md`](frontend-tabela.md) e
    [`frontend-formulario.md`](frontend-formulario.md). Os dois apontam para o
-   código a espelhar; `assistido` é a referência.
+   código a espelhar; `contacts/beneficiaries` é a referência de um contato e
+   `inventory/item` a de um catálogo.
 2. [`../AGENTS.md`](../AGENTS.md) para o estilo e as armadilhas.
 3. O backend está **congelado**: `frozen/` é leitura.
 
 Três coisas que esses documentos não deixam óbvias:
 
 1. **O esquema é a fonte da verdade, e é conferido.** As colunas e os tipos saem
-   de `src/worker/db/schema.ts`, e o gerador do seed valida cada linha que
-   produz contra o `*SelectSchema`. Nenhuma tela inventa campo.
-2. **As tabelas de domínio não têm `organization_id`.** O plugin `organization()`
-   do Better Auth está ativo e as tabelas de organização existem, mas o filtro
-   por organização não foi implementado. Não introduza um valor fixo para
-   "simular" o filtro — isso viola a regra 1 de
-   [`frozen/seguranca.md`](frozen/seguranca.md). Ver
-   [`future/README.md`](future/README.md).
+   de `src/schemas/db/`, e o gerador do seed valida cada linha que
+   produz contra o `*SelectSchema` de `src/schemas/zod/`. Nenhuma tela inventa
+   campo.
+2. **A instituição é a instância.** Não existe `organization_id` em nenhuma
+   tabela de domínio, e não vai existir: uma instância serve uma instituição, e
+   outra instituição é outro deployment. O plugin `organization()` do Better Auth
+   está ativo e as tabelas de organização existem, mas **não são usadas pelo
+   domínio** — e essa é a isca mais fácil do repo. Ver
+   [`frozen/seguranca.md`](frozen/seguranca.md).
 3. **A preview URL usa as bindings de produção.** Testar por ela escreve no
    `prod-sistema-doacoes-2`. Ver [`arquitetura.md`](arquitetura.md).

@@ -1,52 +1,79 @@
-# Segurança e multi-tenancy
+# Segurança
 
-> ⚠️ **Este documento é uma especificação de requisito, não uma descrição do
-> sistema atual.** Das seis regras abaixo, **só a autenticação e a de segredos
-> estão implementadas**. Não existe isolamento entre instituições: as tabelas de
-> domínio perderam a coluna `organization_id`, e nenhuma query filtra por
-> organização. O estado real está em
-> [`api.md` §Não está pronto para produção](api.md#%EF%B8%8F-n%C3%A3o-est%C3%A1-pronto-para-produ%C3%A7%C3%A3o)
-> e o trabalho restante é a
-> [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13).
+> **A instituição é a instância.** Decidido em 19/10/2026: uma instância do
+> sistema serve **uma** instituição, e outra instituição é outra instância, com
+> o seu próprio banco. Não existe `organization_id` em nenhuma tabela de
+> domínio, e nenhuma query filtra por organização.
+>
+> Isso **substitui** o modelo multi-tenant que este documento descrevia. As
+> três regras de isolamento por tenant caem por construção — não há o que
+> filtrar. O que resta é autenticação, autorização, segredos e LGPD.
 
-Resumo das decisões de segurança para o sistema novo. Como o sistema armazena dados
-socioeconômicos de famílias assistidas (dados sensíveis, LGPD), o isolamento entre
-instituições é requisito de segurança, não detalhe técnico.
+Resumo das decisões de segurança do sistema. Como o sistema armazena dados
+socioeconômicos de famílias assistidas (dados sensíveis, LGPD), o controle de
+acesso é requisito de segurança, não detalhe técnico.
 
-## Modelo escolhido: instância única multi-tenant
+## Modelo escolhido: instância única por instituição
 
-Uma única aplicação (um Worker, um banco D1) atende todas as instituições. Cada
-instituição é uma **Organization** do Better Auth, e todo dado operacional deveria
-carregar `organization_id` — **essa coluna ainda não existe** (ver aviso acima). A
-alternativa (uma instância por instituição) foi descartada por multiplicar a
-complexidade operacional (N bancos, N deploys, N segredos).
+Uma aplicação (um Worker, um banco D1) atende **uma** instituição. Uma segunda
+instituição é um segundo deployment, com o seu próprio D1, o seu próprio domínio
+e os seus próprios segredos.
+
+O modelo anterior — uma aplicação multi-tenant, com cada instituição como uma
+`organization` do Better Auth — foi **descartado**: exigiria `organization_id`
+em toda tabela de domínio, filtro por organização em toda query, e conferência
+de organização em todo acesso por ID. Uma instância por instituição troca
+código por operação, e a operação é o que se resolve com um deploy.
+
+### Consequência operacional
+
+O plano Free do D1 permite **10 bancos por conta**. Uma instância por
+instituição significa um banco por instituição, então:
+
+- cada instituição traz a sua própria conta Cloudflare, **ou**
+- o sistema roda no plano pago, que permite 50.000 bancos por conta.
+
+A escolha é de operação, não de código, e vale decidir antes do primeiro
+deployment para outra instituição.
+
+### A tabela `organization` do Better Auth
+
+O plugin `organization()` continua ativo e as tabelas de organização existem,
+mas **não são usadas pelo domínio**: a organização do Better Auth deixou de
+ser a instituição. Nenhuma tabela de referência, e nenhuma query, depende
+delas.
 
 ## Regras obrigatórias
 
-1. **Nunca confiar em parâmetro do cliente** para identificar a instituição.
-   `GET /api/doacoes?institutionId=123` é inseguro — o servidor deve derivar a
-   organização da sessão autenticada.
-2. **Toda query filtra por `organization_id`** — sem exceção.
-3. **Todo acesso a registro por ID verifica a organização** — buscar
-   `assistido` só por `id` permite IDOR (um usuário da instituição A lendo dados
-   da B trocando o número na URL). Sempre:
-   `WHERE id = :id AND organization_id = :orgDaSessao`
-4. **Permissões no backend, não no frontend** — esconder botão não é segurança.
-   Papéis sugeridos: `owner`, `admin`, `staff`, `viewer`.
-5. **Convites são de uso único, com expiração e vinculados a uma organização** —
-   o token do convite define a organização; o cliente não pode escolher.
-6. **Segredos nunca no repositório** — `BETTER_AUTH_SECRET` e afins vão via
+1. **Toda rota de domínio exige sessão.** O `requireSession` vale para
+   `/api/v1/*` e não para `/api/auth/*`, que precisa ficar público para login
+   e cadastro.
+2. **Permissões no backend, não no frontend** — esconder botão não é
+   segurança. Papéis sugeridos: `owner`, `admin`, `staff`, `viewer`.
+3. **Convites são de uso único, com expiração** — o token do convite define a
+   organização; o cliente não pode escolher.
+4. **Segredos nunca no repositório** — `BETTER_AUTH_SECRET` e afins vão via
    `wrangler secret put`, nunca commitados. (No PI I, o `config.py` do Flask
    vazou SECRET_KEY e salt no GitHub — não repetir.)
+5. **A trilha de auditoria é append-only.** O ledger de estoque não é editado
+   nem apagado: correção é movimento novo. O mesmo vale para o histórico de
+   documentos, que só é alterado por estorno.
+6. **A reconciliação é a segunda camada de segurança do estoque.** O saldo é
+   cache e o ledger é a verdade; a reconciliação diária confere os dois, e a
+   segunda invariante prova que o estoque nunca overcommitou. Uma divergência
+   **avisa e não bloqueia** — a instituição não para de entregar por causa de
+   bookkeeping — e o reparo é reconstruir o cache a partir do ledger.
 
 ## Checklist antes de considerar uma rota "pronta"
 
-- [ ] Exige autenticação
-- [ ] Valida que o usuário pertence à organização ativa
-- [ ] Filtra os dados por `organization_id`
-- [ ] Acesso por ID confere a organização do registro
+- [x] Exige autenticação
 - [ ] Permissão do papel do usuário verificada no backend
-- [ ] Teste automatizado cobrindo acesso indevido (401/403 e cross-tenant)
+- [ ] Teste automatizado cobrindo acesso indevido (401/403)
+- [ ] A rota não aceita campo que o cliente não devolve (o `id` é do servidor)
+
+O que saiu do checklist era a conferência de organização — registro por ID,
+filtro por `organization_id`, e o teste cross-tenant. Com uma instituição por
+instância, **esses testes não têm o que verificar**.
 
 ## LGPD no desenvolvimento
 

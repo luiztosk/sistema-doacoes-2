@@ -8,7 +8,13 @@ O que **não existe ainda** e está previsto. Não é tarefa deste trimestre.
 
 ## Redesenho de estoque
 
-**Estado: implementado em 01/10/2026.** As tabelas, as sete operações, o seed e
+> **Superado em 19/10/2026.** O desenho abaixo **foi implementado** em 01/10/2026
+> — e **substituído** pelo modelo de **ledger**, decidido em 19/10/2026. O
+> contrato que vale é o de
+> [`../frozen/modelos-db.md`](../frozen/modelos-db.md). O texto abaixo fica
+> como registro do desenho anterior, e é leitura histórica.
+
+**Estado: implementado em 01/10/2026, e depois substituído.** As tabelas, as sete operações, o seed e
 a verificação existem; o desenho abaixo é o que foi implementado, e o que
 sobrou é o rename de `assistido` e `doador` e as telas. `coleta`, `entrega`,
 `item`, `nome_item` e `categoria_item` saíram do banco pela migration

@@ -8,10 +8,14 @@ Registro das decisões técnicas do PI II. Última atualização: 28/09/2026.
 |---|---|---|
 | Frontend | React 19 + TypeScript + Vite | SPA que consome a API; HMR rápido no desenvolvimento |
 | Backend / API | Hono | Leve, feito para edge, integrado ao Cloudflare Workers; sintaxe parecida com Express |
+| Contrato da API | `@hono/zod-openapi` + `openapi-typescript` | O `openapi.json` é gerado do zod e vira o tipo do cliente; um contrato só |
+| Cliente da API | `openapi-fetch` + `openapi-react-query` | O tipo da resposta vem do `openapi.json`; não há tipo duplicado à mão |
 | Hospedagem | Cloudflare Workers | Deploy global, escala automática, sem servidor para gerenciar |
 | Banco de dados | Cloudflare D1 (SQLite no edge) | Nativo do Workers, gerenciado via Drizzle ORM |
 | ORM | Drizzle ORM + drizzle-kit | Type-safe, gera migrations SQL |
-| Autenticação | Better Auth (plugin Organization) | Substitui o Flask-Security; cuida de sessão, CSRF e convites |
+| Formulários | TanStack Form | Estado do formulário é o payload; valida com o mesmo schema da API |
+| Tabelas | TanStack Table v9 | Ordenação, filtro e paginação; `aria-sort` é nosso |
+| Autenticação | Better Auth | Cuida de sessão, CSRF e senhas |
 | Testes | `tsx tests/api.ts` (automatizados) + Insomnia (exploração manual da API) | Testes automatizados são requisito do tema do PI II |
 | Controle de versão | Git + GitHub | Branch `main` protegida; trabalho via feature branches + PR |
 
@@ -41,13 +45,17 @@ Previews (isolamento por branch) ou criar um `env` de staging no `wrangler.jsonc
 O Cloudflare executa o script `build` do `package.json`, que hoje é:
 
 ```
-npm run lint && npm test && tsc -b && vite build
+npm run lint && tsc -b && vite build
 ```
 
-O `&&` faz o build parar no primeiro erro: um problema de lint ou um teste
-quebrado **impedem o deploy**. Esse build também reporta um status check no
-GitHub, e a `main` exige que ele passe — ou seja, um merge com lint quebrado ou
-teste vermelho não entra.
+O `&&` faz o build parar no primeiro erro: um problema de lint **impede o
+deploy**. Esse build também reporta um status check no GitHub, e a `main`
+exige que ele passe — ou seja, um merge com lint quebrado não entra.
+
+> ⚠️ **O `npm test` saiu do gate.** A cadeia já teve `npm test` no meio, e
+> documentos ainda diziam que um teste vermelho bloqueava o deploy. Não bloqueia
+> mais, porque o teste não roda no build. **Ele volta ao gate** como parte do
+> plano do ledger — ver [`estado-atual.md`](estado-atual.md).
 
 Como esse gate é automático, ele também bloqueia o merge por motivos que não são
 código: cota de build esgotada, token de API inválido ou timeout de 20 min. Se
@@ -100,6 +108,12 @@ on_hand >= reserved_quantity >= 0
 reserved_quantity == SUM(delivery_line) JOIN delivery WHERE status = 'OPEN'
 ```
 
+> ⚠️ Esse trecho descreve o **modelo de contadores**, que foi substituído pelo
+> ledger. As invariantes do modelo novo são as duas consultas de
+> [`frozen/modelos-db.md`](frozen/modelos-db.md#as-duas-invariantes): o cache
+> bater com o ledger, e o estoque nunca ter overcommitado em nenhum momento da
+> história. A suíte `tests/inventory.ts` é reescrita junto.
+
 Ela **não entra no gate de build**, porque precisa de um banco local com as
 migrations aplicadas: quem roda é a pessoa, com `npm run local-db-init` antes.
 Isso é o mesmo arranjo que a verificação por Insomnia, e a razão é a mesma — o
@@ -119,14 +133,203 @@ fim, de forma que uma execução interrompida não envenena a seguinte.
 ## Dados de demonstração
 
 Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas zod da
-própria aplicação: `src/worker/db/generate.ts` gera e valida cada linha contra o
-`*SelectSchema` antes de devolvê-la, e `src/worker/db/seed.ts` insere. O gerador é
+própria aplicação: `scripts/generate.ts` gera e valida cada linha contra o
+`*SelectSchema` antes de devolvê-la, e `scripts/seed.ts` insere. O gerador é
 determinístico (`seed(42)`), então o mesmo `npm run db-seed` produz sempre as
-mesmas 888 linhas.
+mesmas linhas.
 
 O que o gerador não faz: referência cruzada e ordem de evento. `faker` não tem
-modo relacional, então `criarColetas(doadores)` recebe as linhas já criadas e a
-ordem entre as tabelas é escrita à mão.
+modo relacional, então `createDonations` recebe as linhas já criadas e a ordem
+entre as tabelas é escrita à mão.
 
 Para virar o gerador em dado novo, mexa só em `ROWS_PER_TABLE` e na função
-`criar*` da tabela.
+`create*` da tabela.
+
+## O contrato da API vem primeiro
+
+> Decidido em 19/10/2026. O contrato da API é escrito em **zod, à mão**, em
+> `src/schemas/api/` — e é a fonte da verdade. O banco é a implementação.
+> O `openapi.json` é o formato publicado, e é **gerado** do zod.
+
+### O que era
+
+O zod do contrato era **gerado da tabela** (`createSelectSchema(table)`, do
+`drizzle-orm/zod`). O contrato da API era, por consequência, **um despejo do
+banco**, e três coisas quebraram:
+
+1. **A lista carregava a linha inteira.** `GET /api/v1/beneficiaries` devolvia
+   as 26 colunas — incluindo `cep`, `logradouro`, `numero`, `complemento`,
+   `bairro`, `cidade`, `uf` e `observacoes` — para **cada** linha. O frontend
+   compensava com um `Pick` no cliente, mas **o servidor mandava o endereço**.
+2. **Um rename de coluna quebrou a API.** `assistido` → `beneficiary` renomeou
+   `nome` → `name`: uma decisão de banco virou uma quebra de API.
+3. **A API do ledger não tem tabela.** `GET /stock` é um agregado; o corpo do
+   `POST /donations` tem uma lista de itens que não é tabela nenhuma; e
+   `onHand`/`reserved` são cache, enquanto `available` é gerada. **Nenhum
+   schema derivado de uma tabela expressa qualquer um desses.**
+
+### O que é
+
+```
+src/schemas/api/       zod, escrito à mão. O que a API promete.
+  ├─ <recurso>Schema          a resposta do detalhe
+  ├─ <recurso>ListSchema      a linha da LISTA (estreita)
+  ├─ <recurso>CreateSchema    o corpo do POST
+  ├─ <recurso>UpdateSchema    o corpo do PATCH
+  └─ <recurso>ListQuerySchema os query params
+src/schemas/db/        Drizzle. O que a tabela guarda.
+```
+
+**A regra, em uma linha: o schema do contrato é o que o endpoint devolve; o
+schema da tabela é o que a tabela guarda. São duas perguntas, e a resposta de
+uma não decide a outra.**
+
+Os enums moram no contrato (`src/schemas/api/enums.ts`) e o `src/schemas/db/`
+**importa** de lá: o vocabulário é do contrato, e a tabela segue.
+
+### O que isso permite
+
+- **A lista e o detalhe têm formatos diferentes.** `beneficiaryListSchema` tem
+  8 campos e `beneficiarySchema` tem 26 — e a validação da resposta
+  **reprova** a lista se ela vier com endereço.
+- **A API tem vida própria.** Renomear uma coluna não é mais uma quebra de
+  contrato.
+- **O contrato existe antes do backend.** `src/schemas/api/` é a documentação
+  da API, e ela é escrita antes das tabelas existirem.
+
+### O que custou
+
+- **Um mapeamento.** O schema do contrato e o da tabela não são o mesmo
+  objeto, então existe a tradução — no mesmo arquivo, para o leitor não ter que
+  caçar.
+- **O seed perdeu a validação de graça.** Ele validava cada linha contra o
+  `*SelectSchema`. Agora o seed **passa pela API**, que valida contra o
+  contrato — o que é melhor, e é o que foi decidido.
+- **Dois lugares com zod, por enquanto.** `src/schemas/api/` é o contrato; o
+  `drizzle-orm/zod` sai, e o `src/schemas/zod/` — que gera schema a partir da
+  tabela — é **deprecado** e sai junto com a migração das rotas.
+
+### O zod faz o quê, exatamente
+
+Duas coisas, e as duas importam:
+
+- **Validar o que entra.** O corpo do `POST` e do `PATCH`, e os query params.
+- **Validar o que sai.** A resposta. E aqui o `.strict()` importa: um schema
+  de resposta que **rejeita** campo a mais é o que pega a lista carregando
+  endereço. Sem `.strict()`, o zod *descarta* o campo e o bug passa.
+
+As mensagens dos campos são **em português**, para o formulário, e a API
+responde em inglês porque o `errorFromIssue` reconstrói a frase a partir do
+`issue.code` — **menos** no ramo `"custom"`, que é o que `.refine()` produz.
+Por isso **nenhum schema de contrato usa `.refine()`**: regra que atravessa
+dois campos vai no handler, com `apiError(...)` e frase em inglês.
+
+`occurredAt` viaja como **ISO 8601 com fuso** (`z.iso.datetime({ offset: true })`),
+e vira `Date` na rota. A alternativa, `z.coerce.date()`, aceitaria data sem
+fuso — que é ambígua.
+
+### O formato do contrato é OpenAPI 3.1
+
+O `openapi.json` é o formato publicado, e ele é **gerado** do zod — nunca
+escrito à mão. O zod v4 tem conversão nativa para JSON Schema, e
+`draft-2020-12` é o dialeto do OpenAPI 3.1.
+
+O `openapi.json` de hoje tem **zero** schemas nomeados: tudo inline. Com o
+registro no `openAPIRegistry`, o documento passa a ter `components.schemas` e
+as rotas passam a referenciar por `$ref`:
+
+```ts
+const Beneficiary = app.openAPIRegistry.register("Beneficiary", beneficiarySchema);
+```
+
+O `openapi.json` é gerado por `npm run update-openapi`, que **sobe o dev
+server e faz curl**. Com as rotas como módulos importáveis, um script pode
+chamar `app.getOpenAPI31Document(...)` direto — sem servidor, sem rede, sem
+porta — e o CI pode conferir que o arquivo commitado está em dia.
+
+## O modelo de estoque virou ledger
+
+> Decidido em 19/10/2026, em implementação na branch
+> `mess/but-in-a-good-way`. O contrato novo está em
+> [`frozen/modelos-db.md`](frozen/modelos-db.md) e
+> [`frozen/api.md`](frozen/api.md); o modelo anterior, em
+> [`future/README.md`](future/README.md), é leitura histórica.
+
+### O que era
+
+O estoque era **dois contadores** em `inventory_item` — `on_hand` e
+`reserved_quantity` — mais uma coluna gerada `available`, e tabelas de linha
+(`donation_line`, `delivery_line`) ligando documento e item. Toda operação
+mexia nos contadores, e o desenho tinha uma assimetria que ele mesmo
+documentava: a reserva de uma entrega era **compensação**, não transação.
+`db.batch()` é transação contra **erro**, não contra *statement que mudou zero
+linhas* — então reservar era "escreve, confere, compensa", e a compensação
+precisava **desfazer o contador**, não só apagar a linha. Uma falha no meio
+deixava o `reserved_quantity` maior do que a soma das reservas abertas, e
+**nada detectava isso**.
+
+### O que é
+
+O estoque é um **ledger de movimentos**. Cada linha é uma operação que mudou
+quantidades, e o saldo é a soma delas:
+
+```
+ledger(seq, id, item_id, kind, on_hand_delta, reserved_delta, ref_id, occurred_at)
+```
+
+O saldo em `inventory_item` vira **cache** — reconstruível, verificável, e
+rebuildável a qualquer momento.
+
+### Por que
+
+Três motivos, em ordem de peso:
+
+1. **O contador era frágil porque não tinha o que reconciliá-lo.** Com o
+   ledger, `SUM(deltas) == saldo` é uma consulta, e a reconciliação diária
+   roda. A segunda invariante é mais forte ainda: prova que o estoque **nunca**
+   overcommitou, em nenhum momento da história — coisa que um contador não
+   consegue dizer.
+2. **A guarda ficou no banco.** O `trigger ledger_guard` aborta a escrita com
+   `RAISE(ABORT, 'INSUFFICIENT_STOCK')`, que o D1 devolve como
+   `SQLITE_CONSTRAINT_TRIGGER` com a mensagem intacta, e o lote inteiro reverte.
+   A regra que impede overcommit não é código da aplicação, e não tem como
+   ser contornada por um caminho que esqueça de chamar a função.
+3. **A tabela encolheu.** O ledger grava ~1 linha por movimentação, contra N do
+   modelo por unidade. E o saldo se lê em O(itens), não em O(unidades).
+
+### O que custou
+
+- A camada de erro ganhou um ramo: sem traduzir `SQLITE_CONSTRAINT_TRIGGER`, a
+  guarda vira `500` e o cliente perde o motivo.
+- O `POST /donations/:id/receive` saiu, e `DELETE` em documento com
+  movimentações saiu: o caminho é estornar.
+- A tela do ledger é a **primeira com paginação no servidor** do app, porque é
+  a única tabela que cresce sem limite.
+- O conteúdo de um documento passou a ser **fixo na criação**. Editar é
+  estornar e recriar.
+
+### O que a medição no D1 mudou
+
+Os limites do plano Free, conferidos na documentação da Cloudflare (abr/2026):
+**5 milhões de linhas lidas por dia**, **100 mil linhas escritas por dia**,
+**500 MB por banco**, e **50 queries por invocação**. Rows read contam linhas
+**escaneadas**, não devolvidas, e cada coluna indexada escreve uma linha a
+mais. No Free os limites são **corte duro**: a instância para até 00:00 UTC.
+
+Duas medições de projeto mudaram o desenho:
+
+- **O modelo por unidade cabia no limite, e mesmo assim não foi escolhido.**
+  Com 5.000 unidades em estoque e 15 pessoas usando o sistema, a tela de
+  estoque sozinha consumiria 45% do orçamento diário de leitura — e o
+  orçamento é queimado pelo *padrão de leitura*, não pelo volume de dados.
+- **A entrega por unidade cabia num statement só.** Reservar N itens é um
+  `UPDATE` com o guard no mesmo `WHERE`, o que elimina o teto de "uns 45 itens
+  por entrega" que o modelo de contadores tinha.
+
+### A reconciliação
+
+Cron diário no Worker. Ela confere o cache contra o ledger, roda a invariante
+histórica, e **avisa sem bloquear** quando acha divergência — a instituição não
+para de entregar por causa de bookkeeping. O reparo é reconstruir o cache a
+partir do ledger, que é seguro porque o cache é derivado. Detalhes em
+[`frozen/api.md`](frozen/api.md#a-reconciliação-é-a-segunda-camada-de-segurança).

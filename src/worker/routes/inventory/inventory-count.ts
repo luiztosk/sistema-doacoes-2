@@ -1,264 +1,210 @@
-import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
-import { eq, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/d1';
-import { Context } from 'hono';
-import { inventoryCount, inventoryCountLine, inventoryAdjustment } from '../../../schemas/db/inventory';
-import { 
-  inventoryCountSelectSchema, 
-  inventoryCountUpdateSchema,
-  inventoryCountLineInsertSchema,
-  InventoryCountSelect 
-} from '../../../schemas/zod/inventory';
-import { z } from 'zod';
+import { createRoute } from "@hono/zod-openapi";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common";
+import {
+	inventoryCountCreateSchema,
+	inventoryCountListSchema,
+	inventoryCountSchema,
+} from "../../../schemas/api/inventory-count";
+import {
+	inventoryAdjustment,
+	inventoryCount,
+	ledger,
+} from "../../../schemas/db/inventory";
+import { app } from "../../app";
+import { apiError, notFoundError } from "../../api/errors";
+import { parseResponse } from "../../api/response";
+import { defineWorkerRoute } from "../../api/route";
+import {
+	ledgerBalances,
+	stockBatch,
+	toEntries,
+} from "../../api/stock";
 
-const inventoryCountLinePayloadSchema = inventoryCountLineInsertSchema.omit({ countId: true });
+const Count = app.openAPIRegistry.register("InventoryCount", inventoryCountSchema);
+const CountList = app.openAPIRegistry.register(
+	"InventoryCountList",
+	inventoryCountListSchema,
+);
 
-const inventoryCountWithLinesSchema = inventoryCountSelectSchema.extend({
-  lines: z.array(inventoryCountLinePayloadSchema).min(1, { error: 'A count needs at least one line.' }),
+const endpoint = "/api/v1/inventory-counts";
+
+const getCountsRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: endpoint,
+		responses: {
+			200: {
+				description: "Inventory count list",
+				content: { "application/json": { schema: dataListOf(CountList) } },
+			},
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const rows = await db.select().from(inventoryCount).all();
+
+		const data = rows.map((row) => ({
+			...row,
+			occurredAt: row.occurredAt.toISOString(),
+		}));
+
+		return c.json(
+			{ data: parseResponse(inventoryCountListSchema.array(), data) },
+			200,
+		);
+	},
 });
 
-const getInventoryCountsRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/inventory-counts',
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: inventoryCountSelectSchema.array(),
-          },
-        },
-      },
-    },
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const data = await db.select().from(inventoryCount).all() as InventoryCountSelect[];
-    return c.json(data, 200);
-  }
+const getCountRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: `${endpoint}/{id}`,
+		request: { params: idParamsSchema },
+		responses: {
+			200: {
+				description: "Inventory count",
+				content: { "application/json": { schema: dataOf(Count) } },
+			},
+			404: { description: "Inventory count not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
+
+		const [row] = await db
+			.select()
+			.from(inventoryCount)
+			.where(eq(inventoryCount.id, id))
+			.limit(1);
+
+		if (!row) throw notFoundError("Inventory count not found.");
+
+		const items = await db
+			.select({
+				itemId: ledger.itemId,
+				countedQuantity: ledger.countedQuantity,
+			})
+			.from(ledger)
+			.where(eq(ledger.refId, id));
+
+		return c.json(
+			{
+				data: parseResponse(inventoryCountSchema, {
+					...row,
+					occurredAt: row.occurredAt.toISOString(),
+					items,
+				}),
+			},
+			200,
+		);
+	},
 });
 
-const getInventoryCountRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/inventory-counts/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: inventoryCountWithLinesSchema,
-          },
-        },
-      },
-      404: {
-        description: 'Inventory count not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [count] = await db.select().from(inventoryCount).where(eq(inventoryCount.id, id)).limit(1);
-    
-    if (!count) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Inventory count not found.' } }, 404);
-    }
-    
-    const lines = await db
-      .select({
-        itemId: inventoryCountLine.itemId,
-        countedQuantity: inventoryCountLine.countedQuantity,
-      })
-      .from(inventoryCountLine)
-      .where(eq(inventoryCountLine.countId, id));
-    
-    return c.json({ ...count, lines }, 200);
-  }
-});
+const createCountRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "post",
+		path: endpoint,
+		request: {
+			body: {
+				content: {
+					"application/json": { schema: inventoryCountCreateSchema },
+				},
+			},
+		},
+		responses: {
+			201: {
+				description: "Inventory count created",
+				content: { "application/json": { schema: dataOf(Count) } },
+			},
+			400: { description: "Invalid input" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const payload = c.req.valid("json");
 
-const createInventoryCountRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'post',
-    path: '/api/v1/inventory-counts',
-    request: {
-      body: {
-        content: {
-          'application/json': {
-            schema: inventoryCountWithLinesSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      201: {
-        content: {
-          'application/json': {
-            schema: inventoryCountWithLinesSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      409: {
-        description: 'Counted quantity below reserved',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const payload = await c.req.json() as { lines: z.infer<typeof inventoryCountLinePayloadSchema>[]; occurredAt: string | Date; countedBy?: string | null; note?: string | null };
-    const { lines, ...countData } = payload;
-    const occurredAt = typeof countData.occurredAt === 'string' ? new Date(countData.occurredAt) : countData.occurredAt;
-    
-    // Check for duplicate items
-    const itemIds = lines.map((line) => line.itemId);
-    if (new Set(itemIds).size !== itemIds.length) {
-      return c.json({ error: { code: 'INVALID_VALUE', message: 'An item cannot appear twice in the same count.' } }, 400);
-    }
-    
-    // Get current stock
-    const stock = await db
-      .select({
-        id: item.id,
-        onHand: item.onHand,
-        reservedQuantity: item.reservedQuantity,
-      })
-      .from(item)
-      .where(inArray(item.id, itemIds));
-    
-    const stockMap = new Map(stock.map(row => [row.id, row]));
-    
-    for (const line of lines) {
-      const item = stockMap.get(line.itemId);
-      if (!item) {
-        return c.json({ error: { code: 'INVALID_REFERENCE', message: 'One of the references sent does not exist.' } }, 400);
-      }
-      if (line.countedQuantity < item.reservedQuantity) {
-        return c.json({ error: { code: 'INSUFFICIENT_STOCK', message: 'Counted quantity cannot be below reserved quantity.' } }, 409);
-      }
-    }
-    
-    const id = crypto.randomUUID();
-    
-    const countLineInserts = lines.map((line) =>
-      db
-        .insert(inventoryCountLine)
-        .values({
-          countId: id,
-          itemId: line.itemId,
-          countedQuantity: line.countedQuantity,
-        })
-    );
-    
-    const adjustmentInserts = lines.map((line) => {
-      const item = stockMap.get(line.itemId)!;
-      const delta = line.countedQuantity - item.onHand;
-      return db
-        .insert(inventoryAdjustment)
-        .values({
-          id: crypto.randomUUID(),
-          itemId: line.itemId,
-          delta,
-          reason: 'STOCKTAKE',
-          occurredAt,
-          countId: id,
-        });
-    });
-    
-    const onHandUpdates = lines.map((line) =>
-      db
-        .update(item)
-        .set({ onHand: line.countedQuantity })
-        .where(eq(item.id, line.itemId))
-    );
-    
-    await db.batch([
-      db
-        .insert(inventoryCount)
-        .values({
-          id,
-          ...countData,
-          occurredAt,
-        }),
-      ...countLineInserts,
-      ...adjustmentInserts,
-      ...onHandUpdates,
-    ]);
-    
-    const [data] = await db.select().from(inventoryCount).where(eq(inventoryCount.id, id)).limit(1);
-    const createdLines = await db
-      .select({
-        itemId: inventoryCountLine.itemId,
-        countedQuantity: inventoryCountLine.countedQuantity,
-      })
-      .from(inventoryCountLine)
-      .where(eq(inventoryCountLine.countId, id));
-    
-    c.header('Location', `${c.req.path}/${id}`);
-    return c.json({ ...data, lines: createdLines }, 201);
-  }
-});
+		const itemIds = payload.items.map((entry) => entry.itemId);
+		if (new Set(itemIds).size !== itemIds.length) {
+			throw apiError(
+				400,
+				"INVALID_VALUE",
+				"An item cannot appear twice in the same count.",
+			);
+		}
 
-const updateInventoryCountRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'patch',
-    path: '/api/v1/inventory-counts/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-      body: {
-        content: {
-          'application/json': {
-            schema: inventoryCountUpdateSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: inventoryCountSelectSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      404: {
-        description: 'Inventory count not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [existing] = await db.select().from(inventoryCount).where(eq(inventoryCount.id, id)).limit(1);
-    
-    if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Inventory count not found.' } }, 404);
-    }
-    
-    const payload = await c.req.json();
-    
-    const [data] = await db
-      .update(inventoryCount)
-      .set(payload)
-      .where(eq(inventoryCount.id, id))
-      .returning();
+		const balances = await ledgerBalances(db, itemIds);
 
-    return c.json(data, 200);
-  }
+		const id = crypto.randomUUID();
+		const occurredAt = new Date(payload.occurredAt);
+
+		const deltas = payload.items.map((entry) => {
+			const onHand = balances.get(entry.itemId)?.onHand ?? 0;
+			return { entry, delta: entry.countedQuantity - onHand };
+		});
+
+		const entries = toEntries(
+			deltas.map(({ entry, delta }) => ({
+				itemId: entry.itemId,
+				kind: "COUNT" as const,
+				onHandDelta: delta,
+				reservedDelta: 0,
+				countedQuantity: entry.countedQuantity,
+			})),
+			id,
+			occurredAt,
+		);
+
+		await db.batch(
+			stockBatch(
+				db,
+				entries,
+				[
+					db.insert(inventoryCount).values({
+						id,
+						occurredAt,
+						countedBy: payload.countedBy ?? null,
+						note: payload.note ?? null,
+					}),
+					db.insert(inventoryAdjustment).values(
+						deltas.map(({ entry, delta }) => ({
+							id: crypto.randomUUID(),
+							itemId: entry.itemId,
+							delta,
+							reason: "STOCKTAKE" as const,
+							occurredAt,
+							countId: id,
+						})),
+					),
+				],
+			),
+		);
+
+		const [row] = await db
+			.select()
+			.from(inventoryCount)
+			.where(eq(inventoryCount.id, id))
+			.limit(1);
+
+		c.header("Location", `${endpoint}/${id}`);
+
+		return c.json(
+			{
+				data: parseResponse(inventoryCountSchema, {
+					...row,
+					occurredAt: row.occurredAt.toISOString(),
+					items: payload.items,
+				}),
+			},
+			201,
+		);
+	},
 });
 
 export const inventoryCountRoutes = [
-  getInventoryCountsRoute,
-  getInventoryCountRoute,
-  createInventoryCountRoute,
-  updateInventoryCountRoute
-]
+	getCountsRoute,
+	getCountRoute,
+	createCountRoute,
+];

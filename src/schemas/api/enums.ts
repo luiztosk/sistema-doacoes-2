@@ -43,6 +43,16 @@ export const ADJUSTMENT_REASON = [
 	"CORRECTION",
 ] as const;
 
+/**
+ * `STOCKTAKE` e `CORRECTION` são gerados pela aplicação — a contagem e o
+ * estorno. O cliente manda só os três motivos que ele conhece.
+ */
+export const ADJUSTMENT_REASON_INPUT = [
+	"DONOR_RETURN",
+	"LOSS",
+	"DAMAGE",
+] as const;
+
 export const ufSchema = z.enum(UFS);
 export const tipoImovelSchema = z.enum(TIPOS_IMOVEL);
 export const estadoCivilSchema = z.enum(ESTADOS_CIVIS);
@@ -51,3 +61,4 @@ export const donationStatusSchema = z.enum(DONATION_STATUS);
 export const deliveryStatusSchema = z.enum(DELIVERY_STATUS);
 export const ledgerKindSchema = z.enum(LEDGER_KIND);
 export const adjustmentReasonSchema = z.enum(ADJUSTMENT_REASON);
+export const adjustmentReasonInputSchema = z.enum(ADJUSTMENT_REASON_INPUT);

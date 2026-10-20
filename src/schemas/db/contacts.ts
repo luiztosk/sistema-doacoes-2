@@ -4,36 +4,24 @@ import {
 	sqliteTable,
 	text,
 } from "drizzle-orm/sqlite-core";
-
-export const UFS = [
-	"AC", "AL", "AP", "AM", "BA",
-	"CE", "DF", "ES", "GO", "MA",
-	"MT", "MS", "MG", "PA", "PB",
-	"PR", "PE", "PI", "RJ", "RN",
-	"RS", "RO", "RR", "SC", "SP",
-	"SE", "TO",
-] as const;
-export const TIPOS_IMOVEL = ["ALUGADO", "PROPRIO"] as const;
-export const ESTADOS_CIVIS = [
-	"SOLTEIRO",
-	"CASADO",
-	"DIVORCIADO",
-	"VIUVO",
-	"UNIAO_ESTAVEL",
-] as const;
+import {
+	ESTADOS_CIVIS,
+	TIPOS_IMOVEL,
+	UFS,
+} from "../api/enums";
 
 const contact = {
 	id: text().primaryKey(),
 	name: text().notNull(),
-	phone: text(),
+	phone: text().notNull(),
 	email: text(),
 	cep: text(),
 	logradouro: text(),
 	numero: text(),
 	complemento: text(),
-	bairro: text(),
-	cidade: text(),
-	uf: text({ enum: UFS }),
+	bairro: text().notNull(),
+	cidade: text().notNull(),
+	uf: text({ enum: UFS }).notNull(),
 }
 
 export const beneficiary = sqliteTable("beneficiary", {

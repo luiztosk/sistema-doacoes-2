@@ -1,22 +1,27 @@
 import { getPlatformProxy } from "wrangler";
 import { drizzle } from "drizzle-orm/d1";
 import { D1Database } from "@cloudflare/workers-types";
+import { eq } from "drizzle-orm";
 import { gerarSeed } from "./generate";
-import {
-	beneficiary,
-	donor,
-} from "../src/schemas/db/contacts";
+import { beneficiary, donor } from "../src/schemas/db/contacts";
 import {
 	category,
 	item,
 	donation,
-	donationLine,
 	delivery,
-	deliveryLine,
 	inventoryCount,
-	inventoryCountLine,
 	inventoryAdjustment,
+	ledger,
 } from "../src/schemas/db/inventory";
+
+/**
+ * A guarda do estoque mora num trigger do D1, e o trigger lê o saldo do
+ * item. Por isso o seed escreve os movimentos **na mesma ordem que a API**:
+ * a entrada no ledger, e logo depois o saldo. O lote é transação contra
+ * erro — se um movimento estourar o estoque, o lote inteiro volta e o seed
+ * falha em vez de escrever um banco incoerente.
+ */
+const MOVIMENTOS_POR_LOTE = 25;
 
 async function seed() {
 	const dados = gerarSeed();
@@ -27,36 +32,6 @@ async function seed() {
 		return resto;
 	};
 
-	const tableNames = [
-		{ name: "beneficiary", tableName: beneficiary, rows: dados.beneficiary },
-		{ name: "doador", tableName: donor, rows: dados.donor },
-		{ name: "item_category", tableName: category, rows: dados.category },
-		{
-			name: "inventory_item",
-			tableName: item,
-			rows: dados.item.map(withoutGenerated),
-		},
-		{ name: "donation", tableName: donation, rows: dados.donation },
-		{ name: "donation_line", tableName: donationLine, rows: dados.donationLine },
-		{ name: "delivery", tableName: delivery, rows: dados.delivery },
-		{ name: "delivery_line", tableName: deliveryLine, rows: dados.deliveryLine },
-		{
-			name: "inventory_count",
-			tableName: inventoryCount,
-			rows: dados.inventoryCount,
-		},
-		{
-			name: "inventory_count_line",
-			tableName: inventoryCountLine,
-			rows: dados.inventoryCountLine,
-		},
-		{
-			name: "inventory_adjustment",
-			tableName: inventoryAdjustment,
-			rows: dados.inventoryAdjustment,
-		},
-	] as const;
-
 	const { env, dispose } = await getPlatformProxy();
 	const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
 
@@ -64,13 +39,90 @@ async function seed() {
 
 	let total = 0;
 	try {
-		for (const { name, tableName, rows } of tableNames) {
-			for (const row of rows) {
-				await db.insert(tableName).values(row);
-			}
-			total += rows.length;
-			console.log(`  ${name}: ${rows.length} rows`);
+		for (const row of dados.beneficiary) {
+			await db.insert(beneficiary).values(row);
 		}
+		total += dados.beneficiary.length;
+		console.log(`  beneficiary: ${dados.beneficiary.length} rows`);
+
+		for (const row of dados.donor) {
+			await db.insert(donor).values(row);
+		}
+		total += dados.donor.length;
+		console.log(`  doador: ${dados.donor.length} rows`);
+
+		for (const row of dados.itemCategory) {
+			await db.insert(category).values(row);
+		}
+		total += dados.itemCategory.length;
+		console.log(`  item_category: ${dados.itemCategory.length} rows`);
+
+		for (const row of dados.inventoryItem) {
+			await db.insert(item).values({
+				...withoutGenerated(row),
+				onHand: 0,
+				reserved: 0,
+			});
+		}
+		total += dados.inventoryItem.length;
+		console.log(`  inventory_item: ${dados.inventoryItem.length} rows`);
+
+		for (const row of dados.donation) {
+			await db.insert(donation).values(row);
+		}
+		total += dados.donation.length;
+		console.log(`  donation: ${dados.donation.length} rows`);
+
+		for (const row of dados.delivery) {
+			await db.insert(delivery).values(row);
+		}
+		total += dados.delivery.length;
+		console.log(`  delivery: ${dados.delivery.length} rows`);
+
+		for (const row of dados.inventoryCount) {
+			await db.insert(inventoryCount).values(row);
+		}
+		total += dados.inventoryCount.length;
+		console.log(`  inventory_count: ${dados.inventoryCount.length} rows`);
+
+		for (const row of dados.inventoryAdjustment) {
+			await db.insert(inventoryAdjustment).values(row);
+		}
+		total += dados.inventoryAdjustment.length;
+		console.log(`  inventory_adjustment: ${dados.inventoryAdjustment.length} rows`);
+
+		for (
+			let inicio = 0;
+			inicio < dados.ledger.length;
+			inicio += MOVIMENTOS_POR_LOTE
+		) {
+			const lote = dados.ledger.slice(inicio, inicio + MOVIMENTOS_POR_LOTE);
+
+			await db.batch(
+				lote.flatMap((movimento) => [
+					db.insert(ledger).values({
+						id: movimento.id,
+						itemId: movimento.itemId,
+						kind: movimento.kind,
+						onHandDelta: movimento.onHandDelta,
+						reservedDelta: movimento.reservedDelta,
+						countedQuantity: movimento.countedQuantity,
+						refId: movimento.refId,
+						occurredAt: movimento.occurredAt,
+					}),
+					db
+						.update(item)
+						.set({
+							onHand: movimento.onHandAfter,
+							reserved: movimento.reservedAfter,
+						})
+						.where(eq(item.id, movimento.itemId)),
+				]),
+			);
+		}
+
+		total += dados.ledger.length;
+		console.log(`  ledger: ${dados.ledger.length} rows`);
 	} finally {
 		await dispose();
 	}

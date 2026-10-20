@@ -2,23 +2,15 @@ import { sql } from "drizzle-orm";
 import {
 	index,
 	integer,
-	primaryKey,
 	sqliteTable,
 	text,
 	uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { ADJUSTMENT_REASON, LEDGER_KIND, UNITS } from "../api/enums";
 import { beneficiary, donor } from "./contacts";
 
-export const UNITS = ["KG", "L", "UNIT", "PACK", "BOX"] as const;
-export const STATUS_DONATION = ["DRAFT", "RECEIVED"] as const;
+export const STATUS_DONATION = ["RECEIVED", "VOID"] as const;
 export const STATUS_DELIVERY = ["OPEN", "COMPLETED", "CANCELLED"] as const;
-export const REASONS_ADJUSTMENT = [
-	"STOCKTAKE",
-	"DONOR_RETURN",
-	"LOSS",
-	"DAMAGE",
-	"CORRECTION",
-] as const;
 
 export const category = sqliteTable(
 	"item_category",
@@ -39,10 +31,9 @@ export const item = sqliteTable(
 			.references(() => category.id, { onDelete: "no action" }),
 		unit: text("unit", { enum: UNITS }).notNull(),
 		onHand: integer("on_hand").notNull().default(0),
-		reservedQuantity: integer("reserved_quantity").notNull().default(0),
+		reserved: integer("reserved").notNull().default(0),
 		available: integer("available").generatedAlwaysAs(
-			sql`"on_hand" - "reserved_quantity"`,
-			{ mode: "virtual" },
+			sql`"on_hand" - "reserved"`,
 		),
 	},
 	(t) => [
@@ -61,29 +52,12 @@ export const donation = sqliteTable(
 		occurredAt: integer("occurred_at", { mode: "timestamp" }).notNull(),
 		status: text("status", { enum: STATUS_DONATION })
 			.notNull()
-			.default("DRAFT"),
+			.default("RECEIVED"),
 		note: text("note"),
 	},
 	(t) => [
 		index("donation_donorId_idx").on(t.donorId),
 		index("donation_status_idx").on(t.status),
-	],
-);
-
-export const donationLine = sqliteTable(
-	"donation_line",
-	{
-		donationId: text("donation_id")
-			.notNull()
-			.references(() => donation.id, { onDelete: "no action" }),
-		inventoryItemId: text("inventory_item_id")
-			.notNull()
-			.references(() => item.id, { onDelete: "no action" }),
-		quantity: integer("quantity").notNull(),
-	},
-	(t) => [
-		primaryKey({ columns: [t.donationId, t.inventoryItemId] }),
-		index("donation_line_inventoryItemId_idx").on(t.inventoryItemId),
 	],
 );
 
@@ -104,20 +78,32 @@ export const delivery = sqliteTable(
 	],
 );
 
-export const deliveryLine = sqliteTable(
-	"delivery_line",
+/**
+ * O ledger é a fonte da verdade do estoque: cada linha é um movimento, e o
+ * saldo é a soma delas. `on_hand` e `reserved` em `inventory_item` são cache
+ * reconstruível. `ref_id` é uma referência polimórfica — o documento depende
+ * do `kind` — e por isso não é uma constraint: a integridade é conferida por
+ * consulta, que vira teste.
+ */
+export const ledger = sqliteTable(
+	"ledger",
 	{
-		deliveryId: text("delivery_id")
-			.notNull()
-			.references(() => delivery.id, { onDelete: "no action" }),
-		inventoryItemId: text("inventory_item_id")
+		seq: integer("seq").primaryKey({ autoIncrement: true }),
+		id: text("id").notNull().unique(),
+		itemId: text("item_id")
 			.notNull()
 			.references(() => item.id, { onDelete: "no action" }),
-		quantity: integer("quantity").notNull(),
+		kind: text("kind", { enum: LEDGER_KIND }).notNull(),
+		onHandDelta: integer("on_hand_delta").notNull().default(0),
+		reservedDelta: integer("reserved_delta").notNull().default(0),
+		countedQuantity: integer("counted_quantity"),
+		refId: text("ref_id").notNull(),
+		occurredAt: integer("occurred_at", { mode: "timestamp" }).notNull(),
 	},
 	(t) => [
-		primaryKey({ columns: [t.deliveryId, t.inventoryItemId] }),
-		index("delivery_line_inventoryItemId_idx").on(t.inventoryItemId),
+		uniqueIndex("ledger_kind_ref_item_uniq").on(t.kind, t.refId, t.itemId),
+		index("ledger_ref_idx").on(t.refId, t.kind, t.itemId),
+		index("ledger_item_idx").on(t.itemId, t.seq),
 	],
 );
 
@@ -128,39 +114,30 @@ export const inventoryCount = sqliteTable("inventory_count", {
 	note: text("note"),
 });
 
-export const inventoryCountLine = sqliteTable(
-	"inventory_count_line",
-	{
-		countId: text("count_id")
-			.notNull()
-			.references(() => inventoryCount.id, { onDelete: "no action" }),
-		inventoryItemId: text("inventory_item_id")
-			.notNull()
-			.references(() => item.id, { onDelete: "no action" }),
-		countedQuantity: integer("counted_quantity").notNull(),
-	},
-	(t) => [
-		primaryKey({ columns: [t.countId, t.inventoryItemId] }),
-		index("inventory_count_line_inventoryItemId_idx").on(t.inventoryItemId),
-	],
-);
-
 export const inventoryAdjustment = sqliteTable(
 	"inventory_adjustment",
 	{
 		id: text("id").primaryKey(),
-		inventoryItemId: text("inventory_item_id")
+		itemId: text("inventory_item_id")
 			.notNull()
 			.references(() => item.id, { onDelete: "no action" }),
 		delta: integer("delta").notNull(),
-		reason: text("reason", { enum: REASONS_ADJUSTMENT }).notNull(),
+		reason: text("reason", { enum: ADJUSTMENT_REASON }).notNull(),
 		occurredAt: integer("occurred_at", { mode: "timestamp" }).notNull(),
 		countId: text("count_id").references(() => inventoryCount.id, {
 			onDelete: "no action",
 		}),
 	},
 	(t) => [
-		index("inventory_adjustment_inventoryItemId_idx").on(t.inventoryItemId),
+		index("inventory_adjustment_itemId_idx").on(t.itemId),
 		index("inventory_adjustment_countId_idx").on(t.countId),
 	],
 );
+
+export const reconciliation = sqliteTable("reconciliation", {
+	id: text("id").primaryKey(),
+	runAt: integer("run_at", { mode: "timestamp" }).notNull(),
+	ok: integer("ok", { mode: "boolean" }).notNull(),
+	driftedItems: integer("drifted_items").notNull().default(0),
+	detail: text("detail"),
+});

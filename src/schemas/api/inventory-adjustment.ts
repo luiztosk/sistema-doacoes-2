@@ -1,26 +1,34 @@
 import { z } from "zod";
 import type { infer as ZodInfer } from "zod";
 import { idSchema, occurredAtSchema } from "./common";
-import { adjustmentReasonSchema } from "./enums";
+import { adjustmentReasonInputSchema, adjustmentReasonSchema } from "./enums";
 
 export const inventoryAdjustmentSchema = z
 	.object({
-	id: idSchema,
-	itemId: idSchema,
-	itemName: z.string(),
-	delta: z.number().int(),
-	reason: adjustmentReasonSchema,
-	occurredAt: occurredAtSchema,
+		id: idSchema,
+		itemId: idSchema,
+		itemName: z.string(),
+		delta: z.number().int(),
+		reason: adjustmentReasonSchema,
+		occurredAt: occurredAtSchema,
 	})
 	.strict();
 
-export const inventoryAdjustmentListSchema = z.array(inventoryAdjustmentSchema);
+export const inventoryAdjustmentListSchema = z
+	.object({
+		id: idSchema,
+		itemId: idSchema,
+		delta: z.number().int(),
+		reason: adjustmentReasonSchema,
+		occurredAt: occurredAtSchema,
+	})
+	.strict();
 
 export const inventoryAdjustmentCreateSchema = z
 	.object({
 		itemId: idSchema,
 		delta: z.number().int(),
-		reason: adjustmentReasonSchema,
+		reason: adjustmentReasonInputSchema,
 		occurredAt: occurredAtSchema,
 	})
 	.strict();

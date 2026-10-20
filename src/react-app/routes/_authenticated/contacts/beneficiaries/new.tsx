@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { BeneficiaryForm } from "@/react-app/components/forms/contacts/beneficiary";
 
-import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
+import { beneficiariesOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 
 function NovoBeneficiary() {
-	const categories = useQuery(beneficiaryTableOptions);
+	const categories = useQuery(beneficiariesOptions);
 	if (categories.isLoading) {
 		return <div>Loading...</div>;
 	}
@@ -18,7 +18,7 @@ function NovoBeneficiary() {
 
 export const Route = createFileRoute("/_authenticated/contacts/beneficiaries/new")({
 	loader: ({ context }) => {
-		context.queryClient.query(beneficiaryTableOptions);
+		context.queryClient.query(beneficiariesOptions);
 	},
 	component: NovoBeneficiary,
 });

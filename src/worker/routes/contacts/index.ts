@@ -1,2 +1,2 @@
-export { beneficiaryRoutes } from './beneficiary';
-export { donorRoutes } from './donor';
+export { beneficiaryRoutes } from "./beneficiary";
+export { donorRoutes } from "./donor";

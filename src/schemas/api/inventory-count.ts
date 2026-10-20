@@ -24,7 +24,12 @@ export const inventoryCountSchema = z
 	})
 	.strict();
 
-export const inventoryCountListSchema = z.array(inventoryCountSchema);
+export const inventoryCountListSchema = z
+	.object({
+	id: idSchema,
+	...inventoryCountFields,
+	})
+	.strict();
 
 export const inventoryCountCreateSchema = z
 	.object({

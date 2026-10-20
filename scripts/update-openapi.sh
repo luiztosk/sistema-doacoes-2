@@ -17,7 +17,7 @@ done
 curl -s http://localhost:5173/api/openapi.json > openapi.json
 
 # Generate types
-npx openapi-typescript ./openapi.json -o ./src/openapi/schema.d.ts
+npx openapi-typescript ./openapi.json -o ./src/schemas/openapi/schema.d.ts
 
 # Kill dev server
 kill $DEV_PID

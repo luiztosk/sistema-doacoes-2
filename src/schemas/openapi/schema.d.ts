@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/v1/inventory/items": {
+    "/api/v1/beneficiaries": {
         parameters: {
             query?: never;
             header?: never;
@@ -20,21 +20,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Beneficiary list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            categoryId: string;
-                            /** @enum {string} */
-                            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
-                            onHand: number;
-                            reservedQuantity: number;
-                            available: number | null;
-                        }[];
+                            data: components["schemas"]["BeneficiaryList"][];
+                        };
                     };
                 };
             };
@@ -51,27 +45,46 @@ export interface paths {
                 content: {
                     "application/json": {
                         name: string;
-                        categoryId: string;
+                        phone: string;
+                        /** Format: email */
+                        email?: string | null;
+                        cep?: string | null;
+                        logradouro?: string | null;
+                        numero?: string | null;
+                        complemento?: string | null;
+                        bairro: string;
+                        cidade: string;
                         /** @enum {string} */
-                        unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+                        /** @enum {string|null} */
+                        tipoImovel?: "ALUGADO" | "PROPRIO" | null;
+                        valorAluguel?: number | null;
+                        /** @enum {string|null} */
+                        estadoCivil?: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL" | null;
+                        numeroAdultos?: number | null;
+                        criancasPequenas?: number | null;
+                        adolescentes?: number | null;
+                        doentes?: boolean | null;
+                        bolsaFamilia?: boolean | null;
+                        aposentado?: boolean | null;
+                        pensao?: boolean | null;
+                        cestaBasica?: boolean | null;
+                        atividadeRemunerada?: boolean | null;
+                        renda?: number | null;
+                        criancaEscola?: boolean | null;
+                        observacoes?: string | null;
                     };
                 };
             };
             responses: {
+                /** @description Beneficiary created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            categoryId: string;
-                            /** @enum {string} */
-                            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
-                            onHand: number;
-                            reservedQuantity: number;
-                            available: number | null;
+                            data: components["schemas"]["Beneficiary"];
                         };
                     };
                 };
@@ -90,7 +103,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/inventory/items/{id}": {
+    "/api/v1/beneficiaries/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -108,24 +121,18 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Beneficiary */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            categoryId: string;
-                            /** @enum {string} */
-                            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
-                            onHand: number;
-                            reservedQuantity: number;
-                            available: number | null;
+                            data: components["schemas"]["Beneficiary"];
                         };
                     };
                 };
-                /** @description Inventory item not found */
+                /** @description Beneficiary not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -147,14 +154,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Inventory item deleted successfully */
+                /** @description Beneficiary deleted */
                 204: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                /** @description Inventory item not found */
+                /** @description Beneficiary not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -177,29 +184,47 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        id?: string;
-                        name: string;
-                        categoryId?: string;
+                        name?: string;
+                        phone?: string;
+                        /** Format: email */
+                        email?: string | null;
+                        cep?: string | null;
+                        logradouro?: string | null;
+                        numero?: string | null;
+                        complemento?: string | null;
+                        bairro?: string;
+                        cidade?: string;
                         /** @enum {string} */
-                        unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+                        uf?: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+                        /** @enum {string|null} */
+                        tipoImovel?: "ALUGADO" | "PROPRIO" | null;
+                        valorAluguel?: number | null;
+                        /** @enum {string|null} */
+                        estadoCivil?: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL" | null;
+                        numeroAdultos?: number | null;
+                        criancasPequenas?: number | null;
+                        adolescentes?: number | null;
+                        doentes?: boolean | null;
+                        bolsaFamilia?: boolean | null;
+                        aposentado?: boolean | null;
+                        pensao?: boolean | null;
+                        cestaBasica?: boolean | null;
+                        atividadeRemunerada?: boolean | null;
+                        renda?: number | null;
+                        criancaEscola?: boolean | null;
+                        observacoes?: string | null;
                     };
                 };
             };
             responses: {
+                /** @description Beneficiary updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            categoryId: string;
-                            /** @enum {string} */
-                            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
-                            onHand: number;
-                            reservedQuantity: number;
-                            available: number | null;
+                            data: components["schemas"]["Beneficiary"];
                         };
                     };
                 };
@@ -210,7 +235,215 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Inventory item not found */
+                /** @description Beneficiary not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/donors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Donor list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["DonorList"][];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        phone: string;
+                        /** Format: email */
+                        email?: string | null;
+                        cep?: string | null;
+                        logradouro?: string | null;
+                        numero?: string | null;
+                        complemento?: string | null;
+                        bairro: string;
+                        cidade: string;
+                        /** @enum {string} */
+                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+                    };
+                };
+            };
+            responses: {
+                /** @description Donor created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Donor"];
+                        };
+                    };
+                };
+                /** @description Invalid input */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/donors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Donor */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Donor"];
+                        };
+                    };
+                };
+                /** @description Donor not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Donor deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Donor not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        phone?: string;
+                        /** Format: email */
+                        email?: string | null;
+                        cep?: string | null;
+                        logradouro?: string | null;
+                        numero?: string | null;
+                        complemento?: string | null;
+                        bairro?: string;
+                        cidade?: string;
+                        /** @enum {string} */
+                        uf?: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+                    };
+                };
+            };
+            responses: {
+                /** @description Donor updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["Donor"];
+                        };
+                    };
+                };
+                /** @description Invalid input */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Donor not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -237,15 +470,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Item category list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                        }[];
+                            data: components["schemas"]["ItemCategory"][];
+                        };
                     };
                 };
             };
@@ -266,14 +499,14 @@ export interface paths {
                 };
             };
             responses: {
+                /** @description Item category created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
+                            data: components["schemas"]["ItemCategory"];
                         };
                     };
                 };
@@ -310,18 +543,18 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Item category */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
+                            data: components["schemas"]["ItemCategory"];
                         };
                     };
                 };
-                /** @description Category not found */
+                /** @description Item category not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -343,14 +576,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Category deleted successfully */
+                /** @description Item category deleted */
                 204: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                /** @description Category not found */
+                /** @description Item category not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -373,19 +606,19 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        name: string;
+                        name?: string;
                     };
                 };
             };
             responses: {
+                /** @description Item category updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
+                            data: components["schemas"]["ItemCategory"];
                         };
                     };
                 };
@@ -396,7 +629,201 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Category not found */
+                /** @description Item category not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/inventory/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventory item list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["InventoryItem"][];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        /** Format: uuid */
+                        categoryId: string;
+                        /** @enum {string} */
+                        unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+                    };
+                };
+            };
+            responses: {
+                /** @description Inventory item created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["InventoryItem"][];
+                        };
+                    };
+                };
+                /** @description Invalid input */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventory item */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["InventoryItem"][];
+                        };
+                    };
+                };
+                /** @description Inventory item not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventory item deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Inventory item not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        /** Format: uuid */
+                        categoryId?: string;
+                        /** @enum {string} */
+                        unit?: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+                    };
+                };
+            };
+            responses: {
+                /** @description Inventory item updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["InventoryItem"][];
+                        };
+                    };
+                };
+                /** @description Invalid input */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Inventory item not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -423,20 +850,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Donation list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            donorId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "DRAFT" | "RECEIVED";
-                            note: string | null;
-                        }[];
+                            data: components["schemas"]["DonationList"][];
+                        };
                     };
                 };
             };
@@ -452,38 +874,28 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        id: string;
+                        /** Format: uuid */
                         donorId: string;
                         /** Format: date-time */
-                        occurredAt: string | null;
-                        /** @enum {string} */
-                        status: "DRAFT" | "RECEIVED";
-                        note: string | null;
-                        lines: {
-                            inventoryItemId: string;
+                        occurredAt: string;
+                        note?: string | null;
+                        items: {
+                            /** Format: uuid */
+                            itemId: string;
                             quantity: number;
                         }[];
                     };
                 };
             };
             responses: {
+                /** @description Donation created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            donorId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "DRAFT" | "RECEIVED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Donation"];
                         };
                     };
                 };
@@ -520,23 +932,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Donation */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            donorId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "DRAFT" | "RECEIVED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Donation"];
                         };
                     };
                 };
@@ -551,33 +954,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Donation deleted successfully */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Donation not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
         patch: {
@@ -592,27 +969,23 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
+                        /** Format: uuid */
                         donorId?: string;
                         /** Format: date-time */
-                        occurredAt: string | null;
+                        occurredAt?: string;
                         note?: string | null;
                     };
                 };
             };
             responses: {
+                /** @description Donation updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            donorId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "DRAFT" | "RECEIVED";
-                            note: string | null;
+                            data: components["schemas"]["Donation"];
                         };
                     };
                 };
@@ -634,7 +1007,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/donations/{id}/receive": {
+    "/api/v1/donations/{id}/void": {
         parameters: {
             query?: never;
             header?: never;
@@ -654,23 +1027,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Donation voided */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            donorId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "DRAFT" | "RECEIVED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Donation"];
                         };
                     };
                 };
@@ -712,20 +1076,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Delivery list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
-                        }[];
+                            data: components["schemas"]["DeliveryList"][];
+                        };
                     };
                 };
             };
@@ -741,50 +1100,33 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        id: string;
+                        /** Format: uuid */
                         beneficiaryId: string;
                         /** Format: date-time */
-                        occurredAt: string | null;
-                        /** @enum {string} */
-                        status: "OPEN" | "COMPLETED" | "CANCELLED";
-                        note: string | null;
-                        lines: {
-                            inventoryItemId: string;
+                        occurredAt: string;
+                        note?: string | null;
+                        items: {
+                            /** Format: uuid */
+                            itemId: string;
                             quantity: number;
                         }[];
                     };
                 };
             };
             responses: {
+                /** @description Delivery created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Delivery"];
                         };
                     };
                 };
                 /** @description Invalid input */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Insufficient stock */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -816,23 +1158,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Delivery */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Delivery"];
                         };
                     };
                 };
@@ -847,33 +1180,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Delivery deleted successfully */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Delivery not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
         patch: {
@@ -888,27 +1195,23 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
+                        /** Format: uuid */
                         beneficiaryId?: string;
                         /** Format: date-time */
-                        occurredAt: string | null;
+                        occurredAt?: string;
                         note?: string | null;
                     };
                 };
             };
             responses: {
+                /** @description Delivery updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
+                            data: components["schemas"]["Delivery"];
                         };
                     };
                 };
@@ -950,23 +1253,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Delivery completed */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Delivery"];
                         };
                     };
                 };
@@ -979,13 +1273,6 @@ export interface paths {
                 };
                 /** @description Delivery not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Conflict - reserved stock no longer covers this operation */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1019,23 +1306,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Delivery cancelled */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            beneficiaryId: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            /** @enum {string} */
-                            status: "OPEN" | "COMPLETED" | "CANCELLED";
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                quantity: number;
-                            }[];
+                            data: components["schemas"]["Delivery"];
                         };
                     };
                 };
@@ -1048,13 +1326,6 @@ export interface paths {
                 };
                 /** @description Delivery not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Conflict - reserved stock no longer covers this operation */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1084,18 +1355,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Inventory count list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countedBy: string | null;
-                            note: string | null;
-                        }[];
+                            data: components["schemas"]["InventoryCountList"][];
+                        };
                     };
                 };
             };
@@ -1111,46 +1379,32 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        id: string;
                         /** Format: date-time */
-                        occurredAt: string | null;
-                        countedBy: string | null;
-                        note: string | null;
-                        lines: {
-                            inventoryItemId: string;
+                        occurredAt: string;
+                        countedBy?: string | null;
+                        note?: string | null;
+                        items: {
+                            /** Format: uuid */
+                            itemId: string;
                             countedQuantity: number;
                         }[];
                     };
                 };
             };
             responses: {
+                /** @description Inventory count created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countedBy: string | null;
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                countedQuantity: number;
-                            }[];
+                            data: components["schemas"]["InventoryCount"];
                         };
                     };
                 };
                 /** @description Invalid input */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Counted quantity below reserved */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1182,21 +1436,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Inventory count */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countedBy: string | null;
-                            note: string | null;
-                            lines: {
-                                inventoryItemId: string;
-                                countedQuantity: number;
-                            }[];
+                            data: components["schemas"]["InventoryCount"];
                         };
                     };
                 };
@@ -1214,56 +1461,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /** Format: date-time */
-                        occurredAt: string | null;
-                        countedBy?: string | null;
-                        note?: string | null;
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countedBy: string | null;
-                            note: string | null;
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Inventory count not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
     "/api/v1/inventory-adjustments": {
@@ -1282,21 +1480,15 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Inventory adjustment list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            inventoryItemId: string;
-                            delta: number;
-                            /** @enum {string} */
-                            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countId: string | null;
-                        }[];
+                            data: components["schemas"]["InventoryAdjustmentList"][];
+                        };
                     };
                 };
             };
@@ -1312,42 +1504,30 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        inventoryItemId: string;
+                        /** Format: uuid */
+                        itemId: string;
                         delta: number;
                         /** @enum {string} */
-                        reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
+                        reason: "DONOR_RETURN" | "LOSS" | "DAMAGE";
                         /** Format: date-time */
-                        occurredAt: string | null;
+                        occurredAt: string;
                     };
                 };
             };
             responses: {
+                /** @description Inventory adjustment created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            inventoryItemId: string;
-                            delta: number;
-                            /** @enum {string} */
-                            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countId: string | null;
+                            data: components["schemas"]["InventoryAdjustment"];
                         };
                     };
                 };
                 /** @description Invalid input */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Adjustment would leave stock below zero */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1379,20 +1559,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description Inventory adjustment */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            inventoryItemId: string;
-                            delta: number;
-                            /** @enum {string} */
-                            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countId: string | null;
+                            data: components["schemas"]["InventoryAdjustment"];
                         };
                     };
                 };
@@ -1407,251 +1581,13 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Inventory adjustment deleted successfully */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Inventory adjustment not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        inventoryItemId?: string;
-                        delta: number;
-                        /** @enum {string} */
-                        reason?: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
-                        /** Format: date-time */
-                        occurredAt: string | null;
-                        countId?: string | null;
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            inventoryItemId: string;
-                            delta: number;
-                            /** @enum {string} */
-                            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
-                            /** Format: date-time */
-                            occurredAt: string | null;
-                            countId: string | null;
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Inventory adjustment not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/v1/beneficiaries": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                            /** @enum {string} */
-                            tipoImovel: "ALUGADO" | "PROPRIO";
-                            valorAluguel?: number;
-                            /** @enum {string} */
-                            estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                            numeroAdultos?: number;
-                            criancasPequenas?: number;
-                            adolescentes?: number;
-                            doentes?: boolean;
-                            bolsaFamilia?: boolean;
-                            aposentado?: boolean;
-                            pensao?: boolean;
-                            cestaBasica?: boolean;
-                            atividadeRemunerada?: boolean;
-                            renda?: number;
-                            criancaEscola?: boolean;
-                            observacoes: string | null;
-                        }[];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        phone: string;
-                        /** Format: email */
-                        email?: string;
-                        cep?: string;
-                        logradouro?: string;
-                        numero?: string;
-                        complemento?: string;
-                        bairro: string;
-                        cidade: string;
-                        /** @enum {string} */
-                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                        /** @enum {string} */
-                        tipoImovel: "ALUGADO" | "PROPRIO";
-                        valorAluguel?: number;
-                        /** @enum {string} */
-                        estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                        numeroAdultos?: number;
-                        criancasPequenas?: number;
-                        adolescentes?: number;
-                        doentes?: boolean;
-                        bolsaFamilia?: boolean;
-                        aposentado?: boolean;
-                        pensao?: boolean;
-                        cestaBasica?: boolean;
-                        atividadeRemunerada?: boolean;
-                        renda?: number;
-                        criancaEscola?: boolean;
-                        observacoes?: string | null;
-                    };
-                };
-            };
-            responses: {
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                            /** @enum {string} */
-                            tipoImovel: "ALUGADO" | "PROPRIO";
-                            valorAluguel?: number;
-                            /** @enum {string} */
-                            estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                            numeroAdultos?: number;
-                            criancasPequenas?: number;
-                            adolescentes?: number;
-                            doentes?: boolean;
-                            bolsaFamilia?: boolean;
-                            aposentado?: boolean;
-                            pensao?: boolean;
-                            cestaBasica?: boolean;
-                            atividadeRemunerada?: boolean;
-                            renda?: number;
-                            criancaEscola?: boolean;
-                            observacoes: string | null;
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/beneficiaries/{id}": {
+    "/api/v1/stock": {
         parameters: {
             query?: never;
             header?: never;
@@ -1662,307 +1598,33 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    id: string;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
+                /** @description Stock balance per item */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                            /** @enum {string} */
-                            tipoImovel: "ALUGADO" | "PROPRIO";
-                            valorAluguel?: number;
-                            /** @enum {string} */
-                            estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                            numeroAdultos?: number;
-                            criancasPequenas?: number;
-                            adolescentes?: number;
-                            doentes?: boolean;
-                            bolsaFamilia?: boolean;
-                            aposentado?: boolean;
-                            pensao?: boolean;
-                            cestaBasica?: boolean;
-                            atividadeRemunerada?: boolean;
-                            renda?: number;
-                            criancaEscola?: boolean;
-                            observacoes: string | null;
+                            data: components["schemas"]["Stock"][];
                         };
                     };
-                };
-                /** @description Beneficiary not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
                 };
             };
         };
         put?: never;
         post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Beneficiary deleted successfully */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Beneficiary not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        name: string;
-                        phone: string;
-                        /** Format: email */
-                        email?: string;
-                        cep?: string;
-                        logradouro?: string;
-                        numero?: string;
-                        complemento?: string;
-                        bairro: string;
-                        cidade: string;
-                        /** @enum {string} */
-                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                        /** @enum {string} */
-                        tipoImovel: "ALUGADO" | "PROPRIO";
-                        valorAluguel?: number;
-                        /** @enum {string} */
-                        estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                        numeroAdultos?: number;
-                        criancasPequenas?: number;
-                        adolescentes?: number;
-                        doentes?: boolean;
-                        bolsaFamilia?: boolean;
-                        aposentado?: boolean;
-                        pensao?: boolean;
-                        cestaBasica?: boolean;
-                        atividadeRemunerada?: boolean;
-                        renda?: number;
-                        criancaEscola?: boolean;
-                        observacoes?: string | null;
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                            /** @enum {string} */
-                            tipoImovel: "ALUGADO" | "PROPRIO";
-                            valorAluguel?: number;
-                            /** @enum {string} */
-                            estadoCivil: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
-                            numeroAdultos?: number;
-                            criancasPequenas?: number;
-                            adolescentes?: number;
-                            doentes?: boolean;
-                            bolsaFamilia?: boolean;
-                            aposentado?: boolean;
-                            pensao?: boolean;
-                            cestaBasica?: boolean;
-                            atividadeRemunerada?: boolean;
-                            renda?: number;
-                            criancaEscola?: boolean;
-                            observacoes: string | null;
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Beneficiary not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/v1/donors": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                        }[];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        name: string;
-                        phone: string;
-                        /** Format: email */
-                        email?: string;
-                        cep?: string;
-                        logradouro?: string;
-                        numero?: string;
-                        complemento?: string;
-                        bairro: string;
-                        cidade: string;
-                        /** @enum {string} */
-                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                    };
-                };
-            };
-            responses: {
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/donors/{id}": {
+    "/api/v1/ledger": {
         parameters: {
             query?: never;
             header?: never;
@@ -1971,153 +1633,271 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
+                query?: {
+                    page?: number | null;
+                    pageSize?: number;
+                    itemId?: string;
+                    kind?: "COUNT" | "RECEIVE" | "RESERVE" | "ISSUE" | "RELEASE" | "ADJUST" | "REVERSE";
+                    refId?: string;
+                    from?: string;
+                    to?: string;
+                    sort?: "seq" | "occurredAt";
                 };
+                header?: never;
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
+                /** @description Ledger history, paginated on the server */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+                            data: components["schemas"]["LedgerPage"];
                         };
                     };
-                };
-                /** @description Donor not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
                 };
             };
         };
         put?: never;
         post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Donor deleted successfully */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Donor not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        name: string;
-                        phone: string;
-                        /** Format: email */
-                        email?: string;
-                        cep?: string;
-                        logradouro?: string;
-                        numero?: string;
-                        complemento?: string;
-                        bairro: string;
-                        cidade: string;
-                        /** @enum {string} */
-                        uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string;
-                            cep?: string;
-                            logradouro?: string;
-                            numero?: string;
-                            complemento?: string;
-                            bairro: string;
-                            cidade: string;
-                            /** @enum {string} */
-                            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
-                        };
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Donor not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        Beneficiary: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string;
+            /** Format: email */
+            email?: string | null;
+            cep?: string | null;
+            logradouro?: string | null;
+            numero?: string | null;
+            complemento?: string | null;
+            bairro: string;
+            cidade: string;
+            /** @enum {string} */
+            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+            /** @enum {string|null} */
+            tipoImovel?: "ALUGADO" | "PROPRIO" | null;
+            valorAluguel?: number | null;
+            /** @enum {string|null} */
+            estadoCivil?: "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL" | null;
+            numeroAdultos?: number | null;
+            criancasPequenas?: number | null;
+            adolescentes?: number | null;
+            doentes?: boolean | null;
+            bolsaFamilia?: boolean | null;
+            aposentado?: boolean | null;
+            pensao?: boolean | null;
+            cestaBasica?: boolean | null;
+            atividadeRemunerada?: boolean | null;
+            renda?: number | null;
+            criancaEscola?: boolean | null;
+            observacoes?: string | null;
+        };
+        BeneficiaryList: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string;
+            /** Format: email */
+            email?: string | null;
+            cidade: string;
+            /** @enum {string|null} */
+            uf?: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO" | null;
+            renda?: number | null;
+            /** @enum {string|null} */
+            tipoImovel?: "ALUGADO" | "PROPRIO" | null;
+            cestaBasica?: boolean | null;
+        };
+        Donor: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string;
+            /** Format: email */
+            email?: string | null;
+            cep?: string | null;
+            logradouro?: string | null;
+            numero?: string | null;
+            complemento?: string | null;
+            bairro: string;
+            cidade: string;
+            /** @enum {string} */
+            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
+        };
+        DonorList: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string;
+            /** Format: email */
+            email?: string | null;
+            cidade: string;
+        };
+        InventoryItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            categoryId: string;
+            /** @enum {string} */
+            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+            onHand: number;
+            reserved: number;
+            available: number;
+        };
+        ItemCategory: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        Donation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            donorId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            status: "RECEIVED" | "VOID";
+            note?: string | null;
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                quantity: number;
+            }[];
+        };
+        DonationList: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            donorId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            status: "RECEIVED" | "VOID";
+            note?: string | null;
+        };
+        Delivery: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            beneficiaryId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            status: "OPEN" | "COMPLETED" | "CANCELLED";
+            note?: string | null;
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                quantity: number;
+            }[];
+        };
+        DeliveryList: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            beneficiaryId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            status: "OPEN" | "COMPLETED" | "CANCELLED";
+            note?: string | null;
+        };
+        InventoryCount: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            countedBy?: string | null;
+            note?: string | null;
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                countedQuantity: number;
+            }[];
+        };
+        InventoryCountList: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            countedBy?: string | null;
+            note?: string | null;
+        };
+        InventoryAdjustment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            itemId: string;
+            itemName: string;
+            delta: number;
+            /** @enum {string} */
+            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        InventoryAdjustmentList: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            itemId: string;
+            delta: number;
+            /** @enum {string} */
+            reason: "STOCKTAKE" | "DONOR_RETURN" | "LOSS" | "DAMAGE" | "CORRECTION";
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        Stock: {
+            /** Format: uuid */
+            itemId: string;
+            name: string;
+            /** Format: uuid */
+            categoryId: string;
+            categoryName: string;
+            /** @enum {string} */
+            unit: "KG" | "L" | "UNIT" | "PACK" | "BOX";
+            onHand: number;
+            reserved: number;
+            available: number;
+        };
+        LedgerPage: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                seq: number;
+                /** Format: uuid */
+                itemId: string;
+                itemName: string;
+                /** @enum {string} */
+                kind: "COUNT" | "RECEIVE" | "RESERVE" | "ISSUE" | "RELEASE" | "ADJUST" | "REVERSE";
+                onHandDelta: number;
+                reservedDelta: number;
+                countedQuantity?: number | null;
+                /** Format: uuid */
+                refId: string;
+                /** Format: date-time */
+                occurredAt: string;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;

@@ -42,8 +42,8 @@ export function InventoryItemForm({
 	const router = useRouter();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!item);
-	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/items");
-	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/items/{id}");
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/item");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/item/{id}");
 
 	const form = useForm({
 		defaultValues: item,

@@ -30,29 +30,44 @@ export const errorCodeSchema = z.enum([
 
 export const errorSchema = z
 	.object({
-	code: errorCodeSchema,
-	message: z.string(),
+		code: errorCodeSchema,
+		message: z.string(),
 	})
 	.strict();
 
-export const dataSchema = z.object({ data: z.unknown() });
+/**
+ * O envelope das respostas com dados. Todo `2xx` da API responde `{ data }`,
+ * e o `data` é o que o recurso devolve.
+ */
+export function dataOf<T extends z.ZodType>(schema: T) {
+	return z.object({ data: schema }).strict();
+}
+
+/**
+ * O envelope das listas. A lista é a linha do recurso — mais estreita que o
+ * detalhe — e o `.strict()` é o que reprova uma lista carregando campo a
+ * mais.
+ */
+export function dataListOf<T extends z.ZodType>(schema: T) {
+	return z.object({ data: z.array(schema) }).strict();
+}
 
 export const addressFields = {
 	cep: z
 		.string()
 		.regex(/^\d{8}$/, { error: "O CEP precisa ter 8 dígitos." })
-		.optional(),
+		.nullish(),
 	logradouro: z
 		.string()
 		.trim()
 		.min(1, { error: "O logradouro não pode ficar em branco." })
-		.optional(),
+		.nullish(),
 	numero: z
 		.string()
 		.trim()
 		.min(1, { error: "O número não pode ficar em branco." })
-		.optional(),
-	complemento: z.string().trim().optional(),
+		.nullish(),
+	complemento: z.string().trim().nullish(),
 	bairro: z
 		.string()
 		.trim()

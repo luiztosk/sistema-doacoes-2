@@ -2,15 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { DeliveryForm } from "@/react-app/components/forms/inventory/delivery";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { deliveryDetailOptions, deliveryOptions } from "@/react-app/lib/queries/inventory/deliveries";
+import { deliveryDetailOptions } from "@/react-app/lib/queries/inventory/deliveries";
 import { useQuery } from "@tanstack/react-query";
 
-function DeliveryDetail() {
+function DeliveryPage() {
 	const { id } = Route.useParams();
-	const delivery = useQuery(deliveryDetailOptions(id));
-	const deliveries = useQuery(deliveryOptions);
+	const { data, isLoading, isError, isSuccess } = useQuery(deliveryDetailOptions(id));
 
-	if (delivery.isLoading || deliveries.isLoading) {
+	if (isLoading) {
 		return (
 			<div className="flex items-center gap-2 text-muted-foreground">
 				<Spinner />
@@ -19,17 +18,24 @@ function DeliveryDetail() {
 		);
 	}
 
-	if (delivery.isError || deliveries.isError) {
+	if (isError) {
 		return <p>Não foi possível carregar a entrega.</p>;
 	}
 
-	return <DeliveryForm delivery={delivery.data} />;
+	if (isSuccess) {
+		return <DeliveryForm
+			delivery={{
+				...data.delivery,
+				occurredAt: data.delivery.occurredAt ? new Date(data.delivery.occurredAt) : undefined,
+			}}
+			lines={data.lines}
+		/>;
+	}
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/delivery/$id")({
 	loader: ({ context, params }) => {
-		context.queryClient.query({ ...deliveryDetailOptions(params.id) });
-		context.queryClient.query({ ...deliveryOptions });
+		context.queryClient.query(deliveryDetailOptions(params.id));
 	},
-	component: DeliveryDetail,
+	component: DeliveryPage,
 });

@@ -22,14 +22,16 @@ export const donationSchema = z
 	.object({
 	id: idSchema,
 	...donationFields,
+	items: z.array(donationItemSchema),
 	})
 	.strict();
 
-export const donationListSchema = donationSchema;
-
-export const donationDetailSchema = donationSchema.extend({
-	items: z.array(donationItemSchema),
-});
+export const donationListSchema = z
+	.object({
+	id: idSchema,
+	...donationFields,
+	})
+	.strict();
 
 export const donationCreateSchema = z
 	.object({
@@ -52,7 +54,6 @@ export const donationUpdateSchema = z
 
 export type Donation = ZodInfer<typeof donationSchema>;
 export type DonationList = ZodInfer<typeof donationListSchema>;
-export type DonationDetail = ZodInfer<typeof donationDetailSchema>;
 export type DonationCreate = ZodInfer<typeof donationCreateSchema>;
 export type DonationUpdate = ZodInfer<typeof donationUpdateSchema>;
 export type DonationItem = ZodInfer<typeof donationItemSchema>;

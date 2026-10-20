@@ -5,49 +5,52 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 
 import { EditableProvider, DateField, SelectField, SubmitField } from "@/react-app/components/forms/fields";
-import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
+import { beneficiariesOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 import { fkOptions } from "@/react-app/lib/fk-factory";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type { DeliveryCompleto, DeliveryFormValues } from "@/react-app/lib/queries/inventory/deliveries";
 import { $api } from "@/react-app/lib/queries/fetch-client";
 import { queryClient } from "@/react-app/lib/query-client";
-import { deliveryInsertSchema } from "@/schemas/zod/inventory";
+import { deliveryWithLinesInsertSchema, deliveryWithLinesUpdateSchema, DeliveryWithLinesSelect } from "@/schemas/zod/inventory";
 
-type DeliveryFormProps = { delivery?: DeliveryCompleto };
-
-function initialValues(record?: DeliveryCompleto): DeliveryFormValues {
-	return {
-		beneficiaryId: record?.beneficiaryId ?? null,
-		occurredAt: record?.occurredAt != null ? new Date(Number(record.occurredAt) * 1000) : null,
-		note: record?.note ?? null,
-	};
-}
-
-// function errorFor(values: DeliveryFormValues, field: string) {
-// 	const parsed = deliveryInsertSchema.safeParse(values);
-// 	if (parsed.success) return undefined;
-// 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
-// }
-
-export function DeliveryForm({ delivery }: DeliveryFormProps) {
+export function DeliveryForm({ delivery }: DeliveryWithLinesSelect) {
 	const router = useRouter();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!delivery);
-	const { data: beneficiariesData } = useQuery(beneficiaryTableOptions);
+	const { data: beneficiariesData } = useQuery(beneficiariesOptions);
 
 	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/deliveries");
 	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/deliveries/{id}");
 
 	const form = useForm({
-		defaultValues: initialValues(delivery),
+		defaultValues: delivery,
 		onSubmit: async ({ value }) => {
-			if (!deliveryInsertSchema.safeParse(value).success) return;
-			try {
-				if (delivery) await updateMutateAsync({ params: { path: { id: delivery.id } }, body: value });
-				else await createMutateAsync({ body: value });
-			} catch { return; }
+			if (updateMutateAsync && delivery) {
+				const validation = deliveryWithLinesUpdateSchema.safeParse(value);
+				if (!validation.success) {
+					console.error('update validation failed:', validation.error?.message);
+					return;
+				}
+				try {
+					await updateMutateAsync({ params: { path: { id: delivery.id } }, body: validation.data });
+				} catch (error) {
+					console.error('Mutation failed:', error);
+					return;
+				}
+			} else if (createMutateAsync) {
+				const validation = deliveryWithLinesInsertSchema.safeParse(value);
+				if (!validation.success) {
+					console.error('insert validation failed:', validation.error?.message);
+					return;
+				}
+				try {
+					await createMutateAsync({ body: validation.data });
+				} catch (error) {
+					console.error('Mutation failed:', error);
+					return;
+				}
+			}
 			await queryClient.invalidateQueries({ queryKey: ["deliveries"] });
 			await router.navigate({ to: "/inventory/delivery", search: lista ? viewForUrl(lista) : {} });
 		},

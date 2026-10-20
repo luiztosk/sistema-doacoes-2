@@ -22,14 +22,16 @@ export const deliverySchema = z
 	.object({
 	id: idSchema,
 	...deliveryFields,
+	items: z.array(deliveryItemSchema),
 	})
 	.strict();
 
-export const deliveryListSchema = deliverySchema;
-
-export const deliveryDetailSchema = deliverySchema.extend({
-	items: z.array(deliveryItemSchema),
-});
+export const deliveryListSchema = z
+	.object({
+	id: idSchema,
+	...deliveryFields,
+	})
+	.strict();
 
 export const deliveryCreateSchema = z
 	.object({
@@ -52,7 +54,6 @@ export const deliveryUpdateSchema = z
 
 export type Delivery = ZodInfer<typeof deliverySchema>;
 export type DeliveryList = ZodInfer<typeof deliveryListSchema>;
-export type DeliveryDetail = ZodInfer<typeof deliveryDetailSchema>;
 export type DeliveryCreate = ZodInfer<typeof deliveryCreateSchema>;
 export type DeliveryUpdate = ZodInfer<typeof deliveryUpdateSchema>;
 export type DeliveryItem = ZodInfer<typeof deliveryItemSchema>;

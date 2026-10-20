@@ -1,482 +1,354 @@
-import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
-import { eq, sql, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/d1';
-import { Context } from 'hono';
-import { delivery, deliveryLine } from '../../../schemas/db/inventory';
-import { 
-  deliverySelectSchema, 
-  deliveryUpdateSchema,
-  deliveryLineInsertSchema,
-  DeliverySelect 
-} from '../../../schemas/zod/inventory';
-import { z } from 'zod';
+import { createRoute } from "@hono/zod-openapi";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common";
+import {
+	deliveryCreateSchema,
+	deliveryListSchema,
+	deliverySchema,
+	deliveryUpdateSchema,
+} from "../../../schemas/api/delivery";
+import { delivery } from "../../../schemas/db/inventory";
+import { app } from "../../app";
+import { apiError, notFoundError, rejectEmptyUpdate } from "../../api/errors";
+import { parseResponse } from "../../api/response";
+import { defineWorkerRoute } from "../../api/route";
+import {
+	documentEntries,
+	documentItems,
+	stockBatch,
+	toEntries,
+} from "../../api/stock";
 
-const deliveryLinePayloadSchema = deliveryLineInsertSchema.omit({ deliveryId: true });
+const Delivery = app.openAPIRegistry.register("Delivery", deliverySchema);
+const DeliveryList = app.openAPIRegistry.register(
+	"DeliveryList",
+	deliveryListSchema,
+);
 
-const deliveryWithLinesSchema = deliverySelectSchema.extend({
-  lines: z.array(deliveryLinePayloadSchema).min(1, { error: 'A delivery needs at least one line.' }),
+const endpoint = "/api/v1/deliveries";
+
+async function readDelivery(db: ReturnType<typeof drizzle>, id: string) {
+	const [row] = await db
+		.select()
+		.from(delivery)
+		.where(eq(delivery.id, id))
+		.limit(1);
+
+	if (!row) throw notFoundError("Delivery not found.");
+
+	const items = await documentItems(db, id, "RESERVE");
+
+	return {
+		...row,
+		occurredAt: row.occurredAt.toISOString(),
+		items,
+	};
+}
+
+const getDeliveriesRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: endpoint,
+		responses: {
+			200: {
+				description: "Delivery list",
+				content: { "application/json": { schema: dataListOf(DeliveryList) } },
+			},
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const rows = await db.select().from(delivery).all();
+
+		const data = rows.map((row) => ({
+			...row,
+			occurredAt: row.occurredAt.toISOString(),
+		}));
+
+		return c.json({ data: parseResponse(deliveryListSchema.array(), data) }, 200);
+	},
 });
 
-const getDeliveriesRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/deliveries',
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: deliverySelectSchema.array(),
-          },
-        },
-      },
-    },
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const data = await db.select().from(delivery).all() as DeliverySelect[];
-    return c.json(data, 200);
-  }
+const getDeliveryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: `${endpoint}/{id}`,
+		request: { params: idParamsSchema },
+		responses: {
+			200: {
+				description: "Delivery",
+				content: { "application/json": { schema: dataOf(Delivery) } },
+			},
+			404: { description: "Delivery not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const row = await readDelivery(db, c.req.param("id"));
+
+		return c.json({ data: parseResponse(deliverySchema, row) }, 200);
+	},
 });
 
-const getDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/deliveries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: deliveryWithLinesSchema,
-          },
-        },
-      },
-      404: {
-        description: 'Delivery not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [del] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    
-    if (!del) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Delivery not found.' } }, 404);
-    }
-    
-    const lines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    return c.json({ ...del, lines }, 200);
-  }
+const createDeliveryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "post",
+		path: endpoint,
+		request: {
+			body: {
+				content: { "application/json": { schema: deliveryCreateSchema } },
+			},
+		},
+		responses: {
+			201: {
+				description: "Delivery created",
+				content: { "application/json": { schema: dataOf(Delivery) } },
+			},
+			400: { description: "Invalid input" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const payload = c.req.valid("json");
+
+		const itemIds = payload.items.map((entry) => entry.itemId);
+		if (new Set(itemIds).size !== itemIds.length) {
+			throw apiError(
+				400,
+				"INVALID_VALUE",
+				"An item cannot appear twice in the same delivery.",
+			);
+		}
+
+		const id = crypto.randomUUID();
+		const occurredAt = new Date(payload.occurredAt);
+
+		const entries = toEntries(
+			payload.items.map((entry) => ({
+				itemId: entry.itemId,
+				kind: "RESERVE" as const,
+				onHandDelta: 0,
+				reservedDelta: entry.quantity,
+			})),
+			id,
+			occurredAt,
+		);
+
+		await db.batch(
+			stockBatch(
+				db,
+				entries,
+				[
+				db
+					.insert(delivery)
+					.values({
+						id,
+						beneficiaryId: payload.beneficiaryId,
+						occurredAt,
+						status: "OPEN",
+						note: payload.note ?? null,
+					}),
+				],
+			),
+		);
+
+		const row = await readDelivery(db, id);
+
+		c.header("Location", `${endpoint}/${id}`);
+
+		return c.json({ data: parseResponse(deliverySchema, row) }, 201);
+	},
 });
 
-const createDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'post',
-    path: '/api/v1/deliveries',
-    request: {
-      body: {
-        content: {
-          'application/json': {
-            schema: deliveryWithLinesSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      201: {
-        content: {
-          'application/json': {
-            schema: deliveryWithLinesSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      409: {
-        description: 'Insufficient stock',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const payload = await c.req.json() as { lines: z.infer<typeof deliveryLinePayloadSchema>[]; beneficiaryId: string; occurredAt: string | Date; note?: string | null };
-    const { lines, ...deliveryData } = payload;
-    const occurredAt = typeof deliveryData.occurredAt === 'string' ? new Date(deliveryData.occurredAt) : deliveryData.occurredAt;
-    
-    // Check for duplicate items
-    const itemIds = lines.map((line) => line.itemId);
-    if (new Set(itemIds).size !== itemIds.length) {
-      return c.json({ error: { code: 'INVALID_VALUE', message: 'An item cannot appear twice in the same delivery.' } }, 400);
-    }
-    
-    // Check stock availability
-    const stock = await db
-      .select({
-        id: item.id,
-        onHand: item.onHand,
-        reservedQuantity: item.reservedQuantity,
-      })
-      .from(item)
-      .where(inArray(item.id, itemIds));
-    
-    const stockMap = new Map(stock.map(row => [row.id, row]));
-    
-    for (const line of lines) {
-      const item = stockMap.get(line.itemId);
-      if (!item) {
-        return c.json({ error: { code: 'INVALID_REFERENCE', message: 'One of the references sent does not exist.' } }, 400);
-      }
-      const available = item.onHand - item.reservedQuantity;
-      if (available < line.quantity) {
-        return c.json({ error: { code: 'INSUFFICIENT_STOCK', message: 'One of the items does not have enough stock available.' } }, 409);
-      }
-    }
-    
-    const id = crypto.randomUUID();
-    
-    const lineInserts = lines.map((line) =>
-      db
-        .insert(deliveryLine)
-        .values({
-          deliveryId: id,
-          itemId: line.itemId,
-          quantity: line.quantity,
-        })
-    );
-    
-    const reserveUpdates = lines.map((line) =>
-      db
-        .update(item)
-        .set({ reservedQuantity: sql`${item.reservedQuantity} + ${line.quantity}` })
-        .where(eq(item.id, line.itemId))
-    );
-    
-    await db.batch([
-      db
-        .insert(delivery)
-        .values({
-          id,
-          ...deliveryData,
-          occurredAt,
-        }),
-      ...lineInserts,
-      ...reserveUpdates,
-    ]);
-    
-    const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    const createdLines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    c.header('Location', `${c.req.path}/${id}`);
-    return c.json({ ...data, lines: createdLines }, 201);
-  }
+const updateDeliveryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "patch",
+		path: `${endpoint}/{id}`,
+		request: {
+			params: idParamsSchema,
+			body: {
+				content: { "application/json": { schema: deliveryUpdateSchema } },
+			},
+		},
+		responses: {
+			200: {
+				description: "Delivery updated",
+				content: { "application/json": { schema: dataOf(Delivery) } },
+			},
+			400: { description: "Invalid input" },
+			404: { description: "Delivery not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
+		const payload = c.req.valid("json");
+
+		rejectEmptyUpdate(payload);
+
+		const [existing] = await db
+			.select({ id: delivery.id })
+			.from(delivery)
+			.where(eq(delivery.id, id))
+			.limit(1);
+
+		if (!existing) throw notFoundError("Delivery not found.");
+
+		const [row] = await db
+			.update(delivery)
+			.set({
+				...payload,
+				occurredAt: payload.occurredAt
+					? new Date(payload.occurredAt)
+					: undefined,
+			})
+			.where(eq(delivery.id, id))
+			.returning();
+
+		const detail = await readDelivery(db, row.id);
+
+		return c.json({ data: parseResponse(deliverySchema, detail) }, 200);
+	},
 });
 
-const completeDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'post',
-    path: '/api/v1/deliveries/{id}/complete',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: deliveryWithLinesSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid transition',
-      },
-      404: {
-        description: 'Delivery not found',
-      },
-      409: {
-        description: 'Conflict - reserved stock no longer covers this operation',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [existing] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    
-    if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Delivery not found.' } }, 404);
-    }
-    
-    if (existing.status !== 'OPEN') {
-      return c.json({ error: { code: 'INVALID_TRANSITION', message: `Cannot complete a delivery in status ${existing.status}.` } }, 400);
-    }
-    
-    const lines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    // Check reserved quantities
-    const itemIds = lines.map(l => l.itemId);
-    const reserved = await db
-      .select({
-        id: item.id,
-        reservedQuantity: item.reservedQuantity,
-      })
-      .from(item)
-      .where(inArray(item.id, itemIds));
-    
-    const reservedMap = new Map(reserved.map(row => [row.id, row.reservedQuantity]));
-    
-    for (const line of lines) {
-      if ((reservedMap.get(line.itemId) ?? 0) < line.quantity) {
-        return c.json({ error: { code: 'CONFLICT', message: 'The reserved stock no longer covers this operation.' } }, 409);
-      }
-    }
-    
-    const consumeUpdates = lines.map((line) =>
-      db
-        .update(item)
-        .set({ 
-          onHand: sql`${item.onHand} - ${line.quantity}`,
-          reservedQuantity: sql`${item.reservedQuantity} - ${line.quantity}`,
-        })
-        .where(eq(item.id, line.itemId))
-    );
-    
-    const batchOps = [
-      ...consumeUpdates,
-      db
-        .update(delivery)
-        .set({ status: 'COMPLETED' })
-        .where(eq(delivery.id, id)),
-    ];
-    
-    // @ts-expect-error - BatchItem tuple type inference issue with spread arrays
-    await db.batch(batchOps);
-    
-    const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    const updatedLines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    return c.json({ ...data, lines: updatedLines }, 200);
-  }
+const completeDeliveryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "post",
+		path: `${endpoint}/{id}/complete`,
+		request: { params: idParamsSchema },
+		responses: {
+			200: {
+				description: "Delivery completed",
+				content: { "application/json": { schema: dataOf(Delivery) } },
+			},
+			400: { description: "Invalid transition" },
+			404: { description: "Delivery not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
+
+		const [existing] = await db
+			.select()
+			.from(delivery)
+			.where(eq(delivery.id, id))
+			.limit(1);
+
+		if (!existing) throw notFoundError("Delivery not found.");
+
+		if (existing.status !== "OPEN") {
+			throw apiError(
+				400,
+				"INVALID_TRANSITION",
+				`Cannot complete a delivery in status ${existing.status}.`,
+			);
+		}
+
+		const reserved = await documentEntries(db, id, "RESERVE");
+
+		const entries = toEntries(
+			reserved.map((entry) => ({
+				itemId: entry.item_id,
+				kind: "ISSUE" as const,
+				onHandDelta: -entry.reserved_delta,
+				reservedDelta: -entry.reserved_delta,
+			})),
+			id,
+			new Date(),
+		);
+
+		await db.batch(
+			stockBatch(
+				db,
+				entries,
+				[
+				db
+					.update(delivery)
+					.set({ status: "COMPLETED" })
+					.where(eq(delivery.id, id)),
+				],
+			),
+		);
+
+		const row = await readDelivery(db, id);
+
+		return c.json({ data: parseResponse(deliverySchema, row) }, 200);
+	},
 });
 
-const cancelDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'post',
-    path: '/api/v1/deliveries/{id}/cancel',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: deliveryWithLinesSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid transition',
-      },
-      404: {
-        description: 'Delivery not found',
-      },
-      409: {
-        description: 'Conflict - reserved stock no longer covers this operation',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [existing] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    
-    if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Delivery not found.' } }, 404);
-    }
-    
-    if (existing.status !== 'OPEN') {
-      return c.json({ error: { code: 'INVALID_TRANSITION', message: `Cannot cancel a delivery in status ${existing.status}.` } }, 400);
-    }
-    
-    const lines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    // Check reserved quantities
-    const itemIds = lines.map(l => l.itemId);
-    const reserved = await db
-      .select({
-        id: item.id,
-        reservedQuantity: item.reservedQuantity,
-      })
-      .from(item)
-      .where(inArray(item.id, itemIds));
-    
-    const reservedMap = new Map(reserved.map(row => [row.id, row.reservedQuantity]));
-    
-    for (const line of lines) {
-      if ((reservedMap.get(line.itemId) ?? 0) < line.quantity) {
-        return c.json({ error: { code: 'CONFLICT', message: 'The reserved stock no longer covers this operation.' } }, 409);
-      }
-    }
-    
-    const releaseUpdates = lines.map((line) =>
-      db
-        .update(item)
-        .set({ reservedQuantity: sql`${item.reservedQuantity} - ${line.quantity}` })
-        .where(eq(item.id, line.itemId))
-    );
-    
-    const batchOps = [
-      ...releaseUpdates,
-      db
-        .update(delivery)
-        .set({ status: 'CANCELLED' })
-        .where(eq(delivery.id, id)),
-    ];
-    
-    // @ts-expect-error - BatchItem tuple type inference issue with spread arrays
-    await db.batch(batchOps);
-    
-    const [data] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    const updatedLines = await db
-      .select({
-        itemId: deliveryLine.itemId,
-        quantity: deliveryLine.quantity,
-      })
-      .from(deliveryLine)
-      .where(eq(deliveryLine.deliveryId, id));
-    
-    return c.json({ ...data, lines: updatedLines }, 200);
-  }
-});
+const cancelDeliveryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "post",
+		path: `${endpoint}/{id}/cancel`,
+		request: { params: idParamsSchema },
+		responses: {
+			200: {
+				description: "Delivery cancelled",
+				content: { "application/json": { schema: dataOf(Delivery) } },
+			},
+			400: { description: "Invalid transition" },
+			404: { description: "Delivery not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
 
-const updateDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'patch',
-    path: '/api/v1/deliveries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-      body: {
-        content: {
-          'application/json': {
-            schema: deliveryUpdateSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: deliverySelectSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      404: {
-        description: 'Delivery not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [existing] = await db.select().from(delivery).where(eq(delivery.id, id)).limit(1);
-    
-    if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Delivery not found.' } }, 404);
-    }
-    
-    const payload = await c.req.json();
-    
-    const [data] = await db
-      .update(delivery)
-      .set(payload)
-      .where(eq(delivery.id, id))
-      .returning();
+		const [existing] = await db
+			.select()
+			.from(delivery)
+			.where(eq(delivery.id, id))
+			.limit(1);
 
-    return c.json(data, 200);
-  }
-});
+		if (!existing) throw notFoundError("Delivery not found.");
 
-const deleteDeliveryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'delete',
-    path: '/api/v1/deliveries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      204: {
-        description: 'Delivery deleted successfully',
-      },
-      404: {
-        description: 'Delivery not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [removed] = await db
-      .delete(delivery)
-      .where(eq(delivery.id, id))
-      .returning({ id: delivery.id });
+		if (existing.status !== "OPEN") {
+			throw apiError(
+				400,
+				"INVALID_TRANSITION",
+				`Cannot cancel a delivery in status ${existing.status}.`,
+			);
+		}
 
-    if (!removed) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Delivery not found.' } }, 404);
-    }
+		const reserved = await documentEntries(db, id, "RESERVE");
 
-    return c.body(null, 204);
-  }
+		const entries = toEntries(
+			reserved.map((entry) => ({
+				itemId: entry.item_id,
+				kind: "RELEASE" as const,
+				onHandDelta: 0,
+				reservedDelta: -entry.reserved_delta,
+			})),
+			id,
+			new Date(),
+		);
+
+		await db.batch(
+			stockBatch(
+				db,
+				entries,
+				[
+				db
+					.update(delivery)
+					.set({ status: "CANCELLED" })
+					.where(eq(delivery.id, id)),
+				],
+			),
+		);
+
+		const row = await readDelivery(db, id);
+
+		return c.json({ data: parseResponse(deliverySchema, row) }, 200);
+	},
 });
 
 export const deliveryRoutes = [
-  getDeliveriesRoute,
-  getDeliveryRoute,
-  createDeliveryRoute,
-  completeDeliveryRoute,
-  cancelDeliveryRoute,
-  updateDeliveryRoute,
-  deleteDeliveryRoute
-]
+	getDeliveriesRoute,
+	getDeliveryRoute,
+	createDeliveryRoute,
+	updateDeliveryRoute,
+	completeDeliveryRoute,
+	cancelDeliveryRoute,
+];

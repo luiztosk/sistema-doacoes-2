@@ -79,7 +79,7 @@
 	},
 	"private": true,
 	"scripts": {
-		"build": "npm run lint && tsc -b && vite build",
+		"build": "npm run lint && tsc -b && npm test && vite build",
 		"cf-typegen": "wrangler types",
 		"check": "npm run build && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
@@ -88,7 +88,7 @@
 		"test": "tsx tests/api.ts",
 		"test:inventory": "tsx tests/inventory.ts",
 		"typecheck": "tsc -p tsconfig.app.json --noEmit",
-		"gen-auth": "npx auth@latest generate --config=./src/auth.config.ts --output=./schemas/db/auth.ts",
+		"gen-auth": "npx auth@latest generate --config=./src/auth.config.ts --output=./src/schemas/db/auth.ts",
 		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "npx tsx scripts/seed.ts",
 		"db-init": "node scripts/db-init.js",
@@ -97,7 +97,7 @@
 		"local-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --local && wrangler types && npm run db-seed",
 		"remote-db-init": "npm run gen-auth && npm run gen-drizzle && wrangler d1 migrations apply prod-sistema-doacoes-2 --remote",
 		"preview": "npm run build && vite preview",
-		"update-openapi": "tsx scripts/update-openapi.ts"
+		"update-openapi": "tsx scripts/openapi.ts"
 	},
 	"type": "module"
 }

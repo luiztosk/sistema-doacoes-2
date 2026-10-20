@@ -1,40 +1,4 @@
 import { $api } from "../fetch-client";
-import type { infer as ZodInfer } from "zod";
-
-import type {
-	deliveryInsertSchema,
-	deliverySelectSchema,
-} from "@/schemas/zod/inventory";
-
-export type DeliveryLineItem = {
-	inventoryItemId: string;
-	quantity: number;
-};
-
-export type Delivery = Pick<
-	DeliveryCompleto,
-	"id" | "beneficiaryId" | "occurredAt" | "status" | "note"
-> & {
-	lines?: DeliveryLineItem[];
-} & {
-	occurredAt: string | null;
-};
-
-export type DeliveryCompleto = ZodInfer<typeof deliverySelectSchema> & {
-	lines?: DeliveryLineItem[];
-} & {
-	occurredAt: string | Date | null;
-};
-
-type RequiredNullable<TForm> = {
-	[K in keyof TForm]-?: Exclude<TForm[K], undefined> | null;
-};
-
-export type DeliveryFormValues = RequiredNullable<
-	ZodInfer<typeof deliveryInsertSchema>
-> & {
-	lines?: { inventoryItemId: string; quantity: number }[];
-};
 
 export const deliveryKeys = {
 	all: ["deliveries"] as const,

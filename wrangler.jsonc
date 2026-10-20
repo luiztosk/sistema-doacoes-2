@@ -9,6 +9,9 @@
 	"observability": {
 		"enabled": true
 	},
+	"triggers": {
+		"crons": ["0 3 * * *"]
+	},
 	"upload_source_maps": true,
 	"assets": {
 		"directory": "./dist/client",

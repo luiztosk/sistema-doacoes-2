@@ -5,7 +5,7 @@ export const beneficiaryKeys = {
 	detail: (id: string) => [...beneficiaryKeys.all, id] as const,
 };
 
-export const beneficiaryTableOptions = $api.queryOptions(
+export const beneficiariesOptions = $api.queryOptions(
 	"get", "/api/v1/beneficiaries"
 );
 

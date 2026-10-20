@@ -1,198 +1,201 @@
-import { createRoute, defineOpenAPIRoute } from '@hono/zod-openapi'
-import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/d1';
-import { Context } from 'hono';
-import { beneficiary } from '../../../schemas/db/contacts';
-import { beneficiarySelectSchema, beneficiaryInsertSchema, beneficiaryUpdateSchema, BeneficiarySelect } from '../../../schemas/zod/contacts';
-import { z } from 'zod';
+import { createRoute } from "@hono/zod-openapi";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import {
+	beneficiaryCreateSchema,
+	beneficiaryListSchema,
+	beneficiarySchema,
+	beneficiaryUpdateSchema,
+} from "../../../schemas/api/beneficiary";
+import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common";
+import { beneficiary } from "../../../schemas/db/contacts";
+import { app } from "../../app";
+import { notFoundError, rejectEmptyUpdate } from "../../api/errors";
+import { defineWorkerRoute } from "../../api/route";
+import { parseResponse } from "../../api/response";
 
-const getBeneficiariesRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/beneficiaries',
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: beneficiarySelectSchema.array(),
-          },
-        },
-      },
-    },
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const data = await db.select().from(beneficiary).all() as BeneficiarySelect[];
-    return c.json(data, 200);
-  }
+const Beneficiary = app.openAPIRegistry.register(
+	"Beneficiary",
+	beneficiarySchema,
+);
+const BeneficiaryList = app.openAPIRegistry.register(
+	"BeneficiaryList",
+	beneficiaryListSchema,
+);
+
+const endpoint = "/api/v1/beneficiaries";
+
+const getBeneficiariesRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: endpoint,
+		responses: {
+			200: {
+				description: "Beneficiary list",
+				content: { "application/json": { schema: dataListOf(BeneficiaryList) } },
+			},
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+
+		const rows = await db
+			.select({
+				id: beneficiary.id,
+				name: beneficiary.name,
+				phone: beneficiary.phone,
+				email: beneficiary.email,
+				cidade: beneficiary.cidade,
+				uf: beneficiary.uf,
+				renda: beneficiary.renda,
+				tipoImovel: beneficiary.tipoImovel,
+				cestaBasica: beneficiary.cestaBasica,
+			})
+			.from(beneficiary)
+			.all();
+
+		return c.json({ data: parseResponse(beneficiaryListSchema.array(), rows) }, 200);
+	},
 });
 
-const getBeneficiaryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'get',
-    path: '/api/v1/beneficiaries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: beneficiarySelectSchema,
-          },
-        },
-      },
-      404: {
-        description: 'Beneficiary not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [benef] = await db.select().from(beneficiary).where(eq(beneficiary.id, id)).limit(1);
-    
-    if (!benef) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Beneficiary not found.' } }, 404);
-    }
-    
-    return c.json(benef, 200);
-  }
+const getBeneficiaryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "get",
+		path: `${endpoint}/{id}`,
+		request: { params: idParamsSchema },
+		responses: {
+			200: {
+				description: "Beneficiary",
+				content: { "application/json": { schema: dataOf(Beneficiary) } },
+			},
+			404: { description: "Beneficiary not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
+
+		const [row] = await db
+			.select()
+			.from(beneficiary)
+			.where(eq(beneficiary.id, id))
+			.limit(1);
+
+		if (!row) throw notFoundError("Beneficiary not found.");
+
+		return c.json({ data: parseResponse(beneficiarySchema, row) }, 200);
+	},
 });
 
-const createBeneficiaryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'post',
-    path: '/api/v1/beneficiaries',
-    request: {
-      body: {
-        content: {
-          'application/json': {
-            schema: beneficiaryInsertSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      201: {
-        content: {
-          'application/json': {
-            schema: beneficiarySelectSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const payload = await c.req.json();
-    
-    const [data] = await db
-      .insert(beneficiary)
-      .values({
-        id: crypto.randomUUID(),
-        ...payload,
-      })
-      .returning();
+const createBeneficiaryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "post",
+		path: endpoint,
+		request: {
+			body: {
+				content: {
+					"application/json": { schema: beneficiaryCreateSchema },
+				},
+			},
+		},
+		responses: {
+			201: {
+				description: "Beneficiary created",
+				content: { "application/json": { schema: dataOf(Beneficiary) } },
+			},
+			400: { description: "Invalid input" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const payload = c.req.valid("json");
 
-    c.header('Location', `${c.req.path}/${data.id}`);
-    return c.json(data, 201);
-  }
+		const [row] = await db
+			.insert(beneficiary)
+			.values({ id: crypto.randomUUID(), ...payload })
+			.returning();
+
+		c.header("Location", `${endpoint}/${row.id}`);
+
+		return c.json({ data: parseResponse(beneficiarySchema, row) }, 201);
+	},
 });
 
-const updateBeneficiaryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'patch',
-    path: '/api/v1/beneficiaries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-      body: {
-        content: {
-          'application/json': {
-            schema: beneficiaryUpdateSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: beneficiarySelectSchema,
-          },
-        },
-      },
-      400: {
-        description: 'Invalid input',
-      },
-      404: {
-        description: 'Beneficiary not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [existing] = await db.select().from(beneficiary).where(eq(beneficiary.id, id)).limit(1);
-    
-    if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Beneficiary not found.' } }, 404);
-    }
-    
-    const payload = await c.req.json();
-    
-    const [data] = await db
-      .update(beneficiary)
-      .set(payload)
-      .where(eq(beneficiary.id, id))
-      .returning();
+const updateBeneficiaryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "patch",
+		path: `${endpoint}/{id}`,
+		request: {
+			params: idParamsSchema,
+			body: {
+				content: {
+					"application/json": { schema: beneficiaryUpdateSchema },
+				},
+			},
+		},
+		responses: {
+			200: {
+				description: "Beneficiary updated",
+				content: { "application/json": { schema: dataOf(Beneficiary) } },
+			},
+			400: { description: "Invalid input" },
+			404: { description: "Beneficiary not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
+		const payload = c.req.valid("json");
 
-    return c.json(data, 200);
-  }
+		rejectEmptyUpdate(payload);
+
+		const [existing] = await db
+			.select({ id: beneficiary.id })
+			.from(beneficiary)
+			.where(eq(beneficiary.id, id))
+			.limit(1);
+
+		if (!existing) throw notFoundError("Beneficiary not found.");
+
+		const [row] = await db
+			.update(beneficiary)
+			.set(payload)
+			.where(eq(beneficiary.id, id))
+			.returning();
+
+		return c.json({ data: parseResponse(beneficiarySchema, row) }, 200);
+	},
 });
 
-const deleteBeneficiaryRoute = defineOpenAPIRoute({
-  route: createRoute({
-    method: 'delete',
-    path: '/api/v1/beneficiaries/{id}',
-    request: {
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      204: {
-        description: 'Beneficiary deleted successfully',
-      },
-      404: {
-        description: 'Beneficiary not found',
-      }
-    }
-  }),
-  handler: async (c: Context<{ Bindings: Env }>) => {
-    const db = drizzle(c.env.prod_sistema_doacoes_2);
-    const id = c.req.param('id')!;
-    
-    const [removed] = await db
-      .delete(beneficiary)
-      .where(eq(beneficiary.id, id))
-      .returning({ id: beneficiary.id });
+const deleteBeneficiaryRoute = defineWorkerRoute({
+	route: createRoute({
+		method: "delete",
+		path: `${endpoint}/{id}`,
+		request: { params: idParamsSchema },
+		responses: {
+			204: { description: "Beneficiary deleted" },
+			404: { description: "Beneficiary not found" },
+		},
+	}),
+	handler: async (c) => {
+		const db = drizzle(c.env.prod_sistema_doacoes_2);
+		const id = c.req.param("id");
 
-    if (!removed) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Beneficiary not found.' } }, 404);
-    }
+		const [removed] = await db
+			.delete(beneficiary)
+			.where(eq(beneficiary.id, id))
+			.returning({ id: beneficiary.id });
 
-    return c.body(null, 204);
-  }
+		if (!removed) throw notFoundError("Beneficiary not found.");
+
+		return c.body(null, 204);
+	},
 });
 
 export const beneficiaryRoutes = [
-  getBeneficiariesRoute,
-  getBeneficiaryRoute,
-  createBeneficiaryRoute,
-  updateBeneficiaryRoute,
-  deleteBeneficiaryRoute
-]
+	getBeneficiariesRoute,
+	getBeneficiaryRoute,
+	createBeneficiaryRoute,
+	updateBeneficiaryRoute,
+	deleteBeneficiaryRoute,
+];

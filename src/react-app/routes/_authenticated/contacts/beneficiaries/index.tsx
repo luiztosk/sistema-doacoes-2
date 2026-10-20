@@ -4,11 +4,11 @@ import { BeneficiariesTable } from "@/react-app/components/tables/contacts/benef
 import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { beneficiaryTableOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
+import { beneficiariesOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 import { BeneficiarySelect } from "@/schemas/zod/contacts";
 
 function Beneficiaries() {
-	const beneficiaries = useQuery(beneficiaryTableOptions);
+	const beneficiaries = useQuery(beneficiariesOptions);
 
 	if (beneficiaries.isLoading) {
 		return <div>Loading...</div>;
@@ -37,7 +37,7 @@ function Beneficiaries() {
 export const Route = createFileRoute("/_authenticated/contacts/beneficiaries/")({
 	validateSearch: tableViewSchema,
 	loader: ({ context }) => {
-		context.queryClient.query({ ...beneficiaryTableOptions });
+		context.queryClient.query({ ...beneficiariesOptions });
 	},
 	component: Beneficiaries,
 });

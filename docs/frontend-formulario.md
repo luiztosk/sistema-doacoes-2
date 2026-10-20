@@ -1,5 +1,25 @@
 # Como adicionar o formulário de um recurso
 
+> ⚠️ **O contrato mudou em 20/10/2026, e o frontend ainda não migrou.** O
+> schema do formulário **saiu de `src/schemas/zod/`** — que era gerado da
+> tabela, e saiu — e agora vive em **`src/schemas/api/`**, escrito à mão e
+> com nome de contrato:
+>
+> | Antes | Agora |
+> |---|---|
+> | `src/schemas/zod/<área>` | `@/schemas/api/<recurso>` |
+> | `<tabela>InsertSchema` | `<recurso>CreateSchema` — o corpo do `POST` |
+> | `<tabela>UpdateSchema` | `<recurso>UpdateSchema` — o corpo do `PATCH` |
+> | `<tabela>SelectSchema` | `<recurso>Schema` — a resposta do detalhe |
+> | `<recurso>ListSchema` | a linha da lista, **mais estreita** que o detalhe |
+>
+> Os nomes de campo também mudaram: a chave estrangeira do item é **`itemId`**
+> (e não `inventoryItemId`), a resposta vem no envelope **`{ data: ... }`**, e
+> o item de estoque é `/api/v1/inventory/items` (no plural). São **47 erros de
+> tipo** no projeto `app` até a migração, e é ela que segura o `tsc -b` — e
+> portanto o `npm run build`. A lista do que mexer, arquivo por arquivo, está
+> em [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
+
 `contacts/beneficiary` é a referência: ele já está nos três modos, valida com o
 mesmo schema que a API usa, e é o que o build e o PR validam.
 `inventory/item` é a referência de um formulário de **catálogo**, com coluna
@@ -37,7 +57,7 @@ componente, nunca dentro de um `return` condicional.
 
 ```ts
 export type BeneficiaryFormValues = RequiredNullable<
-	ZodInfer<typeof beneficiaryInsertSchema>
+	ZodInfer<typeof beneficiaryCreateSchema>
 >;
 ```
 
@@ -49,11 +69,11 @@ queries do recurso — copie dali.
 
 - **O estado do formulário é o payload.** Não existe passo de tradução no
   `onSubmit`: quem converte é o `onChange` da primitiva. É por isso que dá para
-  validar com `*InsertSchema` direto, sem duplicar regra.
-- **Valide com o schema do modo**: `*InsertSchema` para criar, `*UpdateSchema`
+  validar com o `*CreateSchema` direto, sem duplicar regra.
+- **Valide com o schema do modo**: `*CreateSchema` para criar, `*UpdateSchema`
   para editar. O de update é mais leniente — `name` fica opcional — e é por isso
   que o formulário **manda todos os campos sempre** (veja o item "Mande os N
-  campos sempre" abaixo). Quem valida com o `*InsertSchema` nos dois modos
+  campos sempre" abaixo). Quem valida com o `*CreateSchema` nos dois modos
   resolve o mesmo problema, mas diverge do que o código faz.
 - **A mensagem do zod é lida na tela, então vai em português** — e isso *não*
   muda a API. `errorFromIssue` só embute `issue.message` no ramo `custom`, que

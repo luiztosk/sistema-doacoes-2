@@ -132,11 +132,18 @@ fim, de forma que uma execução interrompida não envenena a seguinte.
 
 ## Dados de demonstração
 
-Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas zod da
-própria aplicação: `scripts/generate.ts` gera e valida cada linha contra o
-`*SelectSchema` antes de devolvê-la, e `scripts/seed.ts` insere. O gerador é
+Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas do
+contrato: `scripts/generate.ts` gera e valida cada linha contra o schema do
+recurso antes de devolvê-la, e `scripts/seed.ts` insere. O gerador é
 determinístico (`seed(42)`), então o mesmo `npm run db-seed` produz sempre as
 mesmas linhas.
+
+O gerador do ledger **não sorteia saldo**: ele sorteia os **movimentos** — doações,
+entregas, contagens, ajustes — e deriva o saldo, aplicando cada movimento numa
+simulação em memória. O `inventory_item` é escrito no fim, com o resultado. E o
+seed escreve os movimentos **na mesma ordem que a API** — a entrada no ledger e,
+logo depois, o saldo — porque a guarda mora no trigger, e o trigger lê o saldo do
+item.
 
 O que o gerador não faz: referência cruzada e ordem de evento. `faker` não tem
 modo relacional, então `createDonations` recebe as linhas já criadas e a ordem
@@ -190,8 +197,10 @@ Os enums moram no contrato (`src/schemas/api/enums.ts`) e o `src/schemas/db/`
 ### O que isso permite
 
 - **A lista e o detalhe têm formatos diferentes.** `beneficiaryListSchema` tem
-  8 campos e `beneficiarySchema` tem 26 — e a validação da resposta
-  **reprova** a lista se ela vier com endereço.
+  9 campos e `beneficiarySchema` tem 26 — e a validação da resposta
+  **reprova** a lista se ela vier com endereço. Durante a implementação, ela
+  reprovou de verdade: as listas de beneficiário, doador e ajuste estavam
+  selecionando todas as colunas.
 - **A API tem vida própria.** Renomear uma coluna não é mais uma quebra de
   contrato.
 - **O contrato existe antes do backend.** `src/schemas/api/` é a documentação
@@ -202,9 +211,11 @@ Os enums moram no contrato (`src/schemas/api/enums.ts`) e o `src/schemas/db/`
 - **Um mapeamento.** O schema do contrato e o da tabela não são o mesmo
   objeto, então existe a tradução — no mesmo arquivo, para o leitor não ter que
   caçar.
-- **O seed perdeu a validação de graça.** Ele validava cada linha contra o
-  `*SelectSchema`. Agora o seed **passa pela API**, que valida contra o
-  contrato — o que é melhor, e é o que foi decidido.
+- **O seed mudou de validação.** Ele validava cada linha contra o
+  `*SelectSchema`, que era gerado da tabela. Agora valida contra o **schema do
+  contrato**, e escreve direto no banco — passá-lo pela API continua sendo a
+  decisão pendente, e é melhor: a validação passaria a ser a do contrato e o
+  ledger nunca nasceria inconsistente.
 - **Dois lugares com zod, por enquanto.** `src/schemas/api/` é o contrato; o
   `drizzle-orm/zod` sai, e o `src/schemas/zod/` — que gera schema a partir da
   tabela — é **deprecado** e sai junto com a migração das rotas.
@@ -242,10 +253,13 @@ as rotas passam a referenciar por `$ref`:
 const Beneficiary = app.openAPIRegistry.register("Beneficiary", beneficiarySchema);
 ```
 
-O `openapi.json` é gerado por `npm run update-openapi`, que **sobe o dev
-server e faz curl**. Com as rotas como módulos importáveis, um script pode
-chamar `app.getOpenAPI31Document(...)` direto — sem servidor, sem rede, sem
-porta — e o CI pode conferir que o arquivo commitado está em dia.
+O `openapi.json` é gerado por `npm run update-openapi`, que **monta o app e
+chama `app.getOpenAPI31Document(...)` direto** — sem servidor, sem rede, sem
+porta. O `src/auth.config.ts` importa `cloudflare:workers` e não roda fora do
+runtime do Worker, então o gerador importa `src/worker/app.ts` e
+`src/worker/routes/index.ts`, e não o `index.ts`: o app e as rotas são o
+contrato, e o `index.ts` é a montagem (middleware, sessão, tratamento de
+erro). O CI pode conferir que o arquivo commitado está em dia.
 
 ## O modelo de estoque virou ledger
 

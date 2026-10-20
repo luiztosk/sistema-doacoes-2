@@ -44,8 +44,8 @@ O `openapi.json` é **gerado** desse zod, e é o formato publicado. Ver
    mundo. Sem `.strict()`, o zod descarta o campo e o bug passa.
 
 O `src/schemas/db/` guarda o Drizzle, e **não** gera zod: o `drizzle-orm/zod`
-sai, e o que ainda existe em `src/schemas/zod/` é deprecado e sai com a
-migração das rotas.
+saiu, e o `src/schemas/zod/` saiu com a migração das rotas, em 20/10/2026. O
+que valida a API é o zod do contrato, em `src/schemas/api/`.
 
 ## Estado da autenticação
 
@@ -85,6 +85,11 @@ Cada instituição traz a sua conta, ou é preciso o plano pago.
 Recursos com CRUD próprio: `/api/v1/beneficiaries`, `/api/v1/donors`,
 `/api/v1/inventory/categories` e `/api/v1/inventory/items`.
 
+`inventory_count` e `inventory_adjustment` **não** têm `PATCH` nem `DELETE`:
+o conteúdo de um documento é fixo, e a correção é movimento novo. A contagem
+grava, além do `COUNT`, um `inventory_adjustment` de motivo `STOCKTAKE` por
+item — é o registro da diferença, e é ele que dá sentido à coluna `count_id`.
+
 ## O modelo de estoque tem verbos próprios
 
 Os cinco verbos acima não dão conta do estoque, porque nenhuma das operações
@@ -99,7 +104,7 @@ e só a interface e as rotas do React ficam em português.
 | `POST` | `/api/v1/deliveries` | Cria a entrega **e** registra o `RESERVE`, num lote só |
 | `POST` | `/api/v1/deliveries/:id/complete` | Conclui: registra o `ISSUE` |
 | `POST` | `/api/v1/deliveries/:id/cancel` | Cancela: registra o `RELEASE` |
-| `POST` | `/api/v1/inventory-counts` | Grava a contagem e o `COUNT` por item |
+| `POST` | `/api/v1/inventory-counts` | Grava a contagem, o `COUNT` por item e o `STOCKTAKE` que registra a diferença |
 | `POST` | `/api/v1/inventory-adjustments` | Grava o `ADJUST`, com o motivo registrado |
 | `GET` | `/api/v1/stock` | O saldo: item, em estoque, reservado, disponível |
 | `GET` | `/api/v1/ledger` | O histórico de movimentos, paginado no servidor |
@@ -131,7 +136,7 @@ de `inventory/items` em cache e faz a junção — a mesma decisão que vale par
 filtro das tabelas.
 
 **A lista é mais estreita que o detalhe, e isso é contrato.**
-`GET /beneficiaries` devolve 8 campos — `id`, `name`, `phone`, `email`,
+`GET /beneficiaries` devolve 9 campos — `id`, `name`, `phone`, `email`,
 `cidade`, `uf`, `renda`, `tipoImovel`, `cestaBasica` — e **não** devolve o
 endereço. A validação da resposta reprova a lista se ela vier com
 `logradouro` a mais. Antes do contrato virar a fonte da verdade, a lista
@@ -206,7 +211,14 @@ nada** e responde `409` com o código do trigger.
 | `RESERVE` | `on_hand - reserved < q` | `409 INSUFFICIENT_STOCK` |
 | `ISSUE` | `on_hand < q` | `409 INSUFFICIENT_STOCK` |
 | `RELEASE` | `reserved < q` | `409 INVALID_RELEASE` |
-| `ADJUST`, `COUNT` | `on_hand + delta < reserved` | `409 NEGATIVE_STOCK` |
+| `ADJUST`, `COUNT` | `on_hand + delta < reserved + reserved_delta` | `409 NEGATIVE_STOCK` |
+| `REVERSE` | `on_hand + delta < reserved + reserved_delta` | `409 NEGATIVE_STOCK` |
+
+O `REVERSE` é o estorno, e o estorno **devolve** estoque. Uma doação já
+entregue não pode ser estornada: o `ISSUE` da entrega já consumiu parte do
+que o `RECEIVE` tinha trazido, e devolver o valor inteiro levaria o saldo
+abaixo de zero. O estorno de uma doação que ainda está inteira devolve o
+físico e deixa a `donation` em `VOID`.
 
 ### Cada operação é dois statements, e a ordem importa
 
@@ -345,8 +357,8 @@ erro capturado vira código aqui.
 
 | Regra | Onde |
 |---|---|
-| tipo, `NOT NULL`, `enum`, conversão | `src/schemas/zod/` (`<tabela>InsertSchema` / `UpdateSchema` / `SelectSchema`, gerados por `drizzle-orm/zod`) |
-| `nome` não vazio, `email` com formato, `cep` com 8 dígitos, `renda`/`valorAluguel` `>= 0` | `refinement` no mesmo arquivo, logo abaixo da tabela que ele julga |
+| tipo, `NOT NULL`, `enum`, conversão | `src/schemas/api/` (`<recurso>CreateSchema` / `UpdateSchema` / `Schema`, escritos à mão) |
+| `nome` não vazio, `email` com formato, `cep` com 8 dígitos, `renda`/`valorAluguel` `>= 0` | no mesmo schema, com a mensagem em português, que serve ao formulário |
 | `INVALID_TRANSITION` | o handler do verbo, que conhece o estado anterior, que nenhum schema de payload enxerga |
 | `INVALID_REFERENCE` | `FOREIGN KEY` do D1, mapeado em `handleApiError` (`src/worker/api/errors.ts`) |
 | `INSUFFICIENT_STOCK`, `NEGATIVE_STOCK`, `INVALID_RELEASE` | o trigger `ledger_guard` do D1, mapeado no mesmo `handleApiError` |
@@ -365,7 +377,7 @@ carrega uma mensagem utilizável, e o `handleApiError` precisa saber lê-la.
 
 ### `.refine()` vaza português para a resposta da API
 
-As mensagens dos refinements em `src/schemas/zod/` estão em português porque
+As mensagens dos schemas em `src/schemas/api/` estão em português porque
 servem à mensagem de campo do formulário. A API responde em inglês. As duas
 coisas só convivem porque `errorFromIssue` **ignora `issue.message` em quase
 todo caso**: ele reconstrói a frase em inglês a partir de `issue.code`, e a

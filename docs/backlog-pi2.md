@@ -15,7 +15,7 @@ Estado conferido em 05/10/2026.
 | JavaScript/TypeScript | ✅ | Todo o código novo é TS, com `strict` e `noUnusedLocals` |
 | Hospedagem em nuvem | ✅ | Cloudflare Workers, deploy automático na `main` |
 | Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
-| Testes | ⚠️ | `npm test` (`tsx tests/api.ts`) e `npm run test:inventory` — as duas suítes estão **desligadas** no meio da migração para o ledger |
+| Testes | ✅ | `npm test` (38 casos do contrato, com D1 de mentira) e `npm run test:inventory` (a suíte do ledger, contra o D1 local). As duas passam, e o `npm test` está no gate do build |
 | Consumo de API externa | ⏳ | ViaCEP — ver [`future/`](future/README.md) |
 | Acessibilidade | ⏳ | Parcial: `label` associado e foco visível nas telas; falta teste com axe |
 
@@ -58,12 +58,15 @@ Estado conferido em 05/10/2026.
    mensagem.
 6. ⏳ **Fluxo de convite por link** — admin convita, usuário aceita e entra na
    organização. Depende do item 7.
-7. ❌ **Multi-tenancy** — **é o buraco mais importante.** Falta a coluna
-   `organization_id` nas tabelas de domínio e o middleware que filtra as
-   queries. Rastreado pela
-   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13). Enquanto não
-   existir, a API não deve receber dados reais. Não implementado nesta rodada:
-   ver [`future/`](future/README.md).
+7. ✅ **Multi-tenancy** — **não vai existir, e essa é a decisão.** Uma
+   instância do sistema serve **uma** instituição, e outra instituição é outro
+   deployment, com o seu próprio banco. Não existe `organization_id` em
+   nenhuma tabela de domínio, e nenhuma query filtra por instituição. O
+   `organization` do Better Auth **está ativo** e é a isca mais fácil do
+   repo, porque parece que o filtro existe. Ele não existe, e não deve.
+   Rastreado pela
+   [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13); o
+   raciocínio, em [`frozen/seguranca.md`](frozen/seguranca.md).
 8. ✅ **Redesenho do estoque** — **decidido e em implementação**. A primeira
    versão (contadores `on_hand` / `reserved_quantity` e tabelas de linha) saiu;
    o modelo final é um **ledger de movimentos**, com o saldo como cache
@@ -138,10 +141,12 @@ Estado conferido em 05/10/2026.
 
 ### O que falta
 
-1. **A implementação do ledger** — a migration que troca as tabelas de linha
-   pelo `ledger`, o trigger, a reconciliação, as rotas novas (`/stock`,
-   `/ledger`, `/donations/:id/void`) e a reescrita das duas suítes de teste. O
-   plano está em [`estado-atual.md`](estado-atual.md).
+1. ✅ **A implementação do ledger** — a migration que troca as tabelas de linha
+   pelo `ledger`, o trigger `ledger_guard`, a reconciliação diária, as rotas
+   novas (`/stock`, `/ledger`, `/donations/:id/void`,
+   `/deliveries/:id/complete`, `/deliveries/:id/cancel`) e a reescrita das duas
+   suítes de teste. Feito em 20/10/2026; o estado está em
+   [`estado-atual.md`](estado-atual.md).
 2. **A tela do saldo e a do histórico** — `GET /api/v1/stock` (item, em estoque,
    reservado, disponível) e `GET /api/v1/ledger`, que é a **primeira tela com
    paginação no servidor** do app.
@@ -151,14 +156,17 @@ Estado conferido em 05/10/2026.
 4. **Os botões de ação** — concluir entrega, cancelar entrega e estornar
    doação. As transições de estoque não são CRUD: são verbos com a
    `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
-5. ⏳ **O `npm test` de volta ao gate do build** — hoje `package.json` tem
-   `lint && tsc -b && vite build`, e o teste não roda no build.
-6. ⏳ **`db-seed` e o caminho do `getPlatformProxy()`** — `wrangler d1 migrations
-   apply --local` e o `getPlatformProxy()` do seed não compartilharam o estado
-   numa execução limpa: com o diretório de estado apagado, `apply` não criou as
-   tabelas e o seed morreu com `no such table`. O contorno foi rodar a migration
-   versionada com `wrangler d1 execute --local --file=`. Vale descobrir por que os
-   dois não conversam, porque o sintoma é `db-seed` quebrado sem aviso.
+5. ✅ **O `npm test` de volta ao gate do build** — `package.json` tem
+   `lint && tsc -b && npm test && vite build` desde 20/10/2026.
+6. ✅ **`db-seed` e o caminho do `getPlatformProxy()`** — o `apply --local` e o
+   `getPlatformProxy()` do seed conversam, e o seed roda em cima da migration do
+   ledger. O seed escreve os movimentos **na mesma ordem que a API** — a entrada
+   no ledger e, logo depois, o saldo — porque a guarda mora no trigger, e o
+   trigger lê o saldo do item.
+7. ⏳ **O frontend migrar para o contrato** — o `src/schemas/zod/` saiu em
+   20/10/2026, e o frontend ainda o importa. São 47 erros de tipo, e é o que
+   segura o `tsc -b` do projeto `app`. Ver
+   [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
 
 ## Fora do escopo do MVP
 

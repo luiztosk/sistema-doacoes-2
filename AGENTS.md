@@ -17,19 +17,18 @@ fonte da verdade de cada assunto.
 
 ```bash
 npm run dev            # Vite dev server (não wrangler dev)
-npm test               # tsx tests/api.ts — 28 casos da API
-npm run test:inventory # tsx tests/inventory.ts — as operações de estoque, contra o D1 local
+npm test               # tsx tests/api.ts — 38 casos do contrato, com D1 de mentira
+npm run test:inventory # tsx tests/inventory.ts — a suíte do ledger, contra o D1 local
 npm run lint           # eslint .
-npm run build          # lint + tsc -b + vite build
+npm run build          # lint + tsc -b + npm test + vite build
 npm run check          # build + wrangler deploy --dry-run
-npm run update-openapi # sobe o dev server, baixa o openapi.json e regenera schema.d.ts
+npm run update-openapi # gera o openapi.json do contrato e o schema.d.ts
 ```
 
-> ⚠️ **O `npm test` saiu do gate do build.** `package.json` tem `lint && tsc -b &&
-> vite build`, e o `npm test` **não** roda no build — apesar de este arquivo e
-> [`docs/arquitetura.md`](docs/arquitetura.md) dizerem, durante anos, que um
-> teste vermelho bloqueava o deploy. **Ele volta ao gate** como parte do plano
-> do ledger.
+> ✅ **O `npm test` voltou ao gate do build** em 20/10/2026, com o ledger.
+> `package.json` tem `lint && tsc -b && npm test && vite build`. O
+> `npm run test:inventory` **não** está no gate: ele precisa do D1 local
+> semeado, e o CI não tem esse estado.
 
 O `build` é o que o **Cloudflare Builds executa a cada push**, em `&&`, então um
 erro de lint **impede o deploy** e a `main` exige que o check passe. Não remova
@@ -91,12 +90,16 @@ em produção.
 | Caminho | O que é |
 |---|---|
 | `src/worker/` | API Hono. `index.ts` monta tudo e compõe as rotas OpenAPI |
+| `src/worker/app.ts` | **A instância do app.** Ela mora aqui porque o registro de schemas nomeados do OpenAPI é do app, e a rota precisa do schema registrado no momento em que é definida |
 | `src/worker/routes/{contacts,inventory}/` | Uma rota por recurso, sobre `@hono/zod-openapi` |
+| `src/worker/routes/index.ts` | A lista de todas as rotas, e quem monta o app no `index.ts` e no gerador do `openapi.json` |
 | `src/worker/api/errors.ts` | Envelope de erro e tradução de erro do D1 |
+| `src/worker/api/stock.ts` | As operações de estoque: a entrada no ledger e o cache, na ordem que a guarda exige |
+| `src/worker/scheduled.ts` | A reconciliação diária, como handler de cron |
 | `src/schemas/api/` | **O contrato da API.** Zod escrito à mão, um arquivo por recurso. A fonte da verdade |
 | `src/schemas/db/` | As tabelas do Drizzle. `schemas.ts` é o barrel que o `drizzle.config.ts` consome |
 | `src/schemas/db/auth.ts` | **Gerado.** Não editar à mão |
-| `src/schemas/zod/` | **Deprecado.** Zod gerado da tabela, com `drizzle-orm/zod`. Sai com a migração das rotas |
+| `src/schemas/zod/` | **Saiu em 20/10/2026**, com a migração das rotas. O frontend ainda o importa, e é o que segura o `tsc -b` |
 | `src/schemas/openapi/schema.d.ts` | **Gerado** pelo `openapi-typescript`, a partir do `openapi.json` |
 | `openapi.json` | **Gerado** pelo servidor. É o contrato publicado, e a fonte do tipo do cliente |
 | `src/react-app/` | SPA React, TanStack Router, shadcn sobre Base UI |
@@ -333,9 +336,10 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 10. **A API ainda não está pronta para produção**: não há papéis nem `403` em
     lugar nenhum, e a guarda do estoque lê o cache — que é reconciliado, mas só
     uma vez por dia. Ver [`docs/frozen/api.md`](docs/frozen/api.md).
-11. O `notFound` em `src/worker/index.ts` responde `"Rota não encontrada."` em
-    português, quebrando a regra de mensagem em inglês do
-    [`docs/frozen/api.md`](docs/frozen/api.md). Corrigir junto, ou não mexe.
+11. **O `notFound` responde em inglês e mora em `src/worker/app.ts`.** Ele
+    responde `{"error": {"code": "NOT_FOUND", "message": "Route not found."}}`, e
+    ficou no `app.ts` — e não no `index.ts` — porque a suíte de contrato monta
+    o app sem o `index.ts`, e o 404 de rota desconhecida é um caso dela.
 12. **No logout, use `setQueryData(key, null)` e nunca `removeQueries`.** Remover
     tira a query do cache enquanto o observador dela ainda está montado, e nenhuma
     montagem posterior volta a buscar — o `invalidateQueries` do login passa a não
@@ -389,7 +393,7 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
 19. **Erro de mutation não aparece na tela.** Não há `Alert`, nem `toast`, nem
     `errorMap` por campo para falha de servidor: o `MutationCache` em
     `lib/query-client.ts` joga no `console` e pronto. As mensagens do zod em
-    `src/schemas/zod/` estão em português e servem à validação de campo do
+    `src/schemas/api/` estão em português e servem à validação de campo do
     formulário, mas a API responde em inglês via `errors.ts` — são públicos
     distintos, e não se traduz o mesmo texto. Ver o item 5 de
     [`docs/backlog-pi2.md`](docs/backlog-pi2.md).
@@ -452,9 +456,34 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     saiu: derivar o schema da API da tabela faz a API virar um despejo do
     banco, e a lista passa a devolver a linha inteira — endereço incluído.
     **Ao criar ou mexer num recurso, o schema do contrato é o que se escreve**;
-    o Drizzle segue o contrato, e não o contrário. E o `src/schemas/zod/` é
-    **deprecado**: ele ainda existe porque as rotas e o frontend ainda o
-    importam, e ele sai com a migração das rotas.
+    o Drizzle segue o contrato, e não o contrário. E o `src/schemas/zod/` **saiu
+    em 20/10/2026**, com a migração das rotas — o frontend ainda o importa, e é
+    o que segura o `tsc -b` do projeto `app`.
+30. **O D1 recusa `DROP TABLE` de uma tabela que outra referencia, e recusa
+    desligar a chave estrangeira.** `PRAGMA foreign_keys=OFF` é no-op dentro de
+    uma transação, e é por isso que a migration do ledger renomeia a tabela
+    antiga, cria a nova, copia e só então derruba a antiga — e recria os filhos
+    depois, para que a referência aponte para o nome novo. O `drizzle-kit`
+    gera o `DROP` no meio, e ele **não roda** no D1.
+31. **`ApiError` é uma classe própria, e não um `HTTPException`.** O
+    `handleApiError` precisa distinguir "a API recusou" — que tem código e
+    mensagem — de "o Hono recusou" (content-type errado, JSON malformado). Com
+    um `HTTPException` para os dois, o ramo do `400` engolia o envelope da API
+    e todo erro de domínio virava `INVALID_JSON`.
+32. **A resposta é validada contra o contrato antes de sair, e isso pega bug de
+    verdade.** O `.strict()` do schema de resposta reprova uma lista carregando
+    campo a mais. As listas de beneficiário, doador e ajuste estavam
+    selecionando todas as colunas, e a validação estrita acusou — é o que
+    garante que a lista não devolva o endereço de todo mundo.
+33. **A ordem do lote de estoque é load-bearing, e o `stockBatch` é quem
+    garante.** A entrada no ledger vem antes do cache, porque a guarda mora no
+    trigger — e o trigger lê o saldo do item. As entradas de um documento
+    entram num statement só, via `json_each`, e o `WHERE true` é obrigatório:
+    sem ele o parser do SQLite não distingue o `ON` do join do `ON` do
+    upsert.
+34. **O `update-openapi` não sobe mais servidor.** Ele monta o app e chama o
+    `getOpenAPI31Document`, porque o `src/auth.config.ts` importa
+    `cloudflare:workers` e não roda fora do runtime do Worker.
 
 ## Branches e commits
 

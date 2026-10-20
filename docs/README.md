@@ -37,14 +37,18 @@ descrição do código.
    código a espelhar; `contacts/beneficiaries` é a referência de um contato e
    `inventory/item` a de um catálogo.
 2. [`../AGENTS.md`](../AGENTS.md) para o estilo e as armadilhas.
-3. O backend está **congelado**: `frozen/` é leitura.
+3. O backend está **congelado**: `frozen/` é leitura. A branch
+   `mess/but-in-a-good-way` levanta o congelamento, porque o modelo de
+   estoque está sendo trocado por um ledger — ver a exceção no
+   [`../AGENTS.md`](../AGENTS.md).
 
 Três coisas que esses documentos não deixam óbvias:
 
-1. **O esquema é a fonte da verdade, e é conferido.** As colunas e os tipos saem
-   de `src/schemas/db/`, e o gerador do seed valida cada linha que
-   produz contra o `*SelectSchema` de `src/schemas/zod/`. Nenhuma tela inventa
-   campo.
+1. **O contrato é a fonte da verdade, e é conferido.** As colunas e os tipos
+   saem de `src/schemas/db/`, e o contrato da API está em zod escrito à mão, em
+   `src/schemas/api/`: o gerador do seed valida cada linha que produz contra o
+   schema do contrato, e a API valida o corpo e a resposta contra ele. Nenhuma
+   tela inventa campo.
 2. **A instituição é a instância.** Não existe `organization_id` em nenhuma
    tabela de domínio, e não vai existir: uma instância serve uma instituição, e
    outra instituição é outro deployment. O plugin `organization()` do Better Auth

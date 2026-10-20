@@ -1,5 +1,16 @@
 # Como adicionar a tabela de um recurso
 
+> ⚠️ **O contrato mudou em 20/10/2026, e o frontend ainda não migrou.** Os
+> schemas da tabela saíram de `src/schemas/zod/` — que era gerado da tabela, e
+> saiu — e agora vivem em **`src/schemas/api/`**, escritos à mão. A linha da
+> lista é o **`<recurso>ListSchema`**, e ela é **mais estreita** que o detalhe:
+> o `Pick` da tela sai dela, e é ela que a API devolve. A resposta vem no
+> envelope **`{ data: ... }`**, e a chave estrangeira do item é **`itemId`**.
+>
+> São **47 erros de tipo** no projeto `app` até a migração, e é ela que segura
+> o `tsc -b` — e portanto o `npm run build`. A lista do que mexer, arquivo por
+> arquivo, está em [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
+
 `contacts/beneficiaries` é a referência de uma tabela de **contato**: ela já
 está com a linha clicável, o botão de detalhe e o `Pick` que a tela carrega, e
 é o que o build e o PR validam. `contacts/donors` aplica a mesma receita com

@@ -60,15 +60,15 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 |---|---|---|
 | `id` | text PK | UUID |
 | `name` | text | |
-| `telefone` | text | |
+| `telefone` | text | obrigatório, E.164 |
 | `email` | text | opcional |
-| `cep` | text | preenchido via ViaCEP |
-| `logradouro` | text | ViaCEP |
-| `numero` | text | manual |
+| `cep` | text | preenchido via ViaCEP, opcional |
+| `logradouro` | text | ViaCEP, opcional |
+| `numero` | text | manual, opcional |
 | `complemento` | text | opcional |
-| `bairro` | text | ViaCEP |
-| `cidade` | text | ViaCEP |
-| `uf` | text | sigla de UF, enum das 27, opcional |
+| `bairro` | text | ViaCEP, obrigatório |
+| `cidade` | text | ViaCEP, obrigatório |
+| `uf` | text | sigla de UF, enum das 27, obrigatório |
 | `tipoImovel` | text | `ALUGADO` \| `PROPRIO`, opcional |
 | `valorAluguel` | integer | em reais, opcional |
 | `estadoCivil` | text | `SOLTEIRO` \| `CASADO` \| `DIVORCIADO` \| `VIUVO` \| `UNIAO_ESTAVEL`, opcional |
@@ -94,9 +94,15 @@ detalhados (o diagrama antigo do README estava desatualizado — este é o model
 |---|---|---|
 | `id` | text PK | |
 | `name` | text | |
-| `telefone` | text | |
+| `telefone` | text | obrigatório, E.164 |
 | `email` | text | opcional |
 | endereço | mesmas 7 colunas de endereço do `beneficiary` | ViaCEP |
+
+O `telefone`, o `bairro`, a `cidade` e a `uf` são `NOT NULL` nas duas
+tabelas, e é o que o contrato exige: o zod em
+[`src/schemas/api/beneficiary.ts`](../../src/schemas/api/beneficiary.ts) e
+[`src/schemas/api/donor.ts`](../../src/schemas/api/donor.ts) recusa o
+`POST` sem eles. O Drizzle segue o contrato, e não o contrário.
 
 ## Estoque: o ledger
 
@@ -249,15 +255,22 @@ BEGIN
          < -NEW.reserved_delta;
 
   SELECT RAISE(ABORT, 'NEGATIVE_STOCK')
-   WHERE NEW.kind IN ('ADJUST', 'COUNT')
+   WHERE NEW.kind IN ('ADJUST', 'COUNT', 'REVERSE')
      AND (SELECT on_hand FROM inventory_item WHERE id = NEW.item_id) + NEW.on_hand_delta
-         < (SELECT reserved FROM inventory_item WHERE id = NEW.item_id);
+         < (SELECT reserved FROM inventory_item WHERE id = NEW.item_id) + NEW.reserved_delta;
 END;
 ```
 
 O `RAISE(ABORT, ...)` chega ao Worker como `SQLITE_CONSTRAINT_TRIGGER`, com a
 mensagem intacta, e **reverte o lote inteiro**. Ver
 [`api.md`](api.md#a-guarda-vive-no-banco).
+
+O `REVERSE` entrou na guarda do `NEGATIVE_STOCK` porque o estorno de uma
+doação **devolve** o estoque, e a devolução não pode passar do que ainda
+está lá: uma doação já entregue não pode ser estornada, porque o `ISSUE` da
+entrada já consumiu parte do que o `RECEIVE` tinha trazido. Sem essa regra, o
+estorno levava o saldo abaixo de zero — e a segunda invariante, a que prova
+que o estoque nunca overcommitou, deixava de valer.
 
 ### Índices
 

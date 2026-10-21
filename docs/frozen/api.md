@@ -301,7 +301,7 @@ problema encontrado, então um corpo com três campos inválidos não vem com tr
 erros.
 
 O **código** é o contrato: é nele que o cliente deve ramificar, e é ele que a
-coleção do Insomnia verifica. A `message` é uma frase em inglês, escrita para
+suíte de contrato verifica. A `message` é uma frase em inglês, escrita para
 quem está olhando a resposta, e vem em três formas — a genérica
 (`Field 'name' has an invalid value.`) para valor inválido, a específica
 quando a regra diz mais do que isso (`Field 'uf' must be one of: …`), e a que
@@ -415,24 +415,10 @@ Três coisas:
 
 Fora dessas, o D1 não recusa nada. A
 [tabela acima](#regras-de-domínio) é a lista do que a API recusa, e vale apenas
-para o que passa por ela — D1 Studio, `npm run db-seed` e scripts futuros
+para o que passa por ela — D1 Studio, `bun run db-seed` e scripts futuros
 escrevem sem nenhum desses filtros.
 
 ### `DELETE` em item com movimentação
 
 Um item que já aparece no ledger **não pode ser apagado**: o `FOREIGN KEY` recusa
 e a resposta é `409 CONFLICT`. O caminho é reclassificar o item, não apagar.
-
-## Testes com Insomnia
-
-A coleção versionada em `insomnia/` cobre o fluxo de listar, criar, consultar,
-atualizar e excluir de cada recurso, além dos casos negativos. Cada request
-envia o cookie `better-auth.session_token` e tem assertions no `afterResponse`.
-
-1. Inicialize e popule o D1 local: `npm run local-db-init`.
-2. Rode `npm run dev`.
-3. Importe o Environment e a Collection do YAML em `insomnia/`.
-4. Execute a coleção na ordem apresentada pelo Collection Runner.
-
-A coleção usa `{{ _.BASE_URL }}` e salva os IDs criados em variáveis como
-`{{ _.BENEFICIARY_CREATED_ID }}`, então os requests dependem da execução anterior.

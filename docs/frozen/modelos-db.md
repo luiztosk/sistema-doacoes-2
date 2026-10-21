@@ -289,7 +289,7 @@ movimentações é recusado pelo `FOREIGN KEY` do D1.
 
 ## Seed
 
-`npm run db-seed` gera o banco. O gerador **não sorteia saldo**: ele sorteia os
+`bun run db-seed` gera o banco. O gerador **não sorteia saldo**: ele sorteia os
 movimentos — doações, entregas, contagens, ajustes — e deriva o saldo, aplicando
 cada movimento numa simulação em memória. O `inventory_item` é escrito no fim, com
 o resultado. Isso faz o banco nascer consistente por construção, e não por
@@ -308,7 +308,7 @@ quantidade não teria o que somar, porque as outras 8 categorias são quase tudo
 ## Migrations
 
 ```bash
-npx drizzle-kit generate                                        # gera a migration
+drizzle-kit generate                                        # gera a migration
 wrangler d1 migrations apply prod-sistema-doacoes-2 --local    # desenvolvimento
 wrangler d1 migrations apply prod-sistema-doacoes-2 --remote   # produção
 ```

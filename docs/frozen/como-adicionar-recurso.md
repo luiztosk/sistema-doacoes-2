@@ -4,6 +4,10 @@
 > documento é o registro de como se faria, não uma tarefa. Para as telas, leia
 > [`../frontend-tabela.md`](../frontend-tabela.md) e
 > [`../frontend-formulario.md`](../frontend-formulario.md).
+>
+> A branch `mess/but-in-a-good-way` levanta o congelamento, porque o modelo de
+> estoque está sendo trocado por um ledger — ver a exceção no
+> [`../../AGENTS.md`](../../AGENTS.md).
 
 ## API: como adicionar um recurso
 
@@ -22,9 +26,10 @@
    schema entra no documento do OpenAPI pelo registro:
    `app.openAPIRegistry.register("<Recurso>", <recurso>Schema)` — e a rota usa
    o schema **devolvido** pelo registro, que é o que vira `$ref`.
-4. `npm run gen-drizzle` e a migration.
+4. `bun run gen-drizzle` e a migration.
 5. Gerador em `scripts/generate.ts` — a tabela entra em `ROWS_PER_TABLE` e
-   ganha uma função `create*` que valida cada linha com o `*SelectSchema`.
+   ganha uma função `create*` que valida cada linha com o schema do
+   **contrato**.
 6. Casos em `tests/api.ts`.
 7. **Atualizar [`api.md`](api.md)** (seção de endpoints e, se vale, a tabela de
    códigos de erro) e [`modelos-db.md`](modelos-db.md).

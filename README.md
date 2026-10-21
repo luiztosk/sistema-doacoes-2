@@ -30,17 +30,17 @@ git clone https://github.com/luiztosk/sistema-doacoes-2.git && cd sistema-doacoe
 
 2. Instale as dependencias
 ```bash
-npm install
+bun install
 ```
 
 3. Inicialize o DB local (wrangler/D1) (também roda as migrations, toda vez que for preciso)
 ```bash
-npm run local-db-init
+bun run db-reset
 ```
 
 4. Inicie o servidor de desenvolvimento com
 ```bash
-npm run dev
+bun run dev
 ```
 
 Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
@@ -50,13 +50,15 @@ Pode acessar o app local em: [http://localhost:5173](http://localhost:5173).
 As rotas de domínio exigem sessão e ficam sob `/api/v1` (ver [`docs/api.md`](docs/frozen/api.md)).
 Depois de fazer login, envie o cookie de sessão:
 ```bash
-curl localhost:5173/api/v1/assistidos \
+curl localhost:5173/api/v1/beneficiaries \
   -H "Cookie: better-auth.session_token=<seu-token>"
 ```
-> deve retornar `{ "data": [ ... ] }` com a lista de assistidos.
+> deve retornar `{ "data": [ ... ] }` com a lista de beneficiários.
 
-Sem sessão, a resposta é `401`. Os demais testes estão na pasta `./insomnia`, basta
-importar o Environment e a Collection no seu Insomnia (Vault Local).
+Sem sessão, a resposta é `401`.
+
+A suíte de contrato é `bun run test` (roda as rotas de verdade, com um D1 de
+mentira) e a suíte do ledger é `bun run test:inventory`, contra o D1 local.
 
 ## Contribuindo com o projeto (membros do grupo)
 
@@ -75,7 +77,7 @@ importar o Environment e a Collection no seu Insomnia (Vault Local).
 Detalhes do fluxo de deploy e de testes: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 > A preview URL usa as mesmas bindings da produção, então testar por ela escreve
-> no banco `prod-sistema-doacoes-2`. Ele só tem dado de seed e `npm run db-seed`
+> no banco `prod-sistema-doacoes-2`. Ele só tem dado de seed e `bun run db-seed`
 > recria tudo.
 
 
@@ -94,8 +96,8 @@ podemos usar tbm o Vitest, que é uma ferramenta de testes.
 - nuvem: Cloudflare Workers
 - banco de dados: Cloudflare D1
 - controle versão: git + GitHub
-- testes automatizados: `npm test` (`tsx tests/api.ts`)
-- testes manuais da API: Insomnia
+- testes automatizados: `bun run test` (`tsx tests/api.ts`)
+- testes manuais da API: o dev server, no navegador
 
 ## Materiais para estudo / referência bibliográfica
 

@@ -16,8 +16,9 @@ Registro das decisões técnicas do PI II. Última atualização: 28/09/2026.
 | Formulários | TanStack Form | Estado do formulário é o payload; valida com o mesmo schema da API |
 | Tabelas | TanStack Table v9 | Ordenação, filtro e paginação; `aria-sort` é nosso |
 | Autenticação | Better Auth | Cuida de sessão, CSRF e senhas |
-| Testes | `tsx tests/api.ts` (automatizados) + Insomnia (exploração manual da API) | Testes automatizados são requisito do tema do PI II |
+| Testes | `bun run test` (automatizados) + `bun run test:inventory` (o ledger, contra o D1 local) | Testes automatizados são requisito do tema do PI II |
 | Controle de versão | Git + GitHub | Branch `main` protegida; trabalho via feature branches + PR |
+| Gerenciador de pacotes | bun | Um lockfile só (`bun.lock`); o `npm ci` não instalava o repo, por causa do peer do TypeScript 6 |
 
 > Next.js foi considerado e descartado em favor do Hono, que é mais leve e mais
 > integrado ao ecossistema do Cloudflare Workers.
@@ -35,7 +36,7 @@ Registro das decisões técnicas do PI II. Última atualização: 28/09/2026.
 
 A preview roda com as mesmas *bindings* da produção, ou seja, no mesmo banco
 `prod-sistema-doacoes-2`. **Testar manualmente pela preview URL escreve no banco
-de produção.** Hoje esse banco só tem dado de seed, e `npm run db-seed` recria
+de produção.** Hoje esse banco só tem dado de seed, e `bun run db-seed` recria
 tudo, então o risco é baixo — mas não é um ambiente isolado. Se algum dia
 precisarmos de um banco separado para testes, o caminho é migrar para Worker
 Previews (isolamento por branch) ou criar um `env` de staging no `wrangler.jsonc`.
@@ -45,14 +46,14 @@ Previews (isolamento por branch) ou criar um `env` de staging no `wrangler.jsonc
 O Cloudflare executa o script `build` do `package.json`, que hoje é:
 
 ```
-npm run lint && tsc -b && vite build
+bun run lint && tsc -b && vite build
 ```
 
 O `&&` faz o build parar no primeiro erro: um problema de lint **impede o
 deploy**. Esse build também reporta um status check no GitHub, e a `main`
 exige que ele passe — ou seja, um merge com lint quebrado não entra.
 
-> ⚠️ **O `npm test` saiu do gate.** A cadeia já teve `npm test` no meio, e
+> ⚠️ **O `bun run test` saiu do gate.** A cadeia já teve `bun run test` no meio, e
 > documentos ainda diziam que um teste vermelho bloqueava o deploy. Não bloqueia
 > mais, porque o teste não roda no build. **Ele volta ao gate** como parte do
 > plano do ledger — ver [`estado-atual.md`](estado-atual.md).
@@ -76,8 +77,8 @@ dashboard antes de suspeitar do repositório.
 
 | Camada | Comando | Quando |
 |---|---|---|
-| Automatizada | `npm run lint`, `npm test` | A cada push, via build do Cloudflare |
-| Manual | Insomnia, fluxos de tela | Em lote, sobre a preview URL do PR |
+| Automatizada | `bun run lint`, `bun run test` | A cada push, via build do Cloudflare |
+| Manual | O dev server, no navegador | Em lote, sobre a preview URL do PR |
 
 Automatizada roda sempre porque custa segundos. Manual é em lote porque custa
 minutos — mas nunca reste a testes automatizados, que são justamente o que
@@ -85,7 +86,7 @@ mantém um lote longo confiável.
 
 ### Uma terceira camada, que só roda com banco
 
-`npm test` roda contra um **stub em memória**: o D1 é substituído por um objeto
+`bun run test` roda contra um **stub em memória**: o D1 é substituído por um objeto
 que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
 pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma
 requisição anterior fez, e não executa `db.batch()` de verdade.
@@ -95,8 +96,8 @@ item só faz sentido como resultado de uma sequência de operações sobre o mes
 banco, e a guarda mora num trigger do D1. Por isso existe uma segunda suíte:
 
 ```bash
-npm run local-db-init    # migrations + tipos + seed, tudo local
-npm run test:inventory   # as 7 operações do estoque, contra o D1 local
+bun run db-reset         # banco do zero: apaga, aplica, e semeia
+bun run test:inventory   # as 7 operações do estoque, contra o D1 local
 ```
 
 [`tests/inventory.ts`](../tests/inventory.ts) cria as categorias e os itens,
@@ -119,10 +120,10 @@ então essa diferença ficaria invisível até alguém colar um id do seed numa
 chamada.
 
 Ela **não entra no gate de build**, porque precisa de um banco local com as
-migrations aplicadas: quem roda é a pessoa, com `npm run local-db-init` antes.
-Isso é o mesmo arranjo que a verificação por Insomnia, e a razão é a mesma — o
-stub não tem ciclo de vida. As asserções que o stub consegue fazer (código de
-erro, status, mensagem, validação) ficam em `npm test`; a aritmética do ledger
+migrations aplicadas: quem roda é a pessoa, com `bun run db-reset` antes.
+Isso é o mesmo arranjo da verificação manual no navegador, e a razão é a
+mesma — o stub não tem ciclo de vida. As asserções que o stub consegue fazer (código de
+erro, status, mensagem, validação) ficam em `bun run test`; a aritmética do ledger
 fica aqui.
 
 O script é autossanável: as linhas que ele cria são ancoradas em nomes
@@ -134,7 +135,7 @@ fim, de forma que uma execução interrompida não envenena a seguinte.
 Não há mais CSV em `mock_data/`. O seed gera os dados a partir dos schemas do
 contrato: `scripts/generate.ts` gera e valida cada linha contra o schema do
 recurso antes de devolvê-la, e `scripts/seed.ts` insere. O gerador é
-determinístico (`seed(42)`), então o mesmo `npm run db-seed` produz sempre as
+determinístico (`seed(42)`), então o mesmo `bun run db-seed` produz sempre as
 mesmas linhas.
 
 O gerador do ledger **não sorteia saldo**: ele sorteia os **movimentos** — doações,
@@ -253,7 +254,7 @@ as rotas passam a referenciar por `$ref`:
 const Beneficiary = app.openAPIRegistry.register("Beneficiary", beneficiarySchema);
 ```
 
-O `openapi.json` é gerado por `npm run update-openapi`, que **monta o app e
+O `openapi.json` é gerado por `bun run update-openapi`, que **monta o app e
 chama `app.getOpenAPI31Document(...)` direto** — sem servidor, sem rede, sem
 porta. O `src/auth.config.ts` importa `cloudflare:workers` e não roda fora do
 runtime do Worker, então o gerador importa `src/worker/app.ts` e

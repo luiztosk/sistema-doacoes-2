@@ -28,7 +28,7 @@ aplica a migration é o Wrangler, não o `drizzle-kit`.
 ## Gerar uma migration
 
 ```bash
-npm run gen-drizzle     # npx drizzle-kit generate
+bun run gen-drizzle     # drizzle-kit generate
 ```
 
 O drizzle-kit cria uma pasta nova em `drizzle/migrations/`, com `migration.sql` e
@@ -56,8 +56,11 @@ Os scripts que já embrulham isso:
 
 | Script | O que faz |
 |---|---|
-| `npm run local-db-init` | Gera auth schema + migration, aplica no banco local, roda `wrangler types` e semeia |
-| `npm run remote-db-init` | Mesma coisa, mas com `--remote` — **aplica em produção** |
+| `bun run db-reset` | Apaga o banco local, gera o auth schema e a migration, aplica as migrations, roda `wrangler types` e semeia |
+| `bun run db-reset-remote` | Mesma coisa, mas no remoto — **aplica em produção** |
+
+O `db-reset` é o caminho do zero, e é o que o `bun run db-init --local` faz sem
+apagar o estado.
 
 ## Recriar o banco do zero
 
@@ -66,12 +69,11 @@ Foi a decisão tomada para os 26 `check()` que ficaram no banco sem estar no
 migrations de um schema novo e semeamos em cima. Vale para o local e para o
 remoto.
 
-O `local-db-init` aplica as migrations que já existem, então recomeçar exige
-descartar o estado local antes:
+O `db-reset` **apaga o estado local** antes de aplicar, então recomeçar do
+zero é um comando só:
 
 ```bash
-rm -rf .wrangler/state          # apaga o banco local (recriado no passo seguinte)
-npm run local-db-init           # migrations + tipos + seed, tudo local
+bun run db-reset                # apaga o banco local, aplica, e semeia
 ```
 
 No remoto é o mesmo raciocínio, com o cuidado de sempre: criar o banco zerado e
@@ -81,23 +83,23 @@ escreve sempre no local, porque usa `getPlatformProxy()`.
 Ordem ao mexer no schema:
 
 1. edite `src/schemas/db/`
-2. `npm run gen-drizzle` e confira o `migration.sql` que saiu
+2. `bun run gen-drizzle` e confira o `migration.sql` que saiu
 3. commit do schema **e** da pasta da migration
-4. `rm -rf .wrangler/state && npm run local-db-init` para validar do zero
+4. `bun run db-reset` para validar do zero
 5. só depois aplique no remoto
 
 ## Dados de desenvolvimento
 
 Não existe `seeds/baseline.sql`. O seed é um script que **gera** os dados antes de
-gravar, a partir dos schemas zod:
+gravar, a partir do contrato:
 
 ```bash
-npm run db-seed          # npx tsx scripts/seed.ts
+bun run db-seed          # tsx scripts/seed.ts
 ```
 
 Ele usa `getPlatformProxy()`, então escreve **sempre no banco local**, mesmo sem
-`--remote`. Quem gera é `scripts/generate.ts`, que valida **cada linha** com
-o `*SelectSchema` da tabela antes de inserir — se o gerador produzir algo fora do
+`--remote`. Quem gera é `scripts/generate.ts`, que valida **cada linha** com o
+schema do contrato antes de inserir — se o gerador produzir algo fora do
 schema, o seed para e diz qual campo e qual linha. Não é mais possível o banco
 divergir do que o gerador afirmou, que era a raiz dos bugs da
 [#44](https://github.com/luiztosk/sistema-doacoes-2/issues/44).
@@ -116,22 +118,55 @@ id repetido ou um nome de catálogo repetido estoura o `UNIQUE` e o seed sai com
 código 1, em vez de pular a linha em silêncio. Rodar o seed duas vezes seguidas
 falha — isso é intencional, o banco de demonstração se recria do zero.
 
+### O seed do modelo com ledger
+
+O gerador **não sorteia saldo**: ele sorteia os **movimentos** — doações,
+entregas, contagens, ajustes — e deriva o saldo, aplicando cada movimento numa
+simulação em memória. O `inventory_item` é escrito no fim, com o resultado. Duas
+consequências, e as duas valem:
+
+- o gerador só sorteia uma entrega para item que tem disponibilidade, então ele
+  respeita a mesma guarda que a API;
+- e ele **valida as duas invariantes antes de devolver**, então um seed que
+  produzisse drift falharia em vez de escrever.
+
+E o seed escreve os movimentos **na mesma ordem que a API** — a entrada no
+ledger e, logo depois, o saldo — porque a guarda mora no trigger, e o trigger
+lê o saldo do item. Sem essa ordem, o trigger veria o saldo zerado e recusaria a
+primeira reserva.
+
+### O banco do zero
+
+O `bun run db-reset` **apaga o estado local** e refaz tudo, na ordem:
+
+| Passo | O que faz |
+|---|---|
+| 1 | `gen-auth` — gera `src/schemas/db/auth.ts` com o gerador do Better Auth |
+| 2 | `gen-drizzle` — gera a migration, se o schema do banco mudou |
+| 3 | `wrangler d1 migrations apply --local` — aplica as migrations |
+| 4 | `cf-typegen` — gera `worker-configuration.d.ts` |
+| 5 | `db-seed` — gera e grava os dados |
+
+O passo 2 é o único que **pode escrever no repo**: ele cria uma migration nova
+quando o schema mudou, e ela precisa ser revisada e commitada antes de seguir.
+Num banco já em dia, ele não cria nada.
+
 Depois de `git pull`, o caminho é:
 
 ```bash
-npm run local-db-init    # migration + tipos + seed, tudo local
+bun run db-reset         # banco do zero: apaga, aplica, e semeia
 ```
 
 ## Regras da casa
 
 1. **Nunca use `drizzle-kit push`.** Ele ignora os arquivos de migration e quebra
    a paridade entre local e remoto. Sempre `generate`.
-2. **`src/schemas/db/auth.ts` é gerado.** Não edite à mão: rode `npm run gen-auth`,
+2. **`src/schemas/db/auth.ts` é gerado.** Não edite à mão: rode `bun run gen-auth`,
    que chama o gerador do Better Auth e escreve o arquivo. É ele que produz as tabelas
    `user`, `session`, `account`, `organization`, `member`, `invitation` e
    `verification`.
 3. **Migrations aplicadas não se editam.** Se algo está errado, escreva outra.
 4. **Nunca commite `.wrangler/`.** Já está no `.gitignore`; ele guarda o banco
    local.
-5. **Não rode nada com `--remote` sem querer.** `remote-db-init` e
+5. **Não rode nada com `--remote` sem querer.** `db-reset-remote` e
    `migrations apply --remote` escrevem em produção.

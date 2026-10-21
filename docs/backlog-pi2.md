@@ -15,7 +15,7 @@ Estado conferido em 05/10/2026.
 | JavaScript/TypeScript | ✅ | Todo o código novo é TS, com `strict` e `noUnusedLocals` |
 | Hospedagem em nuvem | ✅ | Cloudflare Workers, deploy automático na `main` |
 | Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
-| Testes | ✅ | `npm test` (38 casos do contrato, com D1 de mentira) e `npm run test:inventory` (a suíte do ledger, contra o D1 local). As duas passam, e o `npm test` está no gate do build |
+| Testes | ✅ | `bun run test` (38 casos do contrato, com D1 de mentira) e `bun run test:inventory` (a suíte do ledger, contra o D1 local). As duas passam, e o `bun run test` está no gate do build |
 | Consumo de API externa | ⏳ | ViaCEP — ver [`future/`](future/README.md) |
 | Acessibilidade | ⏳ | Parcial: `label` associado e foco visível nas telas; falta teste com axe |
 
@@ -156,8 +156,8 @@ Estado conferido em 05/10/2026.
 4. **Os botões de ação** — concluir entrega, cancelar entrega e estornar
    doação. As transições de estoque não são CRUD: são verbos com a
    `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
-5. ✅ **O `npm test` de volta ao gate do build** — `package.json` tem
-   `lint && tsc -b && npm test && vite build` desde 20/10/2026.
+5. ✅ **O `bun run test` de volta ao gate do build** — `package.json` tem
+   `lint && tsc -b && bun run test && vite build` desde 20/10/2026.
 6. ✅ **`db-seed` e o caminho do `getPlatformProxy()`** — o `apply --local` e o
    `getPlatformProxy()` do seed conversam, e o seed roda em cima da migration do
    ledger. O seed escreve os movimentos **na mesma ordem que a API** — a entrada
@@ -165,10 +165,23 @@ Estado conferido em 05/10/2026.
    trigger lê o saldo do item.
 7. ✅ **O frontend migrar para o contrato** — feito em 21/10/2026. O
    `src/schemas/zod/` saiu em 20/10/2026 e o frontend migrou no dia seguinte:
-   os formulários, as tabelas, as queries e as rotas consume
+   os formulários, as tabelas, as queries e as rotas consomem
    `@/schemas/api/`. Vieram junto as telas de saldo e de histórico, os botões
    de ação do registro e a lista de itens do formulário de documento. O
    `tsc -b` do projeto `app` está limpo.
+8. ✅ **Um gerenciador de pacotes só** — o bun, com o `bun.lock` como lockfile
+   único. O `package-lock.json` saiu porque ele já estava fora de sincronia
+   com o `package.json`, e o `npm ci` falhava com `ERESOLVE`: o
+   `openapi-typescript` pede `typescript@^5` e o repo usa o TypeScript 6. O bun
+   não impõe a faixa de peer, e `bun install --frozen-lockfile` é o que o CI
+   roda.
+9. ⏳ **A camada de teste manual** — a coleção do Insomnia saiu em 21/10/2026:
+   os 49 requests eram do modelo antigo (`/api/v1/assistidos`, `/coletas`,
+   `/entregas`, `/itens`) e carregavam um token de sessão no git. A camada
+   manual é hoje o **dev server, no navegador**. Falta um script de *smoke*
+   contra ele — o fluxo inteiro do ledger, com sessão de verdade, que é o que as
+   suítes automatizadas não cobrem (elas não passam pelo middleware de
+   sessão).
 
 ## Fora do escopo do MVP
 

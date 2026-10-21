@@ -6,28 +6,38 @@ Instruções para agentes de código neste repositório. O objetivo é registrar
 Comece por [`docs/README.md`](docs/README.md) para saber qual documento é a
 fonte da verdade de cada assunto.
 
-> **O branch `mess/but-in-a-good-way` está no meio de uma migração de modelo.**
-> O contrato novo (estoque como **ledger**) está escrito em
-> [`docs/frozen/`](docs/frozen/README.md), e o código ainda está no modelo
-> antigo. O estado exato do que está quebrado e do que falta está em
+> **O branch `mess/but-in-a-good-way` já migrou o modelo de estoque.** O
+> contrato novo (estoque como **ledger**) está escrito em
+> [`docs/frozen/`](frozen/README.md), e o código — a API e o frontend — está
+> sobre ele. O estado exato do que está pronto e do que falta está em
 > [`docs/estado-atual.md`](docs/estado-atual.md). Leia os dois antes de
 > mexer em qualquer coisa de estoque.
 
 ## Comandos
 
 ```bash
-npm run dev            # Vite dev server (não wrangler dev)
-npm test               # tsx tests/api.ts — 38 casos do contrato, com D1 de mentira
-npm run test:inventory # tsx tests/inventory.ts — a suíte do ledger, contra o D1 local
-npm run lint           # eslint .
-npm run build          # lint + tsc -b + npm test + vite build
-npm run check          # build + wrangler deploy --dry-run
-npm run update-openapi # gera o openapi.json do contrato e o schema.d.ts
+bun install             # instala as dependências (o lockfile é o bun.lock)
+bun run dev            # Vite dev server (não wrangler dev)
+bun run test               # tsx tests/api.ts — 38 casos do contrato, com D1 de mentira
+bun run test:inventory # tsx tests/inventory.ts — a suíte do ledger, contra o D1 local
+bun run lint           # eslint .
+bun run build          # lint + tsc -b + bun run test + vite build
+bun run check          # build + wrangler deploy --dry-run
+bun run update-openapi # gera o openapi.json do contrato e o schema.d.ts
+bun run db-reset      # banco local do zero: apaga, aplica as migrations e semeia
 ```
 
-> ✅ **O `npm test` voltou ao gate do build** em 20/10/2026, com o ledger.
-> `package.json` tem `lint && tsc -b && npm test && vite build`. O
-> `npm run test:inventory` **não** está no gate: ele precisa do D1 local
+> **O gerenciador de pacotes é o bun, e há um lockfile só: o `bun.lock`.** O
+> `package-lock.json` foi removido em 21/10/2026, e ele já estava fora de
+> sincronia com o `package.json` — o `npm ci` **falhava** com `ERESOLVE`, porque
+> o `openapi-typescript` pede `typescript@^5` e o repo usa o TypeScript 6. O bun
+> não impõe a faixa de peer, e `bun install --frozen-lockfile` é o que o CI
+> roda. **Não recrie o `package-lock.json`**: com dois lockfiles, o Cloudflare
+> Builds não sabe qual instalar.
+
+> ✅ **O `bun run test` voltou ao gate do build** em 20/10/2026, com o ledger.
+> `package.json` tem `lint && tsc -b && bun run test && vite build`. O
+> `bun run test:inventory` **não** está no gate: ele precisa do D1 local
 > semeado, e o CI não tem esse estado.
 
 O `build` é o que o **Cloudflare Builds executa a cada push**, em `&&`, então um
@@ -35,8 +45,8 @@ erro de lint **impede o deploy** e a `main` exige que o check passe. Não remova
 o lint da cadeia para destravar um merge.
 
 `db-seed` usa `getPlatformProxy()` e escreve **sempre no banco local**. Nada de
-`--remote` sem querer: `remote-db-init` e `d1 migrations apply --remote` escrevem
-em produção.
+`--remote` sem querer: `db-reset-remote` e `d1 migrations apply --remote`
+escrevem em produção.
 
 ## Estilo de código
 
@@ -555,12 +565,12 @@ nele, e o motivo está escrito para não parecer convite:
 
 ## Lint: por que existem duas exceções no `eslint.config.js`
 
-`npm run lint` fecha em **zero warning**. As duas exceções estão no config, e não
+`bun run lint` fecha em **zero warning**. As duas exceções estão no config, e não
 em comentário no arquivo, porque ambos são sobrescritos por ferramenta:
 `react-refresh/only-export-components` em `components/ui/**` (o shadcn exporta o
 componente e o `cva` de variantes no mesmo arquivo, que é a convenção da lib, e
 `npx shadcn add` apagaria um comentário por arquivo), e
 `reportUnusedDisableDirectives` em `worker-configuration.d.ts`, que é gerado por
-`npm run cf-typegen` e já vem com `// eslint-disable-line`.
+`bun run cf-typegen` e já vem com `// eslint-disable-line`.
 
 Se aparecer warning novo, **não** desligue a regra: ajuste o código.

@@ -5,7 +5,7 @@
 > zod está escrito, o banco tem a tabela do ledger e o trigger da guarda, a API
 > está sobre o contrato, e o **frontend** consome o contrato — inclusive as
 > telas de saldo e de histórico. As duas suítes de teste passam, e o
-> `npm run build` está verde.
+> `bun run build` está verde.
 >
 > O contrato continua em [`frozen/modelos-db.md`](frozen/modelos-db.md) e
 > [`frozen/api.md`](frozen/api.md), e o raciocínio da troca, em
@@ -60,16 +60,16 @@ endereço incluído.
 
 | Gate | Resultado |
 |---|---|
-| `npm run lint` | **zero erro** |
+| `bun run lint` | **zero erro** |
 | `tsc -b` (projeto `worker`) | **zero erro** |
 | `tsc -b` (projeto `node`) | **zero erro** |
 | `tsc -b` (projeto `app`) | **zero erro** |
-| `npm test` | **passa** — 38 casos de contrato |
-| `npm run test:inventory` | **passa** — a suíte do ledger, contra o D1 local |
-| `npm run build` | **verde** — `lint && tsc -b && npm test && vite build` |
+| `bun run test` | **passa** — 38 casos de contrato |
+| `bun run test:inventory` | **passa** — a suíte do ledger, contra o D1 local |
+| `bun run build` | **verde** — `lint && tsc -b && bun run test && vite build` |
 
-O `npm test` **voltou ao gate do build**: `package.json` agora é
-`lint && tsc -b && npm test && vite build`.
+O `bun run test` **voltou ao gate do build**: `package.json` agora é
+`lint && tsc -b && bun run test && vite build`.
 
 ## A camada de erro
 
@@ -199,6 +199,33 @@ em toda coluna de chave.
 3. **A reconciliação visível.** A reconciliação roda no cron, avisa no
    `console.error` e grava na tabela `reconciliation` — mas não há tela que
    mostre a última execução.
+4. **A camada de teste manual.** A coleção do Insomnia foi removida em
+   21/10/2026: os 49 requests apontavam para endpoints do modelo antigo
+   (`/api/v1/assistidos`, `/coletas`, `/entregas`, `/itens`), e o mesmo token
+   de sessão estava escrito em todos eles. A camada manual agora é o **dev
+   server, no navegador** — e um script de *smoke* contra ele (o fluxo inteiro
+   do ledger, com sessão de verdade) é o item aberto.
+
+## A limpeza de 21/10/2026
+
+O repo foi auditado de ponta a ponta, e o que não tinha mais serventia saiu:
+
+| Saiu | Por quê |
+|---|---|
+| `package-lock.json` | Estava fora de sincronia com o `package.json` — o `npm ci` falhava com `ERESOLVE`. O bun é o gerenciador, e o `bun.lock` é o lockfile |
+| `openapi2.json`, `openapi3.json` | Restos de uma exploração de outubro: um "Inventory Items API" em OpenAPI 3.0, que não descreve nada do repo |
+| `scripts/update-openapi.ts`, `scripts/update-openapi.sh` | Substituídos por `scripts/openapi.ts`, que monta o app e chama o `getOpenAPI31Document` — sem servidor |
+| `src/worker/api/{resource,v1,inventory}.ts` | 21 KB **100% comentados** — a fábrica genérica de CRUD e as rotas de estoque do modelo antigo, que o ledger substituiu |
+| `src/react-app/lib/utils.ts` | Só reexportava o `cn`, que ninguém importava: os 25 usos vêm do pacote `cn` |
+| `insomnia/` | Os 49 requests eram de um modelo que não existe mais, e carregavam um token de sessão no git |
+| `local-db-init`, `remote-db-init` | Duas implementações paralelas de `scripts/db-init.js`. Ficou só o script, que tem `--force` e avisa sobre produção |
+| `@tanstack/react-query-devtools`, `chanfana`, `randexp` | Nenhuma referência no código |
+| `miniflare`, `sharp` (direto) | Já vinham como dependência transitiva, em versão idêntica. O `sharp` continua preso pelo `overrides`, que é o que importa |
+
+O `errorSchema` do contrato não foi removido: ele **entrou em uso**. Toda
+resposta de erro das rotas agora declara o envelope
+`{"error": {"code": "…", "message": "…"}}` no `openapi.json`, e o contrato
+publicado diz o que o cliente recebe.
 
 ## Uma questão de governança
 
@@ -251,7 +278,7 @@ invariantes.
 7. ~~**Uma convenção só de nomes**~~ → **`xxxOptions` para ler, `xxxMutation()`
    para escrever**, que é o que o `openapi-react-query` dá.
 8. ~~**Plano de teste**~~ → **`tests/api.ts` reescrito para o modelo novo,
-   `tests/inventory.ts` reescrito como suíte do ledger, e `npm test` de volta
+   `tests/inventory.ts` reescrito como suíte do ledger, e `bun run test` de volta
    ao gate do build.**
 9. ~~**Documentação**~~ → **Feita**: `frozen/`, `arquitetura.md`, este
    documento, `AGENTS.md` e os dois documentos de frontend.
@@ -261,7 +288,7 @@ invariantes.
 ### Pendências do banco
 
 1. **O banco remoto ainda não recebeu a migration do ledger.** O
-   `remote-db-init` continua sendo um passo manual, e o `wrangler.jsonc`
+   `db-reset-remote` continua sendo um passo manual, e o `wrangler.jsonc`
    continua apontando para o banco local.
 2. **A migration do ledger muda `beneficiary` e `donor`** (o `telefone`, o
    `bairro`, a `cidade` e a `uf` viram `NOT NULL`), e o D1 **recusa**

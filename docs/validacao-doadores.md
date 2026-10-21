@@ -28,7 +28,7 @@ doadores fictícios foram cadastrados pela interface. O banco local anterior
 foi preservado. Não houve escrita remota.
 
 As dependências foram reinstaladas pelo `package-lock.json`, sem alteração
-do manifesto ou do lockfile. `npm run check` passou: lint sem avisos, **28/28
+do manifesto ou do lockfile. `bun run check` passou: lint sem avisos, **28/28
 testes da API**, TypeScript, build do cliente/worker e simulação de deploy
 (`wrangler deploy --dry-run`). Nenhum deploy foi realizado.
 

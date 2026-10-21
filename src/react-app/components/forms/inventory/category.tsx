@@ -8,15 +8,25 @@ import { SubmitField, TextField } from "@/react-app/components/forms/fields";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type {
-	CategorySelect,
-} from "@/schemas/zod/inventory";
+import type { ItemCategory } from "@/schemas/api/category";
+import { categoryCreateSchema } from "@/schemas/api/category";
 import { $api } from "@/react-app/lib/queries/fetch-client";
-import { categoryInsertSchema } from "@/schemas/zod/inventory";
 import { queryClient } from "@/react-app/lib/query-client";
+import type { CategoryFormValues } from "@/react-app/lib/queries/inventory/categories";
+import { categoryKeys } from "@/react-app/lib/queries/inventory/categories";
+
+function errorFor(values: CategoryFormValues, field: string) {
+	const parsed = categoryCreateSchema.safeParse(values);
+	if (parsed.success) return undefined;
+	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+}
+
+function initialValues(record?: ItemCategory): CategoryFormValues {
+	return { name: record?.name ?? "" };
+}
 
 export function CategoryForm({ itemCategory }: {
-	itemCategory?: CategorySelect;
+	itemCategory?: ItemCategory;
 }) {
 	const router = useRouter();
 	const lista = useListView();
@@ -25,26 +35,26 @@ export function CategoryForm({ itemCategory }: {
 	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/categories/{id}");
 
 	const form = useForm({
-		// defaultValues: initialValues(itemCategory),
-		defaultValues: itemCategory,
+		defaultValues: initialValues(itemCategory),
 		onSubmit: async ({ value }) => {
-			if (!categoryInsertSchema.safeParse(value).success) {
+			const parsed = categoryCreateSchema.safeParse(value);
+			if (!parsed.success) {
+				console.error("validacao falhou", parsed.error.issues);
 				return;
 			}
 
 			try {
 				if (itemCategory) {
-					await updateMutateAsync({ params: { path: { id: itemCategory.id } }, body: value });
+					await updateMutateAsync({ params: { path: { id: itemCategory.id } }, body: parsed.data });
 				} else {
-					await createMutateAsync({ body: value });
+					await createMutateAsync({ body: parsed.data });
 				}
-			} catch {
+			} catch (error) {
+				console.error("Mutation failed:", error);
 				return;
 			}
 
-			await queryClient.invalidateQueries({
-				queryKey: ["item-categories"],
-			});
+			await queryClient.invalidateQueries({ queryKey: categoryKeys.all });
 
 			await router.navigate({
 				to: "/inventory/category",
@@ -90,6 +100,10 @@ export function CategoryForm({ itemCategory }: {
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "name"),
+								}}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}

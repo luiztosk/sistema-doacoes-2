@@ -34,6 +34,8 @@ import { Route as AuthenticatedInventoryDonationsNewRouteImport } from './routes
 import { Route as AuthenticatedInventoryItemIndexRouteImport } from './routes/_authenticated/inventory/item/index'
 import { Route as AuthenticatedInventoryItemIdRouteImport } from './routes/_authenticated/inventory/item/$id'
 import { Route as AuthenticatedInventoryItemNewRouteImport } from './routes/_authenticated/inventory/item/new'
+import { Route as AuthenticatedInventoryLedgerIndexRouteImport } from './routes/_authenticated/inventory/ledger/index'
+import { Route as AuthenticatedInventoryStockIndexRouteImport } from './routes/_authenticated/inventory/stock/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -177,6 +179,18 @@ const AuthenticatedInventoryItemNewRoute =
     path: '/inventory/item/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInventoryLedgerIndexRoute =
+  AuthenticatedInventoryLedgerIndexRouteImport.update({
+    id: '/inventory/ledger/',
+    path: '/inventory/ledger/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedInventoryStockIndexRoute =
+  AuthenticatedInventoryStockIndexRouteImport.update({
+    id: '/inventory/stock/',
+    path: '/inventory/stock/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -203,6 +217,8 @@ export interface FileRoutesByFullPath {
   '/inventory/delivery/': typeof AuthenticatedInventoryDeliveryIndexRoute
   '/inventory/donations/': typeof AuthenticatedInventoryDonationsIndexRoute
   '/inventory/item/': typeof AuthenticatedInventoryItemIndexRoute
+  '/inventory/ledger/': typeof AuthenticatedInventoryLedgerIndexRoute
+  '/inventory/stock/': typeof AuthenticatedInventoryStockIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -229,6 +245,8 @@ export interface FileRoutesByTo {
   '/inventory/delivery': typeof AuthenticatedInventoryDeliveryIndexRoute
   '/inventory/donations': typeof AuthenticatedInventoryDonationsIndexRoute
   '/inventory/item': typeof AuthenticatedInventoryItemIndexRoute
+  '/inventory/ledger': typeof AuthenticatedInventoryLedgerIndexRoute
+  '/inventory/stock': typeof AuthenticatedInventoryStockIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -257,6 +275,8 @@ export interface FileRoutesById {
   '/_authenticated/inventory/delivery/': typeof AuthenticatedInventoryDeliveryIndexRoute
   '/_authenticated/inventory/donations/': typeof AuthenticatedInventoryDonationsIndexRoute
   '/_authenticated/inventory/item/': typeof AuthenticatedInventoryItemIndexRoute
+  '/_authenticated/inventory/ledger/': typeof AuthenticatedInventoryLedgerIndexRoute
+  '/_authenticated/inventory/stock/': typeof AuthenticatedInventoryStockIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -285,6 +305,8 @@ export interface FileRouteTypes {
     | '/inventory/delivery/'
     | '/inventory/donations/'
     | '/inventory/item/'
+    | '/inventory/ledger/'
+    | '/inventory/stock/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -311,6 +333,8 @@ export interface FileRouteTypes {
     | '/inventory/delivery'
     | '/inventory/donations'
     | '/inventory/item'
+    | '/inventory/ledger'
+    | '/inventory/stock'
   id:
     | '__root__'
     | '/'
@@ -338,6 +362,8 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/delivery/'
     | '/_authenticated/inventory/donations/'
     | '/_authenticated/inventory/item/'
+    | '/_authenticated/inventory/ledger/'
+    | '/_authenticated/inventory/stock/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -526,6 +552,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryItemNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/inventory/ledger/': {
+      id: '/_authenticated/inventory/ledger/'
+      path: '/inventory/ledger'
+      fullPath: '/inventory/ledger/'
+      preLoaderRoute: typeof AuthenticatedInventoryLedgerIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/inventory/stock/': {
+      id: '/_authenticated/inventory/stock/'
+      path: '/inventory/stock'
+      fullPath: '/inventory/stock/'
+      preLoaderRoute: typeof AuthenticatedInventoryStockIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -549,6 +589,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedInventoryDeliveryIndexRoute: typeof AuthenticatedInventoryDeliveryIndexRoute
   AuthenticatedInventoryDonationsIndexRoute: typeof AuthenticatedInventoryDonationsIndexRoute
   AuthenticatedInventoryItemIndexRoute: typeof AuthenticatedInventoryItemIndexRoute
+  AuthenticatedInventoryLedgerIndexRoute: typeof AuthenticatedInventoryLedgerIndexRoute
+  AuthenticatedInventoryStockIndexRoute: typeof AuthenticatedInventoryStockIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -581,6 +623,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedInventoryDonationsIndexRoute:
     AuthenticatedInventoryDonationsIndexRoute,
   AuthenticatedInventoryItemIndexRoute: AuthenticatedInventoryItemIndexRoute,
+  AuthenticatedInventoryLedgerIndexRoute:
+    AuthenticatedInventoryLedgerIndexRoute,
+  AuthenticatedInventoryStockIndexRoute: AuthenticatedInventoryStockIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

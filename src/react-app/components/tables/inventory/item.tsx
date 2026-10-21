@@ -5,7 +5,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { ItemSelect, CategorySelect } from "@/schemas/zod/inventory";
+import type { InventoryItem } from "@/schemas/api/item";
+import type { ItemCategory } from "@/schemas/api/category";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -24,7 +25,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { UNITS } from "@/schemas/db/inventory";
+import { UNITS } from "@/schemas/api/enums";
 
 const empty = "—";
 
@@ -40,7 +41,7 @@ const unitOptions = UNITS.map((value) => ({
 						"Caixa",
 }));
 
-const columnHelper = createColumnHelper<DataTableFeatures, ItemSelect & { categoryName: string }>();
+const columnHelper = createColumnHelper<DataTableFeatures, InventoryItem & { categoryName: string }>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
@@ -99,8 +100,8 @@ const columns = columnHelper.columns([
 		sortFn: "basic",
 		sortUndefined: "last",
 	}),
-	columnHelper.accessor((row) => row.reservedQuantity ?? undefined, {
-		id: "reservedQuantity",
+	columnHelper.accessor((row) => row.reserved ?? undefined, {
+		id: "reserved",
 		header: ({ column }) => (
 			<SortableHeader column={column} label="Reservado" />
 		),
@@ -132,7 +133,7 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-export function ItemsTable({ items, categories }: { items: ItemSelect[], categories: CategorySelect[] }) {
+export function ItemsTable({ items, categories }: { items: InventoryItem[], categories: ItemCategory[] }) {
 	const data = items.map((item) => ({
 		...item,
 		categoryName: categories.find(a => a.id === item.categoryId)?.name ?? ""

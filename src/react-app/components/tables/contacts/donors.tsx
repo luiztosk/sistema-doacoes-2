@@ -7,7 +7,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { DonorTableView } from "@/schemas/zod/contacts";
+import type { DonorList } from "@/schemas/api/donor";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -32,14 +32,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { UFS } from "@/schemas/db/contacts";
+import { UFS } from "@/schemas/api/enums";
 
 const empty = "—";
-const emptyRows: DonorTableView[] = [];
-const cityLabel = (row: DonorTableView) =>
+const emptyRows: DonorList[] = [];
+const cityLabel = (row: DonorList) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 const searchable = new Set(["name", "cityLabel", "telefone", "email"]);
-const columnHelper = createColumnHelper<DataTableFeatures, DonorTableView>();
+const columnHelper = createColumnHelper<DataTableFeatures, DonorList>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetailsLink({ id }: { id: string }) {
@@ -52,7 +52,7 @@ function DetailsLink({ id }: { id: string }) {
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			More details
+			Mais detalhes
 		</Link>
 	);
 }
@@ -98,7 +98,7 @@ const columns = columnHelper.columns([
 ]);
 
 type DonorsTableProps = {
-	data: DonorTableView[];
+	data: DonorList[];
 	view: TableViewState;
 };
 
@@ -170,7 +170,7 @@ export function DonorsTable({ data, view }: DonorsTableProps) {
 	return (
 			<ListViewContext value={view}>
 				<div className="space-y-4">
-					<TableToolbar table={table} searchLabel="Buscar donor">
+					<TableToolbar table={table} searchLabel="Buscar doador">
 						<TableColumnFilter
 							table={table}
 							columnId="uf"

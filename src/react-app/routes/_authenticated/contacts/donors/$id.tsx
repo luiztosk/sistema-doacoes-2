@@ -2,25 +2,25 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { DonorForm } from "@/react-app/components/forms/contacts/donor";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { donorDetailOptions, donorOptions } from "@/react-app/lib/queries/contacts/donors";
+import { donorOptions, donorsOptions } from "@/react-app/lib/queries/contacts/donors";
 import { useQuery } from "@tanstack/react-query";
 
 function DonorDetail() {
 	const { id } = Route.useParams();
-	const donor = useQuery(donorDetailOptions(id));
-	const donors = useQuery(donorOptions);
+	const donor = useQuery(donorOptions(id));
+	const donors = useQuery(donorsOptions);
 
 	if (donor.isLoading || donors.isLoading) {
 		return (
 			<div className="flex items-center gap-2 text-muted-foreground">
 				<Spinner />
-				Carregando donor...
+				Carregando doador...
 			</div>
 		);
 	}
 
 	if (donor.isError || donors.isError) {
-		return <p>Não foi possível carregar o donor.</p>;
+		return <p>Não foi possível carregar o doador.</p>;
 	}
 
 	return <DonorForm donor={donor.data} />;
@@ -28,8 +28,8 @@ function DonorDetail() {
 
 export const Route = createFileRoute("/_authenticated/contacts/donors/$id")({
 	loader: ({ context, params }) => {
-		context.queryClient.query({ ...donorDetailOptions(params.id) });
-		context.queryClient.query({ ...donorOptions });
+		context.queryClient.query({ ...donorOptions(params.id) });
+		context.queryClient.query({ ...donorsOptions });
 	},
 	component: DonorDetail,
 });

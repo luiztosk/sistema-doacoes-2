@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { DonationForm } from "@/react-app/components/forms/inventory/donation";
 import { Spinner } from "@/react-app/components/ui/spinner";
-import { donationDetailOptions, donationOptions } from "@/react-app/lib/queries/inventory/donations";
+import { donationOptions, donationsOptions } from "@/react-app/lib/queries/inventory/donations";
 import { useQuery } from "@tanstack/react-query";
 
 function DonationDetail() {
 	const { id } = Route.useParams();
-	const donation = useQuery(donationDetailOptions(id));
-	const donations = useQuery(donationOptions);
+	const donation = useQuery(donationOptions(id));
+	const donations = useQuery(donationsOptions);
 
 	if (donation.isLoading || donations.isLoading) {
 		return (
@@ -28,8 +28,8 @@ function DonationDetail() {
 
 export const Route = createFileRoute("/_authenticated/inventory/donations/$id")({
 	loader: ({ context, params }) => {
-		context.queryClient.query({ ...donationDetailOptions(params.id) });
-		context.queryClient.query({ ...donationOptions });
+		context.queryClient.query({ ...donationOptions(params.id) });
+		context.queryClient.query({ ...donationsOptions });
 	},
 	component: DonationDetail,
 });

@@ -3,7 +3,8 @@ import { createContext, useCallback, useContext, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { createColumnHelper, functionalUpdate, useTable } from "@tanstack/react-table";
 
-import type { Delivery } from "@/react-app/lib/queries/inventory/deliveries";
+import type { DeliveryList } from "@/schemas/api/delivery";
+import type { BeneficiaryList } from "@/schemas/api/beneficiary";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -15,37 +16,58 @@ import { buttonVariants } from "@/react-app/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/react-app/components/ui/table";
 
 const empty = "—";
-const emptyRows: Delivery[] = [];
 const searchable = new Set(["beneficiaryId", "status", "note"]);
 
-const columnHelper = createColumnHelper<DataTableFeatures, Delivery>();
+const columnHelper = createColumnHelper<
+	DataTableFeatures,
+	DeliveryList & { beneficiaryName: string }
+>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
 	const view = useContext(ListViewContext);
 	return (
 		<Link to="/inventory/delivery/$id" params={{ id }} state={{ lista: view }} onClick={(e) => e.stopPropagation()} className={buttonVariants({ variant: "outline", size: "xs" })}>
-			More details
+			Mais detalhes
 		</Link>
 	);
 }
 
 const columns = columnHelper.columns([
-	columnHelper.accessor("beneficiaryId", { id: "beneficiaryId", header: ({ column }) => <SortableHeader column={column} label="Beneficiario" />, filterFn: "includesString", sortFn: "alphanumeric" }),
-	columnHelper.accessor("status", { id: "status", header: ({ column }) => <SortableHeader column={column} label="Status" />, cell: ({ getValue }) => getValue() === "OPEN" ? "Em aberto" : getValue() === "COMPLETED" ? "Concluida" : getValue() === "CANCELLED" ? "Cancelada" : getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric" }),
-	columnHelper.accessor("note", { id: "note", header: ({ column }) => <SortableHeader column={column} label="Observacao" />, cell: ({ getValue }) => getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric", sortUndefined: "last" }),
+	columnHelper.accessor((row) => row.beneficiaryName, { id: "beneficiaryId", header: ({ column }) => <SortableHeader column={column} label="Beneficiário" />, filterFn: "includesString", sortFn: "alphanumeric" }),
+	columnHelper.accessor("status", { id: "status", header: ({ column }) => <SortableHeader column={column} label="Status" />, cell: ({ getValue }) => getValue() === "OPEN" ? "Em aberto" : getValue() === "COMPLETED" ? "Concluída" : getValue() === "CANCELLED" ? "Cancelada" : getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric" }),
+	columnHelper.accessor("note", { id: "note", header: ({ column }) => <SortableHeader column={column} label="Observação" />, cell: ({ getValue }) => getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric", sortUndefined: "last" }),
 	columnHelper.display({ id: "details", header: "Detalhes", cell: ({ row }) => <DetalhesLink id={row.id} /> }),
 ]);
 
-type DeliveriesTableProps = { data: Delivery[]; view: TableViewState };
+type DeliveriesTableProps = {
+	data: DeliveryList[];
+	beneficiaries: BeneficiaryList[];
+	view: TableViewState;
+};
 
-export function DeliveriesTable({ data, view }: DeliveriesTableProps) {
+export function DeliveriesTable({
+	data,
+	beneficiaries,
+	view,
+}: DeliveriesTableProps) {
+	/**
+	 * A linha leva o `beneficiaryId` e não o nome: o cliente já tem o
+	 * cadastro em cache e faz a junção — a mesma decisão que vale para o
+	 * filtro das tabelas.
+	 */
+	const enriched = data.map((row) => ({
+		...row,
+		beneficiaryName:
+			beneficiaries.find((beneficiary) => beneficiary.id === row.beneficiaryId)
+				?.name ?? row.beneficiaryId,
+	}));
 	const navigate = useNavigate();
 
 	const irPara = useCallback((next: TableViewState) => navigate({ to: "/inventory/delivery", search: viewForUrl(next), replace: true }), [navigate]);
 
 	const table = useTable({
-		features, columns, data: data ?? emptyRows, getRowId: (row) => row.id,
+		features, columns, data: enriched, getRowId: (row) => row.id,
 		state: { pagination: paginationFromView(view), sorting: sortingFromView(view.sort) },
 		onPaginationChange: (updater) => { const next = functionalUpdate(updater, paginationFromView(view)); irPara({ page: next.pageIndex, pageSize: next.pageSize, sort: view.sort }); },
 		onSortingChange: (updater) => { const next = functionalUpdate(updater, sortingFromView(view.sort)); irPara({ page: 0, pageSize: view.pageSize, sort: sortingToView(next) }); },

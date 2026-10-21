@@ -4,7 +4,6 @@ import { BeneficiaryForm } from "@/react-app/components/forms/contacts/beneficia
 import { Spinner } from "@/react-app/components/ui/spinner";
 import { beneficiaryOptions } from "@/react-app/lib/queries/contacts/beneficiaries";
 import { useQuery } from "@tanstack/react-query";
-import { BeneficiarySelect } from "@/schemas/zod/contacts";
 
 function BeneficiaryDetail() {
 	const { id } = Route.useParams();
@@ -24,7 +23,7 @@ function BeneficiaryDetail() {
 	}
 
 	return <BeneficiaryForm 
-		beneficiary={beneficiary.data as BeneficiarySelect}
+		beneficiary={beneficiary.data}
 	/>;
 }
 

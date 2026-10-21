@@ -1,9 +1,13 @@
 import { z } from "zod";
 import type { infer as ZodInfer } from "zod";
 import { addressFields, idSchema } from "./common";
+import { ufSchema } from "./enums";
 
 export const donorFields = {
-	name: z.string().trim().min(1, { error: "O nome não pode ficar em branco." }),
+	name: z
+		.string({ error: "O nome não pode ficar em branco." })
+		.trim()
+		.min(1, { error: "O nome não pode ficar em branco." }),
 	phone: z.e164({ error: "O telefone precisa estar no formato E.164." }),
 	email: z.email({ error: "O e-mail precisa ser válido." }).nullish(),
 	...addressFields,
@@ -23,6 +27,7 @@ export const donorListSchema = z
 		phone: donorFields.phone,
 		email: donorFields.email,
 		cidade: donorFields.cidade,
+		uf: ufSchema,
 	})
 	.strict();
 

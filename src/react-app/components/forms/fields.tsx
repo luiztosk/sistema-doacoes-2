@@ -225,12 +225,21 @@ type SubmitFieldProps = {
 	isPending: boolean;
 };
 
-export function DateField({ field, label }: BaseFieldProps<Date | null>) {
+/**
+ * A data é o ISO 8601 do contrato, e não um `Date`: o estado do formulário é
+ * o payload, e o que a API aceita é a string. O `type="date"` do input não
+ * tem fuso, então a data escolhida vira o início do dia local — que é o que
+ * a pessoa digitou.
+ */
+export function DateField({ field, label }: BaseFieldProps<string | null>) {
 	const error = firstError(field.state.meta);
 	const editable = useEditable();
 
 	const valueStr = field.state.value
-		? new Date(field.state.value.getTime() - field.state.value.getTimezoneOffset() * 60000)
+		? new Date(
+				new Date(field.state.value).getTime() -
+					new Date(field.state.value).getTimezoneOffset() * 60000,
+			)
 				.toISOString()
 				.split("T")[0]
 		: "";
@@ -246,9 +255,9 @@ export function DateField({ field, label }: BaseFieldProps<Date | null>) {
 				value={valueStr}
 				onBlur={field.handleBlur}
 				onChange={(e) => {
-				const d = e.target.value ? new Date(e.target.value + "T00:00:00") : null;
-				field.handleChange(d);
-			}}
+					const d = e.target.value ? new Date(e.target.value + "T00:00:00") : null;
+					field.handleChange(d ? d.toISOString() : null);
+				}}
 				aria-invalid={invalid(error)}
 			/>
 			<FieldError>{error}</FieldError>

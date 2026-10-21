@@ -4,29 +4,29 @@ import { DonorsTable } from "@/react-app/components/tables/contacts/donors";
 import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { donorOptions } from "@/react-app/lib/queries/contacts/donors";
+import { donorsOptions } from "@/react-app/lib/queries/contacts/donors";
 
 function Donors() {
 	const view = Route.useSearch();
-	const donors = useQuery(donorOptions);
+	const donors = useQuery(donorsOptions);
 
 	if (donors.isLoading) {
-		return <div>Loading...</div>;
+		return <div>Carregando...</div>;
 	}
 
 	if (donors.isError) {
-		return <div>Error: {String(donors.error)}</div>;
+		return <p>Não foi possível carregar os doadores.</p>;
 	}
 
 	return (
 		<section className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h1 className="text-3xl font-bold">Donors</h1>
+				<h1 className="text-3xl font-bold">Doadores</h1>
 				<Link
 					to="/contacts/donors/new"
 					className={buttonVariants({ size: "sm" })}
 				>
-					New donor
+					Novo doador
 				</Link>
 			</div>
 			<DonorsTable data={donors.data ?? []} view={view} />
@@ -37,7 +37,7 @@ function Donors() {
 export const Route = createFileRoute("/_authenticated/contacts/donors/")({
 	validateSearch: tableViewSchema,
 	loader: ({ context }) => {
-		context.queryClient.query({ ...donorOptions });
+		context.queryClient.query({ ...donorsOptions });
 	},
 	component: Donors,
 });

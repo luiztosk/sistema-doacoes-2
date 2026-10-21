@@ -1,7 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { dataListOf, idParamsSchema } from "../../../schemas/api/common";
+import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common";
 import {
 	itemCreateSchema,
 	itemSchema,
@@ -44,7 +44,7 @@ const getItemRoute = defineWorkerRoute({
 		responses: {
 			200: {
 				description: "Inventory item",
-				content: { "application/json": { schema: dataListOf(Item) } },
+				content: { "application/json": { schema: dataOf(Item) } },
 			},
 			404: { description: "Inventory item not found" },
 		},
@@ -73,7 +73,7 @@ const createItemRoute = defineWorkerRoute({
 		responses: {
 			201: {
 				description: "Inventory item created",
-				content: { "application/json": { schema: dataListOf(Item) } },
+				content: { "application/json": { schema: dataOf(Item) } },
 			},
 			400: { description: "Invalid input" },
 		},
@@ -106,7 +106,7 @@ const updateItemRoute = defineWorkerRoute({
 		responses: {
 			200: {
 				description: "Inventory item updated",
-				content: { "application/json": { schema: dataListOf(Item) } },
+				content: { "application/json": { schema: dataOf(Item) } },
 			},
 			400: { description: "Invalid input" },
 			404: { description: "Inventory item not found" },

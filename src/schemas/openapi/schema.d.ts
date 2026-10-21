@@ -696,7 +696,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            data: components["schemas"]["InventoryItem"][];
+                            data: components["schemas"]["InventoryItem"];
                         };
                     };
                 };
@@ -740,7 +740,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            data: components["schemas"]["InventoryItem"][];
+                            data: components["schemas"]["InventoryItem"];
                         };
                     };
                 };
@@ -812,7 +812,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            data: components["schemas"]["InventoryItem"][];
+                            data: components["schemas"]["InventoryItem"];
                         };
                     };
                 };
@@ -1746,6 +1746,8 @@ export interface components {
             /** Format: email */
             email?: string | null;
             cidade: string;
+            /** @enum {string} */
+            uf: "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA" | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN" | "RS" | "RO" | "RR" | "SC" | "SP" | "SE" | "TO";
         };
         InventoryItem: {
             /** Format: uuid */

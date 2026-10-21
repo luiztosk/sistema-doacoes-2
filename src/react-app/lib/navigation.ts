@@ -11,33 +11,43 @@ export type Resource = {
 export const resources: readonly Resource[] = [
 	{
 		path: "/contacts/beneficiaries",
-		label: "Beneficiaries",
-		description: "Register of assisted families and individuals.",
+		label: "Beneficiários",
+		description: "Cadastro de famílias e pessoas assistidas.",
 	},
 	{
 		path: "/contacts/donors",
-		label: "Donors",
-		description: "Register of donation sources.",
+		label: "Doadores",
+		description: "Cadastro das origens das doações.",
 	},
 	{
 		path: "/inventory/item",
-		label: "Inventory Items",
-		description: "Item catalog and stock control.",
+		label: "Itens de estoque",
+		description: "Catálogo de itens e controle de estoque.",
 	},
 	{
 		path: "/inventory/category",
-		label: "Item Categories",
-		description: "Categories for item classification.",
+		label: "Categorias de item",
+		description: "Categorias para classificar os itens.",
 	},
 	{
 		path: "/inventory/donations",
-		label: "Donations",
-		description: "Donation registration and receipt.",
+		label: "Doações",
+		description: "Registro de doações e recebimento.",
 	},
 	{
 		path: "/inventory/delivery",
-		label: "Deliveries",
-		description: "Stock reservations and deliveries.",
+		label: "Entregas",
+		description: "Reserva de estoque e entregas.",
+	},
+	{
+		path: "/inventory/stock",
+		label: "Saldo",
+		description: "O saldo de cada item: físico, reservado e disponível.",
+	},
+	{
+		path: "/inventory/ledger",
+		label: "Histórico",
+		description: "Todos os movimentos de estoque, do mais recente ao mais antigo.",
 	},
 ];
 

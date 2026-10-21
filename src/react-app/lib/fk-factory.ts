@@ -3,15 +3,15 @@ export type SelectOption = {
 	label: string;
 };
 
+/**
+ * As opções de um campo que aponta para outro registro. O label é o nome do
+ * registro, e o valor é o id — a mesma linha que a API devolve.
+ */
 export function fkOptions(
-	_resource: "beneficiaries" | "doadores" | "inventory-items" | "item-categories",
-	items?: { id: string; name?: string; nome?: string }[],
+	items?: readonly { id: string; name: string }[],
 ): SelectOption[] {
-	if (items) {
-		return items.map((r) => ({
-			value: r.id,
-			label: r.name ?? r.nome ?? r.id,
-		}));
-	}
-	return [];
+	return (items ?? []).map((item) => ({
+		value: item.id,
+		label: item.name,
+	}));
 }

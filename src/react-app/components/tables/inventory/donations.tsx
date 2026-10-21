@@ -7,7 +7,8 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { Donation } from "@/react-app/lib/queries/inventory/donations";
+import type { DonationList } from "@/schemas/api/donation";
+import type { DonorList } from "@/schemas/api/donor";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -31,11 +32,14 @@ import {
 } from "@/react-app/components/ui/table";
 
 const empty = "—";
-const emptyRows: Donation[] = [];
+const emptyRows: DonationList[] = [];
 
 const searchable = new Set(["donorId", "status", "note"]);
 
-const columnHelper = createColumnHelper<DataTableFeatures, Donation>();
+const columnHelper = createColumnHelper<
+	DataTableFeatures,
+	DonationList & { donorName: string }
+>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
@@ -48,13 +52,13 @@ function DetalhesLink({ id }: { id: string }) {
 			onClick={(e) => e.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			More details
+			Mais detalhes
 		</Link>
 	);
 }
 
 const columns = columnHelper.columns([
-	columnHelper.accessor("donorId", {
+	columnHelper.accessor((row) => row.donorName, {
 		id: "donorId",
 		header: ({ column }) => <SortableHeader column={column} label="Doador" />,
 		filterFn: "includesString",
@@ -64,7 +68,7 @@ const columns = columnHelper.columns([
 		id: "status",
 		header: ({ column }) => <SortableHeader column={column} label="Status" />,
 		cell: ({ getValue }) =>
-			getValue() === "DRAFT" ? "Rascunho" : getValue() === "RECEIVED" ? "Recebida" : getValue() || empty,
+			getValue() === "RECEIVED" ? "Recebida" : getValue() === "VOID" ? "Estornada" : getValue() || empty,
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 	}),
@@ -83,9 +87,22 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-type DonationsTableProps = { data: Donation[]; view: TableViewState };
+type DonationsTableProps = {
+	data: DonationList[];
+	donors: DonorList[];
+	view: TableViewState;
+};
 
-export function DonationsTable({ data, view }: DonationsTableProps) {
+export function DonationsTable({ data, donors, view }: DonationsTableProps) {
+	/**
+	 * A linha leva o `donorId` e não o nome: o cliente já tem o cadastro em
+	 * cache e faz a junção — a mesma decisão que vale para o filtro das
+	 * tabelas.
+	 */
+	const enriched = data.map((row) => ({
+		...row,
+		donorName: donors.find((donor) => donor.id === row.donorId)?.name ?? row.donorId,
+	}));
 	const navigate = useNavigate();
 
 	const irPara = useCallback(
@@ -97,7 +114,7 @@ export function DonationsTable({ data, view }: DonationsTableProps) {
 	const table = useTable({
 		features,
 		columns,
-		data: data ?? emptyRows,
+		data: enriched ?? emptyRows,
 		getRowId: (row) => row.id,
 		state: {
 			pagination: paginationFromView(view),
@@ -134,7 +151,7 @@ export function DonationsTable({ data, view }: DonationsTableProps) {
 	return (
 		<ListViewContext value={view}>
 			<div className="space-y-4">
-				<TableToolbar table={table} searchLabel="Buscar doacao" />
+				<TableToolbar table={table} searchLabel="Buscar doação" />
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((group) => (

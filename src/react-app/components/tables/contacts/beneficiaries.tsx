@@ -5,7 +5,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 
-import type { BeneficiaryTableView } from "@/schemas/zod/contacts";
+import type { BeneficiaryList } from "@/schemas/api/beneficiary";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -24,17 +24,17 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/react-app/components/ui/table";
-import { TIPOS_IMOVEL } from "@/schemas/db/contacts";
+import { TIPOS_IMOVEL } from "@/schemas/api/enums";
 
 const empty = "—";
 
-const cityLabel = (row: BeneficiaryTableView) =>
+const cityLabel = (row: BeneficiaryList) =>
 	[row.cidade, row.uf].filter(Boolean).join(" / ");
 
 const searchable = new Set([
 	"name",
 	"cityLabel",
-	"telefone",
+	"phone",
 	"email",
 	"tipoImovel",
 ]);
@@ -49,7 +49,7 @@ const cestaBasicaOptions = [
 	{ value: "false", label: "Não" },
 ];
 
-const columnHelper = createColumnHelper<DataTableFeatures, BeneficiaryTableView>();
+const columnHelper = createColumnHelper<DataTableFeatures, BeneficiaryList>();
 const ListViewContext = createContext<TableViewState>({});
 
 function DetalhesLink({ id }: { id: string }) {
@@ -63,7 +63,7 @@ function DetalhesLink({ id }: { id: string }) {
 			onClick={(event) => event.stopPropagation()}
 			className={buttonVariants({ variant: "outline", size: "xs" })}
 		>
-			More details
+			Mais detalhes
 		</Link>
 	);
 }
@@ -82,7 +82,7 @@ const columns = columnHelper.columns([
 		sortFn: "alphanumeric",
 	}),
 	columnHelper.accessor((row) => row.phone ?? undefined, {
-		id: "telefone",
+		id: "phone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
 		cell: ({ getValue }) => getValue() ?? empty,
 		filterFn: "includesString",
@@ -135,7 +135,7 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-export function BeneficiariesTable({ beneficiaries }: { beneficiaries: BeneficiaryTableView[] }) {
+export function BeneficiariesTable({ beneficiaries }: { beneficiaries: BeneficiaryList[] }) {
 	const data = beneficiaries;
 
 	const table = useTable({
@@ -150,7 +150,7 @@ export function BeneficiariesTable({ beneficiaries }: { beneficiaries: Beneficia
 
 	return (
 		<div className="space-y-4">
-			<TableToolbar table={table} searchLabel="Buscar beneficiary">
+			<TableToolbar table={table} searchLabel="Buscar beneficiário">
 				<TableColumnFilter
 					table={table}
 					columnId="tipoImovel"
@@ -196,7 +196,7 @@ export function BeneficiariesTable({ beneficiaries }: { beneficiaries: Beneficia
 					)}
 				</TableBody>
 			</Table>
-			<TablePagination table={table} totalLabel="beneficiary" />
+			<TablePagination table={table} totalLabel="beneficiário" />
 		</div>
 	);
 }

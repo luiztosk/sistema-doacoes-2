@@ -40,6 +40,7 @@ const getDonorsRoute = defineWorkerRoute({
 				phone: donor.phone,
 				email: donor.email,
 				cidade: donor.cidade,
+				uf: donor.uf,
 			})
 			.from(donor)
 			.all();

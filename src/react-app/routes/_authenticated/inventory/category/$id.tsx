@@ -4,7 +4,7 @@ import { CategoryForm } from "@/react-app/components/forms/inventory/category";
 import { Spinner } from "@/react-app/components/ui/spinner";
 import { categoryOptions } from "@/react-app/lib/queries/inventory/categories";
 import { useQuery } from "@tanstack/react-query";
-import { CategorySelect } from "@/schemas/zod/inventory";
+import type { ItemCategory } from "@/schemas/api/category";
 
 function CategoryPage() {
 	const { id } = Route.useParams();
@@ -25,10 +25,10 @@ function CategoryPage() {
 
 	// The categoryOptions response type is not correctly inferred due to missing OpenAPI schema
 	// Cast to the expected type
-	// const categoryData = category.data as CategorySelect | undefined;
+	// const categoryData = category.data as ItemCategory | undefined;
 
 	return <CategoryForm
-		itemCategory={category.data as CategorySelect}
+		itemCategory={category.data as ItemCategory}
 	/>;
 }
 

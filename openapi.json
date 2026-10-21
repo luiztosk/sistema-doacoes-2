@@ -430,13 +430,46 @@
           "cidade": {
             "type": "string",
             "minLength": 1
+          },
+          "uf": {
+            "type": "string",
+            "enum": [
+              "AC",
+              "AL",
+              "AP",
+              "AM",
+              "BA",
+              "CE",
+              "DF",
+              "ES",
+              "GO",
+              "MA",
+              "MT",
+              "MS",
+              "MG",
+              "PA",
+              "PB",
+              "PR",
+              "PE",
+              "PI",
+              "RJ",
+              "RN",
+              "RS",
+              "RO",
+              "RR",
+              "SC",
+              "SP",
+              "SE",
+              "TO"
+            ]
           }
         },
         "required": [
           "id",
           "name",
           "phone",
-          "cidade"
+          "cidade",
+          "uf"
         ],
         "additionalProperties": false
       },
@@ -2179,10 +2212,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventoryItem"
-                      }
+                      "$ref": "#/components/schemas/InventoryItem"
                     }
                   },
                   "required": [
@@ -2221,10 +2251,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventoryItem"
-                      }
+                      "$ref": "#/components/schemas/InventoryItem"
                     }
                   },
                   "required": [
@@ -2291,10 +2318,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventoryItem"
-                      }
+                      "$ref": "#/components/schemas/InventoryItem"
                     }
                   },
                   "required": [

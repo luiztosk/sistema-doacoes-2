@@ -20,63 +20,87 @@ import {
 	FieldLegend,
 	FieldSet,
 } from "@/react-app/components/ui/field";
-import type {
-	BeneficiarySelect,
-} from "@/schemas/zod/contacts";
-import {
-	beneficiaryInsertSchema,
-	beneficiaryUpdateSchema,
-} from "@/schemas/zod/contacts";
-import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/db/contacts";
+import type { Beneficiary } from "@/schemas/api/beneficiary";
+import { beneficiaryCreateSchema } from "@/schemas/api/beneficiary";
+import { ESTADOS_CIVIS, TIPOS_IMOVEL, UFS } from "@/schemas/api/enums";
 import { queryClient } from "@/react-app/lib/query-client";
 import { $api } from "@/react-app/lib/queries/fetch-client";
+import type { BeneficiaryFormValues } from "@/react-app/lib/queries/contacts/beneficiaries";
+import { beneficiaryKeys } from "@/react-app/lib/queries/contacts/beneficiaries";
 
 const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
 
-export function BeneficiaryForm({ 
-	beneficiary, 
-}: { 
-	beneficiary?: BeneficiarySelect;
+function errorFor(values: BeneficiaryFormValues, field: string) {
+	const parsed = beneficiaryCreateSchema.safeParse(values);
+	if (parsed.success) return undefined;
+	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+}
+
+function initialValues(record?: Beneficiary): BeneficiaryFormValues {
+	return {
+		name: record?.name ?? "",
+		phone: record?.phone ?? "",
+		email: record?.email ?? null,
+		cep: record?.cep ?? null,
+		logradouro: record?.logradouro ?? null,
+		numero: record?.numero ?? null,
+		complemento: record?.complemento ?? null,
+		bairro: record?.bairro ?? "",
+		cidade: record?.cidade ?? "",
+		uf: record?.uf ?? null,
+		tipoImovel: record?.tipoImovel ?? null,
+		valorAluguel: record?.valorAluguel ?? null,
+		estadoCivil: record?.estadoCivil ?? null,
+		numeroAdultos: record?.numeroAdultos ?? null,
+		criancasPequenas: record?.criancasPequenas ?? null,
+		adolescentes: record?.adolescentes ?? null,
+		doentes: record?.doentes ?? null,
+		bolsaFamilia: record?.bolsaFamilia ?? null,
+		aposentado: record?.aposentado ?? null,
+		pensao: record?.pensao ?? null,
+		cestaBasica: record?.cestaBasica ?? null,
+		atividadeRemunerada: record?.atividadeRemunerada ?? null,
+		renda: record?.renda ?? null,
+		criancaEscola: record?.criancaEscola ?? null,
+		observacoes: record?.observacoes ?? null,
+	};
+}
+
+export function BeneficiaryForm({
+	beneficiary,
+}: {
+	beneficiary?: Beneficiary;
 }) {
 	const router = useRouter();
-	// const queryClient = useQueryClient();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!beneficiary);
 	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/beneficiaries");
 	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/beneficiaries/{id}");
 
 	const form = useForm({
-		defaultValues: beneficiary,
+		defaultValues: initialValues(beneficiary),
 		onSubmit: async ({ value }) => {
-			try {
-				if (updateMutateAsync && beneficiary) {
-					const validation = beneficiaryUpdateSchema.safeParse(value);
-					if (!validation.success) {
-						console.error('update validation failed:', validation.error.message);
-						return;
-					}
-					await updateMutateAsync({
-						params: {
-							path: { id: beneficiary.id }
-						},
-						body: validation.data,
-					});
-				} else if (createMutateAsync) {
-					const validation = beneficiaryInsertSchema.safeParse(value);
-					if (!validation.success) {
-						console.error('insert validation failed:', validation.error.message);
-						return;
-					}
-					await createMutateAsync({ body: validation.data });
-				}
-			} catch (error) {
-				console.error('Mutation failed:', error)
+			const parsed = beneficiaryCreateSchema.safeParse(value);
+			if (!parsed.success) {
+				console.error("validacao falhou", parsed.error.issues);
 				return;
 			}
 
-			await queryClient.invalidateQueries({
-				queryKey: ["beneficiaries"]
-			});
+			try {
+				if (updateMutateAsync && beneficiary) {
+					await updateMutateAsync({
+						params: { path: { id: beneficiary.id } },
+						body: parsed.data,
+					});
+				} else if (createMutateAsync) {
+					await createMutateAsync({ body: parsed.data });
+				}
+			} catch (error) {
+				console.error("Mutation failed:", error);
+				return;
+			}
+
+			await queryClient.invalidateQueries({ queryKey: beneficiaryKeys.all });
 
 			await router.navigate({
 				to: "/contacts/beneficiaries",
@@ -104,7 +128,7 @@ export function BeneficiaryForm({
 						search={lista ? viewForUrl(lista) : {}}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
-						Back to list
+						Voltar para a lista
 					</Link>
 				</div>
 			</div>
@@ -122,10 +146,10 @@ export function BeneficiaryForm({
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
-								// validators={{
-								// 	onBlur: ({ fieldApi }) =>
-								// 		errorFor(fieldApi.form.state.values, "nome"),
-								// }}
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "name"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -136,6 +160,10 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="phone"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "phone"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -147,10 +175,10 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="email"
-								// validators={{
-								// onBlur: ({ fieldApi }) =>
-								// errorFor(fieldApi.form.state.values, "email"),
-								// }}
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "email"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -166,10 +194,10 @@ export function BeneficiaryForm({
 							<FieldLegend variant="label">Endereço</FieldLegend>
 							<form.Field
 								name="cep"
-								// validators={{
-								// 	onBlur: ({ fieldApi }) =>
-								// 		errorFor(fieldApi.form.state.values, "cep"),
-								// }}
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "cep"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -202,6 +230,10 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="bairro"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "bairro"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -212,6 +244,10 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="cidade"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "cidade"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
@@ -222,6 +258,10 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="uf"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "uf"),
+								}}
 								children={(field) => (
 									<SelectField
 										field={field}
@@ -247,10 +287,6 @@ export function BeneficiaryForm({
 							/>
 							<form.Field
 								name="valorAluguel"
-								// validators={{
-								// onBlur: ({ fieldApi }) =>
-								// errorFor(fieldApi.form.state.values, "valorAluguel"),
-								// }}
 								children={(field) => (
 									<NumberField field={field} label="Valor do aluguel" />
 								)}
@@ -275,30 +311,18 @@ export function BeneficiaryForm({
 							<FieldLegend variant="label">Composição familiar</FieldLegend>
 							<form.Field
 								name="numeroAdultos"
-								// validators={{
-								// onBlur: ({ fieldApi }) =>
-								// errorFor(fieldApi.form.state.values, "numeroAdultos"),
-								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adultos" />
 								)}
 							/>
 							<form.Field
 								name="criancasPequenas"
-								// validators={{
-								// onBlur: ({ fieldApi }) =>
-								// errorFor(fieldApi.form.state.values, "criancasPequenas"),
-								// }}
 								children={(field) => (
 									<NumberField field={field} label="Crianças pequenas" />
 								)}
 							/>
 							<form.Field
 								name="adolescentes"
-								// validators={{
-								// onBlur: ({ fieldApi }) =>
-								// errorFor(fieldApi.form.state.values, "adolescentes"),
-								// }}
 								children={(field) => (
 									<NumberField field={field} label="Adolescentes" />
 								)}
@@ -360,10 +384,6 @@ export function BeneficiaryForm({
 							<FieldLegend variant="label">Renda</FieldLegend>
 							<form.Field
 								name="renda"
-								// validators={{
-								// 	onBlur: ({ fieldApi }) =>
-								// 		errorFor(fieldApi.form.state.values, "renda"),
-								// }}
 								children={(field) => (
 									<NumberField field={field} label="Renda mensal" step={0.01} />
 								)}

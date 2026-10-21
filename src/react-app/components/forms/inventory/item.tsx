@@ -9,14 +9,14 @@ import type { SelectOption } from "@/react-app/components/forms/fields";
 import { useListView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { Button, buttonVariants } from "@/react-app/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/react-app/components/ui/field";
-import type {
-	ItemSelect,
-	CategorySelect,
-} from "@/schemas/zod/inventory";
-import { itemInsertSchema, itemUpdateSchema } from "@/schemas/zod/inventory";
-import { UNITS } from "@/schemas/db/inventory";
+import type { InventoryItem } from "@/schemas/api/item";
+import { itemCreateSchema } from "@/schemas/api/item";
+import type { ItemCategory } from "@/schemas/api/category";
+import { UNITS } from "@/schemas/api/enums";
 import { queryClient } from "@/react-app/lib/query-client";
 import { $api } from "@/react-app/lib/queries/fetch-client";
+import type { ItemFormValues } from "@/react-app/lib/queries/inventory/items";
+import { itemKeys } from "@/react-app/lib/queries/inventory/items";
 
 const unitLabels: SelectOption[] = UNITS.map((value) => ({
 	value: value,
@@ -28,60 +28,67 @@ const unitLabels: SelectOption[] = UNITS.map((value) => ({
 						"Caixa",
 }));
 
-export function InventoryItemForm({ 
-	item, 
-	categories, 
+function errorFor(values: ItemFormValues, field: string) {
+	const parsed = itemCreateSchema.safeParse(values);
+	if (parsed.success) return undefined;
+	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
+}
+
+/**
+ * O saldo **não** vem do formulário. Ele só se move pelas operações de
+ * estoque, e o `POST` do item nasce com o saldo zerado — por isso o `id` do
+ * item, o `onHand`, o `reserved` e o `available` não são campos do formulário.
+ */
+function initialValues(record?: InventoryItem): ItemFormValues {
+	return {
+		name: record?.name ?? "",
+		categoryId: record?.categoryId ?? null,
+		unit: record?.unit ?? null,
+	};
+}
+
+export function InventoryItemForm({
+	item,
+	categories,
 }: {
-	item?: ItemSelect;
-	categories: CategorySelect[];
+	item?: InventoryItem;
+	categories: ItemCategory[];
 }) {
 	const categoryLabels: SelectOption[] = categories.map((category) => ({
 		value: category.id,
-		label: category.name
-	}))
+		label: category.name,
+	}));
 	const router = useRouter();
 	const lista = useListView();
 	const [isEditing, setIsEditing] = useState(!item);
-	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/item");
-	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/item/{id}");
+	const { mutateAsync: createMutateAsync, isPending: createIsPending } = $api.useMutation("post", "/api/v1/inventory/items");
+	const { mutateAsync: updateMutateAsync, isPending: updateIsPending } = $api.useMutation("patch", "/api/v1/inventory/items/{id}");
 
 	const form = useForm({
-		defaultValues: item,
+		defaultValues: initialValues(item),
 		onSubmit: async ({ value }) => {
-			if (updateMutateAsync && item) {
-				const validation = itemUpdateSchema.safeParse(value);
-				if (!validation.success) {
-					console.error('update validation failed:', validation.error.message);
-					return;
-				}
-				try {
-					await updateMutateAsync({
-						params: { path: { id: item.id } },
-						body: validation.data,
-					});
-					console.log('sucess mutated')
-				} catch (error) {
-					console.error('Mutation failed:', error)
-					return;
-				}
-			} else if (createMutateAsync) {
-				const validation = itemInsertSchema.safeParse(value);
-				if (!validation.success) {
-					console.error('insert validation failed:', validation.error.message);
-					return;
-				}
-				try {
-					await createMutateAsync({ body: validation.data });
-					console.log('sucess mutated')
-				} catch (error) {
-					console.error('Mutation failed:', error)
-					return;
-				}
+			const parsed = itemCreateSchema.safeParse(value);
+			if (!parsed.success) {
+				console.error("validacao falhou", parsed.error.issues);
+				return;
 			}
 
-			await queryClient.invalidateQueries({
-				queryKey: ["inventory-items"],
-			});
+			try {
+				if (item) {
+					await updateMutateAsync({
+						params: { path: { id: item.id } },
+						body: parsed.data,
+					});
+				} else {
+					await createMutateAsync({ body: parsed.data });
+				}
+			} catch (error) {
+				console.error("Mutation failed:", error);
+				return;
+			}
+
+			await queryClient.invalidateQueries({ queryKey: itemKeys.all });
+			await queryClient.invalidateQueries({ queryKey: ["stock"] });
 
 			await router.navigate({
 				to: "/inventory/item",
@@ -126,6 +133,10 @@ export function InventoryItemForm({
 							<FieldLegend variant="label">Identificação</FieldLegend>
 							<form.Field
 								name="name"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "name"),
+								}}
 								children={(field) => (
 									<TextField field={field} label="Nome" />
 								)}
@@ -136,11 +147,16 @@ export function InventoryItemForm({
 							<FieldLegend variant="label">Classificação</FieldLegend>
 							<form.Field
 								name="categoryId"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "categoryId"),
+								}}
 								children={(field) => (
 									<SelectField
 										field={field}
 										label="Categoria"
 										options={categoryLabels}
+										placeholder="Selecione"
 									/>
 								)}
 							/>
@@ -150,11 +166,16 @@ export function InventoryItemForm({
 							<FieldLegend variant="label">Unidade</FieldLegend>
 							<form.Field
 								name="unit"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "unit"),
+								}}
 								children={(field) => (
 									<SelectField
 										field={field}
 										label="Unidade de medida"
 										options={unitLabels}
+										placeholder="Selecione"
 									/>
 								)}
 							/>

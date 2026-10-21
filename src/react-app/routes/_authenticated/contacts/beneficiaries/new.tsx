@@ -8,10 +8,10 @@ import { beneficiariesOptions } from "@/react-app/lib/queries/contacts/beneficia
 function NovoBeneficiary() {
 	const categories = useQuery(beneficiariesOptions);
 	if (categories.isLoading) {
-		return <div>Loading...</div>;
+		return <div>Carregando...</div>;
 	}
 	if (categories.isError) {
-		return <div>Error: {String(categories.error)}</div>;
+		return <p>Não foi possível carregar os dados.</p>;
 	}
 	return <BeneficiaryForm />;
 }

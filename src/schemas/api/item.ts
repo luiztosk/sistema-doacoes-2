@@ -5,7 +5,7 @@ import { unitSchema } from "./enums";
 
 const itemFields = {
 	name: z
-		.string()
+		.string({ error: "O nome do item não pode ficar em branco." })
 		.trim()
 		.min(1, { error: "O nome do item não pode ficar em branco." }),
 	categoryId: idSchema,
@@ -32,7 +32,7 @@ export const itemCreateSchema = z.object(itemFields).strict();
 
 export const itemUpdateSchema = z.object(itemFields).partial().strict();
 
-export type Item = ZodInfer<typeof itemSchema>;
-export type ItemList = ZodInfer<typeof itemListSchema>;
-export type ItemCreate = ZodInfer<typeof itemCreateSchema>;
-export type ItemUpdate = ZodInfer<typeof itemUpdateSchema>;
+export type InventoryItem = ZodInfer<typeof itemSchema>;
+export type InventoryItemList = ZodInfer<typeof itemListSchema>;
+export type InventoryItemCreate = ZodInfer<typeof itemCreateSchema>;
+export type InventoryItemUpdate = ZodInfer<typeof itemUpdateSchema>;

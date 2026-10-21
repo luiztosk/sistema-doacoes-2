@@ -5,7 +5,10 @@ export const idSchema = z.uuid({
 	error: "O id precisa ser um UUID.",
 });
 
-export const occurredAtSchema = z.iso.datetime({ offset: true });
+export const occurredAtSchema = z.iso.datetime({
+	offset: true,
+	error: "A data precisa ser um ISO 8601 com fuso.",
+});
 
 export const idParamsSchema = z.object({ id: idSchema });
 

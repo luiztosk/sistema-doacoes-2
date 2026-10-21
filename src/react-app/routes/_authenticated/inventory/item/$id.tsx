@@ -5,7 +5,6 @@ import { Spinner } from "@/react-app/components/ui/spinner";
 import { itemOptions } from "@/react-app/lib/queries/inventory/items";
 import { categoriesOptions } from "@/react-app/lib/queries/inventory/categories";
 import { useQuery } from "@tanstack/react-query";
-import { ItemSelect, CategorySelect } from "@/schemas/zod/inventory";
 
 function ItemPage() {
 	const { id } = Route.useParams();
@@ -26,8 +25,8 @@ function ItemPage() {
 	}
 
 	return <InventoryItemForm 
-		item={item.data as ItemSelect}
-		categories={categories.data as CategorySelect[]}
+		item={item.data}
+		categories={categories.data ?? []}
 	/>;
 }
 

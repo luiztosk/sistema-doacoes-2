@@ -1298,7 +1298,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -1337,7 +1375,45 @@
             }
           },
           "404": {
-            "description": "Beneficiary not found"
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -1575,10 +1651,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Beneficiary not found"
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -1599,7 +1751,45 @@
             "description": "Beneficiary deleted"
           },
           "404": {
-            "description": "Beneficiary not found"
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -1753,7 +1943,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -1792,7 +2020,45 @@
             }
           },
           "404": {
-            "description": "Donor not found"
+            "description": "Donor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -1922,10 +2188,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Donor not found"
+            "description": "Donor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -1946,7 +2288,45 @@
             "description": "Donor deleted"
           },
           "404": {
-            "description": "Donor not found"
+            "description": "Donor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2019,7 +2399,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2058,7 +2476,45 @@
             }
           },
           "404": {
-            "description": "Item category not found"
+            "description": "Item category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2111,10 +2567,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Item category not found"
+            "description": "Item category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2135,7 +2667,45 @@
             "description": "Item category deleted"
           },
           "404": {
-            "description": "Item category not found"
+            "description": "Item category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2224,7 +2794,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2263,7 +2871,45 @@
             }
           },
           "404": {
-            "description": "Inventory item not found"
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2330,10 +2976,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Inventory item not found"
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2354,7 +3076,45 @@
             "description": "Inventory item deleted"
           },
           "404": {
-            "description": "Inventory item not found"
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2460,7 +3220,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2499,7 +3297,45 @@
             }
           },
           "404": {
-            "description": "Donation not found"
+            "description": "Donation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2562,10 +3398,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Donation not found"
+            "description": "Donation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2604,10 +3516,86 @@
             }
           },
           "400": {
-            "description": "Invalid transition"
+            "description": "Invalid transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Donation not found"
+            "description": "Donation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2713,7 +3701,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2752,7 +3778,45 @@
             }
           },
           "404": {
-            "description": "Delivery not found"
+            "description": "Delivery not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       },
@@ -2815,10 +3879,86 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Delivery not found"
+            "description": "Delivery not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2857,10 +3997,86 @@
             }
           },
           "400": {
-            "description": "Invalid transition"
+            "description": "Invalid transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Delivery not found"
+            "description": "Delivery not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -2899,10 +4115,86 @@
             }
           },
           "400": {
-            "description": "Invalid transition"
+            "description": "Invalid transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           },
           "404": {
-            "description": "Delivery not found"
+            "description": "Delivery not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -3009,7 +4301,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -3048,7 +4378,45 @@
             }
           },
           "404": {
-            "description": "Inventory count not found"
+            "description": "Inventory count not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -3139,7 +4507,45 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }
@@ -3178,7 +4584,45 @@
             }
           },
           "404": {
-            "description": "Inventory adjustment not found"
+            "description": "Inventory adjustment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRED_FIELD",
+                        "UNKNOWN_FIELD",
+                        "READ_ONLY_FIELD",
+                        "EMPTY_UPDATE",
+                        "INVALID_VALUE",
+                        "INVALID_REFERENCE",
+                        "INVALID_TRANSITION",
+                        "INSUFFICIENT_STOCK",
+                        "NEGATIVE_STOCK",
+                        "INVALID_RELEASE",
+                        "INVALID_JSON",
+                        "INVALID_BODY",
+                        "NOT_FOUND",
+                        "CONFLICT",
+                        "UNSUPPORTED_MEDIA_TYPE",
+                        "INTERNAL_ERROR"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
           }
         }
       }

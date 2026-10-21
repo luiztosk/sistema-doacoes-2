@@ -10,7 +10,7 @@ import {
 import { item } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { notFoundError, rejectEmptyUpdate } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 
 const Item = app.openAPIRegistry.register("InventoryItem", itemSchema);
@@ -46,7 +46,7 @@ const getItemRoute = defineWorkerRoute({
 				description: "Inventory item",
 				content: { "application/json": { schema: dataOf(Item) } },
 			},
-			404: { description: "Inventory item not found" },
+			404: errorResponse("Inventory item not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -75,7 +75,7 @@ const createItemRoute = defineWorkerRoute({
 				description: "Inventory item created",
 				content: { "application/json": { schema: dataOf(Item) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -108,8 +108,8 @@ const updateItemRoute = defineWorkerRoute({
 				description: "Inventory item updated",
 				content: { "application/json": { schema: dataOf(Item) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Inventory item not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Inventory item not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -144,7 +144,7 @@ const deleteItemRoute = defineWorkerRoute({
 		request: { params: idParamsSchema },
 		responses: {
 			204: { description: "Inventory item deleted" },
-			404: { description: "Inventory item not found" },
+			404: errorResponse("Inventory item not found"),
 		},
 	}),
 	handler: async (c) => {

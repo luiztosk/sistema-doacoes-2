@@ -10,7 +10,7 @@ import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common"
 import { category } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { notFoundError, rejectEmptyUpdate } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 
 const Category = app.openAPIRegistry.register(
@@ -49,7 +49,7 @@ const getCategoryRoute = defineWorkerRoute({
 				description: "Item category",
 				content: { "application/json": { schema: dataOf(Category) } },
 			},
-			404: { description: "Item category not found" },
+			404: errorResponse("Item category not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -84,7 +84,7 @@ const createCategoryRoute = defineWorkerRoute({
 				description: "Item category created",
 				content: { "application/json": { schema: dataOf(Category) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -119,8 +119,8 @@ const updateCategoryRoute = defineWorkerRoute({
 				description: "Item category updated",
 				content: { "application/json": { schema: dataOf(Category) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Item category not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Item category not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -155,7 +155,7 @@ const deleteCategoryRoute = defineWorkerRoute({
 		request: { params: idParamsSchema },
 		responses: {
 			204: { description: "Item category deleted" },
-			404: { description: "Item category not found" },
+			404: errorResponse("Item category not found"),
 		},
 	}),
 	handler: async (c) => {

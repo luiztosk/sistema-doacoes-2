@@ -11,7 +11,7 @@ import {
 import { donation } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { apiError, notFoundError, rejectEmptyUpdate } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 import {
 	documentEntries,
@@ -84,7 +84,7 @@ const getDonationRoute = defineWorkerRoute({
 				description: "Donation",
 				content: { "application/json": { schema: dataOf(Donation) } },
 			},
-			404: { description: "Donation not found" },
+			404: errorResponse("Donation not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -109,7 +109,7 @@ const createDonationRoute = defineWorkerRoute({
 				description: "Donation created",
 				content: { "application/json": { schema: dataOf(Donation) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -180,8 +180,8 @@ const updateDonationRoute = defineWorkerRoute({
 				description: "Donation updated",
 				content: { "application/json": { schema: dataOf(Donation) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Donation not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Donation not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -226,8 +226,8 @@ const voidDonationRoute = defineWorkerRoute({
 				description: "Donation voided",
 				content: { "application/json": { schema: dataOf(Donation) } },
 			},
-			400: { description: "Invalid transition" },
-			404: { description: "Donation not found" },
+			400: errorResponse("Invalid transition"),
+			404: errorResponse("Donation not found"),
 		},
 	}),
 	handler: async (c) => {

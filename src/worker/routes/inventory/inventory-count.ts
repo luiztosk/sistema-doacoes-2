@@ -14,7 +14,7 @@ import {
 } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { apiError, notFoundError } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 import {
 	ledgerBalances,
@@ -67,7 +67,7 @@ const getCountRoute = defineWorkerRoute({
 				description: "Inventory count",
 				content: { "application/json": { schema: dataOf(Count) } },
 			},
-			404: { description: "Inventory count not found" },
+			404: errorResponse("Inventory count not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -119,7 +119,7 @@ const createCountRoute = defineWorkerRoute({
 				description: "Inventory count created",
 				content: { "application/json": { schema: dataOf(Count) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {

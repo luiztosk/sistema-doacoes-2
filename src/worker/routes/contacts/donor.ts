@@ -11,7 +11,7 @@ import { dataListOf, dataOf, idParamsSchema } from "../../../schemas/api/common"
 import { donor } from "../../../schemas/db/contacts";
 import { app } from "../../app";
 import { notFoundError, rejectEmptyUpdate } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 
 const Donor = app.openAPIRegistry.register("Donor", donorSchema);
@@ -59,7 +59,7 @@ const getDonorRoute = defineWorkerRoute({
 				description: "Donor",
 				content: { "application/json": { schema: dataOf(Donor) } },
 			},
-			404: { description: "Donor not found" },
+			404: errorResponse("Donor not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -88,7 +88,7 @@ const createDonorRoute = defineWorkerRoute({
 				description: "Donor created",
 				content: { "application/json": { schema: dataOf(Donor) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -121,8 +121,8 @@ const updateDonorRoute = defineWorkerRoute({
 				description: "Donor updated",
 				content: { "application/json": { schema: dataOf(Donor) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Donor not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Donor not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -157,7 +157,7 @@ const deleteDonorRoute = defineWorkerRoute({
 		request: { params: idParamsSchema },
 		responses: {
 			204: { description: "Donor deleted" },
-			404: { description: "Donor not found" },
+			404: errorResponse("Donor not found"),
 		},
 	}),
 	handler: async (c) => {

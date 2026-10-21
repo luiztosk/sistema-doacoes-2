@@ -10,7 +10,7 @@ import {
 import { inventoryAdjustment, item } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { notFoundError } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 import { stockBatch, toEntries } from "../../api/stock";
 
@@ -72,7 +72,7 @@ const getAdjustmentRoute = defineWorkerRoute({
 				description: "Inventory adjustment",
 				content: { "application/json": { schema: dataOf(Adjustment) } },
 			},
-			404: { description: "Inventory adjustment not found" },
+			404: errorResponse("Inventory adjustment not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -123,7 +123,7 @@ const createAdjustmentRoute = defineWorkerRoute({
 				description: "Inventory adjustment created",
 				content: { "application/json": { schema: dataOf(Adjustment) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {

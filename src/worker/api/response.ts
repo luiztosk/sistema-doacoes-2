@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { errorSchema } from "../../schemas/api/common";
 
 /**
  * A resposta é validada contra o contrato antes de sair. O `.strict()` do
@@ -17,4 +18,18 @@ export function parseResponse<T extends z.ZodType>(
 	}
 
 	return parsed.data;
+}
+
+/**
+ * A resposta de erro tem um formato só, e ele é o contrato:
+ * `{"error": {"code": "…", "message": "…"}}`. O `code` é o que o cliente
+ * ramifica, e a `message` é uma frase em inglês.
+ */
+export function errorResponse(description: string) {
+	return {
+		description,
+		content: {
+			"application/json": { schema: errorSchema },
+		},
+	};
 }

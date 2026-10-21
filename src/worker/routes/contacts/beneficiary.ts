@@ -12,7 +12,7 @@ import { beneficiary } from "../../../schemas/db/contacts";
 import { app } from "../../app";
 import { notFoundError, rejectEmptyUpdate } from "../../api/errors";
 import { defineWorkerRoute } from "../../api/route";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 
 const Beneficiary = app.openAPIRegistry.register(
 	"Beneficiary",
@@ -68,7 +68,7 @@ const getBeneficiaryRoute = defineWorkerRoute({
 				description: "Beneficiary",
 				content: { "application/json": { schema: dataOf(Beneficiary) } },
 			},
-			404: { description: "Beneficiary not found" },
+			404: errorResponse("Beneficiary not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -103,7 +103,7 @@ const createBeneficiaryRoute = defineWorkerRoute({
 				description: "Beneficiary created",
 				content: { "application/json": { schema: dataOf(Beneficiary) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -138,8 +138,8 @@ const updateBeneficiaryRoute = defineWorkerRoute({
 				description: "Beneficiary updated",
 				content: { "application/json": { schema: dataOf(Beneficiary) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Beneficiary not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Beneficiary not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -174,7 +174,7 @@ const deleteBeneficiaryRoute = defineWorkerRoute({
 		request: { params: idParamsSchema },
 		responses: {
 			204: { description: "Beneficiary deleted" },
-			404: { description: "Beneficiary not found" },
+			404: errorResponse("Beneficiary not found"),
 		},
 	}),
 	handler: async (c) => {

@@ -11,7 +11,7 @@ import {
 import { delivery } from "../../../schemas/db/inventory";
 import { app } from "../../app";
 import { apiError, notFoundError, rejectEmptyUpdate } from "../../api/errors";
-import { parseResponse } from "../../api/response";
+import { errorResponse, parseResponse } from "../../api/response";
 import { defineWorkerRoute } from "../../api/route";
 import {
 	documentEntries,
@@ -80,7 +80,7 @@ const getDeliveryRoute = defineWorkerRoute({
 				description: "Delivery",
 				content: { "application/json": { schema: dataOf(Delivery) } },
 			},
-			404: { description: "Delivery not found" },
+			404: errorResponse("Delivery not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -105,7 +105,7 @@ const createDeliveryRoute = defineWorkerRoute({
 				description: "Delivery created",
 				content: { "application/json": { schema: dataOf(Delivery) } },
 			},
-			400: { description: "Invalid input" },
+			400: errorResponse("Invalid input"),
 		},
 	}),
 	handler: async (c) => {
@@ -176,8 +176,8 @@ const updateDeliveryRoute = defineWorkerRoute({
 				description: "Delivery updated",
 				content: { "application/json": { schema: dataOf(Delivery) } },
 			},
-			400: { description: "Invalid input" },
-			404: { description: "Delivery not found" },
+			400: errorResponse("Invalid input"),
+			404: errorResponse("Delivery not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -222,8 +222,8 @@ const completeDeliveryRoute = defineWorkerRoute({
 				description: "Delivery completed",
 				content: { "application/json": { schema: dataOf(Delivery) } },
 			},
-			400: { description: "Invalid transition" },
-			404: { description: "Delivery not found" },
+			400: errorResponse("Invalid transition"),
+			404: errorResponse("Delivery not found"),
 		},
 	}),
 	handler: async (c) => {
@@ -288,8 +288,8 @@ const cancelDeliveryRoute = defineWorkerRoute({
 				description: "Delivery cancelled",
 				content: { "application/json": { schema: dataOf(Delivery) } },
 			},
-			400: { description: "Invalid transition" },
-			404: { description: "Delivery not found" },
+			400: errorResponse("Invalid transition"),
+			404: errorResponse("Delivery not found"),
 		},
 	}),
 	handler: async (c) => {

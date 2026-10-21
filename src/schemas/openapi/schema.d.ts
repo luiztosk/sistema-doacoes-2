@@ -93,7 +93,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -137,7 +143,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -166,7 +178,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -233,14 +251,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Beneficiary not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -318,7 +348,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -362,7 +398,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -391,7 +433,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -441,14 +489,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Donor not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -515,7 +575,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -559,7 +625,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -588,7 +660,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -627,14 +705,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Item category not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -705,7 +795,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -749,7 +845,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -778,7 +880,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -821,14 +929,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Inventory item not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -904,7 +1024,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -948,7 +1074,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -994,14 +1126,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Donation not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1043,14 +1187,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Donation not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1130,7 +1286,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1174,7 +1336,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1220,14 +1388,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Delivery not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1269,14 +1449,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Delivery not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1322,14 +1514,26 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
                 /** @description Delivery not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1408,7 +1612,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1452,7 +1662,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1531,7 +1747,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };
@@ -1575,7 +1797,13 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "REQUIRED_FIELD" | "UNKNOWN_FIELD" | "READ_ONLY_FIELD" | "EMPTY_UPDATE" | "INVALID_VALUE" | "INVALID_REFERENCE" | "INVALID_TRANSITION" | "INSUFFICIENT_STOCK" | "NEGATIVE_STOCK" | "INVALID_RELEASE" | "INVALID_JSON" | "INVALID_BODY" | "NOT_FOUND" | "CONFLICT" | "UNSUPPORTED_MEDIA_TYPE" | "INTERNAL_ERROR";
+                            message: string;
+                        };
+                    };
                 };
             };
         };

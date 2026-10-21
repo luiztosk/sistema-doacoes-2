@@ -1,17 +1,18 @@
 # Estado atual — branch `mess/but-in-a-good-way`
 
-> **Atualizado em 20/10/2026, depois da implementação do ledger.** O modelo
-> de estoque **virou ledger** e está implementado: o contrato em zod está
-> escrito, o banco tem a tabela do ledger e o trigger da guarda, a API está
-> sobre o contrato, e as duas suítes de teste passam. O que falta é o
-> **frontend**, que é o outro lado do trabalho.
+> **Atualizado em 21/10/2026, depois da migração do frontend.** O modelo de
+> estoque **virou ledger** e está implementado dos dois lados: o contrato em
+> zod está escrito, o banco tem a tabela do ledger e o trigger da guarda, a API
+> está sobre o contrato, e o **frontend** consome o contrato — inclusive as
+> telas de saldo e de histórico. As duas suítes de teste passam, e o
+> `npm run build` está verde.
 >
 > O contrato continua em [`frozen/modelos-db.md`](frozen/modelos-db.md) e
 > [`frozen/api.md`](frozen/api.md), e o raciocínio da troca, em
 > [`arquitetura.md`](arquitetura.md#o-modelo-de-estoque-virou-ledger).
 
-Fotografia do código depois da implementação do ledger, com o que está
-pronto, o que está quebrado e o que ainda precisa ser decidido.
+Fotografia do código depois da migração do frontend para o contrato, com o
+que está pronto, o que está quebrado e o que ainda precisa ser decidido.
 
 Estado conferido em 20/10/2026.
 
@@ -62,10 +63,10 @@ endereço incluído.
 | `npm run lint` | **zero erro** |
 | `tsc -b` (projeto `worker`) | **zero erro** |
 | `tsc -b` (projeto `node`) | **zero erro** |
-| `tsc -b` (projeto `app`) | **47 erros** — todos no frontend, pela migração para o contrato |
+| `tsc -b` (projeto `app`) | **zero erro** |
 | `npm test` | **passa** — 38 casos de contrato |
 | `npm run test:inventory` | **passa** — a suíte do ledger, contra o D1 local |
-| `npm run build` | falha no `tsc -b`, no projeto `app` |
+| `npm run build` | **verde** — `lint && tsc -b && npm test && vite build` |
 
 O `npm test` **voltou ao gate do build**: `package.json` agora é
 `lint && tsc -b && npm test && vite build`.
@@ -100,27 +101,60 @@ overcommitou — deixava de valer. A regra agora é
 `on_hand + delta < reserved + reserved_delta`, e o estorno de uma doação
 inteira devolve o físico.
 
-## O frontend é o outro lado
+## O frontend migrou para o contrato
 
-O frontend ainda importa `src/schemas/zod/`, que saiu. São **47 erros de
-tipo**, todos de arquivos que importam o schema antigo:
+O frontend consome `@/schemas/api/` — o contrato — e não o `src/schemas/zod/`,
+que saiu. A migração mudou o que o frontend **é**:
 
-| Arquivo | O que falta |
+| Antes | Agora |
 |---|---|
-| `components/forms/contacts/{beneficiary,donor}.tsx` | trocar `src/schemas/zod/contacts` por `@/schemas/api/*` |
-| `components/forms/inventory/{item,category,donation,delivery}.tsx` | idem, e o contrato do formulário é o `*CreateSchema` / `*UpdateSchema` |
-| `components/tables/**` | idem, e a linha da lista é mais estreita que o detalhe |
-| `routes/_authenticated/**` | idem, e os caminhos das rotas da API |
-| `lib/queries/**` | idem, e o envelope `{data}` e o `itemId` |
+| `src/schemas/zod/<área>` | `@/schemas/api/<recurso>` |
+| `<tabela>InsertSchema` | `<recurso>CreateSchema` — o corpo do `POST` |
+| `<tabela>UpdateSchema` | `<recurso>UpdateSchema` — o corpo do `PATCH` |
+| `<tabela>SelectSchema` | `<recurso>Schema` — a resposta do detalhe |
+| `BeneficiaryTableView` (um `Pick`) | `BeneficiaryList` — a linha **é** o schema da lista |
+| `inventoryItemId` | `itemId` |
+| `/api/v1/inventory/item` | `/api/v1/inventory/items` (no plural) |
+| `delivery.lines` | `delivery.items` — `{ itemId, quantity }` |
+| `reservedQuantity` | `reserved` |
 
-O que já está certo do lado do contrato, e que o frontend vai herdar: a
-página da lista é mais estreita, o `itemId` é o nome da chave estrangeira, o
-envelope é `{data}`, e o `openapi.json` é a fonte do tipo do cliente.
+E o que o contrato mudou no frontend:
 
-**A interface visível continua em inglês em alguns lugares**, e a tabela de
-itens dos formulários de doação e entrega (itens 4, 5 e 7 do
-[`TODO.md`](../TODO.md)) continua sendo o que o ledger mais simplifica: a
-lista de itens **é** o conteúdo do documento.
+- **O envelope.** Toda resposta vem em `{ data }`, e o `select` da query
+  desembrulha. O `select` precisa aguentar o `null` — a resposta de erro não
+  tem envelope, e o `401` é a única que não tem corpo — e é o
+  `semEnvelope` de `lib/queries/fetch-client.ts` que faz isso.
+- **A data é ISO 8601.** O `DateField` fala a string do contrato, e não um
+  `Date`: o estado do formulário é o payload.
+- **O conteúdo do documento é fixo.** A lista de itens do formulário de
+  doação e de entrega é editável **só na criação** — depois disso, corrigir é
+  estornar e recriar. E o `PATCH` do cabeçalho não leva os itens.
+- **O saldo não vem do formulário.** O item nasce com o saldo zerado, e ele
+  só se move pelas operações de estoque.
+
+### As telas novas
+
+| Tela | Rota | O que é |
+|---|---|---|
+| Saldo do estoque | `/inventory/stock` | o saldo de cada item: físico, reservado e disponível |
+| Histórico do estoque | `/inventory/ledger` | todos os movimentos, **paginado no servidor** |
+
+O histórico é a **única** tela que pagina no servidor: é a única tabela que
+cresce sem limite, porque um histórico de movimentos tem uma linha por
+operação, para sempre. O resto recebe a tabela inteira e filtra no cliente.
+
+### Os verbos na tela
+
+O `POST /donations/:id/void`, o `POST /deliveries/:id/complete` e o
+`POST /deliveries/:id/cancel` viraram botões na tela do registro, ao lado do
+"Editar" — a pessoa está olhando a entrega e quer concluí-la, não editar o
+cabeçalho.
+
+### A interface está em pt-BR
+
+A navegação, os títulos, os rótulos de coluna, os botões e as mensagens de
+erro de campo estão em português. O enum continua em inglês no banco e no
+contrato, e a tela mostra a tradução.
 
 ## O seed
 
@@ -156,16 +190,15 @@ em toda coluna de chave.
 
 ## O que ainda falta
 
-1. **O frontend migrar para o contrato.** É o outro lado do trabalho, e é o
-   que segura o `tsc -b`.
-2. **A tela do ledger** — a única que pagina no servidor.
-3. **As telas de saldo** (`GET /api/v1/stock`).
-4. **Os botões de ação**: concluir entrega, cancelar entrega, estornar
-   doação.
-5. **A tabela de itens nos formulários** de doação e entrega.
-6. **A interface em pt-BR** — sobrou "Donations", "New donation", "Back",
-   "Identificacao", "Beneficiario", "Observacao" sem acento, e a
-   inconsistência entre "Observação" e "Observacao".
+1. **A tela da contagem e do ajuste.** A API tem `POST /inventory-counts` e
+   `POST /inventory-adjustments`, e o `GET` das duas listas, mas não há tela
+   — nem formulário. O `GET /inventory-counts` e o
+   `GET /inventory-adjustments` existem e não têm rota no frontend.
+2. **O `POST /api/v1/inventory/rebuild`** exposto, ou só script (decisão
+   pendente, ver abaixo).
+3. **A reconciliação visível.** A reconciliação roda no cron, avisa no
+   `console.error` e grava na tabela `reconciliation` — mas não há tela que
+   mostre a última execução.
 
 ## Uma questão de governança
 

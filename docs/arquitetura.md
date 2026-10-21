@@ -90,41 +90,40 @@ que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
 pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma
 requisição anterior fez, e não executa `db.batch()` de verdade.
 
-O modelo de estoque depende justamente do que o stub não tem: `on_hand` e
-`reserved_quantity` só fazem sentido como resultado de uma sequência de operações
-sobre o mesmo banco. Por isso existe uma segunda suíte:
+O modelo de estoque depende justamente do que o stub não tem: o saldo de cada
+item só faz sentido como resultado de uma sequência de operações sobre o mesmo
+banco, e a guarda mora num trigger do D1. Por isso existe uma segunda suíte:
 
 ```bash
 npm run local-db-init    # migrations + tipos + seed, tudo local
 npm run test:inventory   # as 7 operações do estoque, contra o D1 local
 ```
 
-[`tests/inventory.ts`](../tests/inventory.ts) cria a sessão, as categorias e os
-itens, roda as sete operações na ordem e **verifica as duas invariantes** depois
-de cada passo:
+[`tests/inventory.ts`](../tests/inventory.ts) cria as categorias e os itens,
+roda as sete operações na ordem — `RECEIVE`, `RESERVE`, `ISSUE`, `RELEASE`,
+`REVERSE`, `COUNT` e `ADJUST` — e **verifica as duas invariantes** depois de
+cada passo:
 
 ```
-on_hand >= reserved_quantity >= 0
-reserved_quantity == SUM(delivery_line) JOIN delivery WHERE status = 'OPEN'
+o cache bate com o ledger
+o estoque nunca overcommitou, em nenhum momento da história
 ```
 
-> ⚠️ Esse trecho descreve o **modelo de contadores**, que foi substituído pelo
-> ledger. As invariantes do modelo novo são as duas consultas de
-> [`frozen/modelos-db.md`](frozen/modelos-db.md#as-duas-invariantes): o cache
-> bater com o ledger, e o estoque nunca ter overcommitado em nenhum momento da
-> história. A suíte `tests/inventory.ts` é reescrita junto.
+As duas consultas estão em
+[`frozen/modelos-db.md`](frozen/modelos-db.md#as-duas-invariantes), e a suíte
+as roda de verdade, no D1 local. Ela também confere a integridade do `ref_id` —
+que não é uma FK, e por isso é uma consulta — e que todo id gravado no banco
+está em minúsculo, porque `crypto.randomUUID()` devolve minúsculo e
+`fake(z.uuidv4())` devolve maiúsculo — e o `.uuid()` do zod aceita os dois,
+então essa diferença ficaria invisível até alguém colar um id do seed numa
+chamada.
 
 Ela **não entra no gate de build**, porque precisa de um banco local com as
 migrations aplicadas: quem roda é a pessoa, com `npm run local-db-init` antes.
 Isso é o mesmo arranjo que a verificação por Insomnia, e a razão é a mesma — o
 stub não tem ciclo de vida. As asserções que o stub consegue fazer (código de
-erro, status, mensagem, validação) ficam em `npm test`; a aritmética dos
-contadores fica aqui.
-
-Ele também confere que todo id gravado no banco está em minúsculo, nas onze
-tabelas, porque `crypto.randomUUID()` devolve minúsculo e `fake(z.uuidv4())`
-devolve maiúsculo — e o `.uuid()` do zod aceita os dois, então essa diferença
-ficaria invisível até alguém colar um id do seed numa chamada.
+erro, status, mensagem, validação) ficam em `npm test`; a aritmética do ledger
+fica aqui.
 
 O script é autossanável: as linhas que ele cria são ancoradas em nomes
 (`check-item-%`, `check-categoria-%`, `note = 'check'`) e apagadas no começo e no
@@ -217,8 +216,9 @@ Os enums moram no contrato (`src/schemas/api/enums.ts`) e o `src/schemas/db/`
   decisão pendente, e é melhor: a validação passaria a ser a do contrato e o
   ledger nunca nasceria inconsistente.
 - **Dois lugares com zod, por enquanto.** `src/schemas/api/` é o contrato; o
-  `drizzle-orm/zod` sai, e o `src/schemas/zod/` — que gera schema a partir da
-  tabela — é **deprecado** e sai junto com a migração das rotas.
+  `drizzle-orm/zod` saiu, e o `src/schemas/zod/` — que gerava schema a partir
+  da tabela — saiu em 20/10/2026, com a migração das rotas. O que sobrou foi o
+  frontend, que migrou no dia seguinte.
 
 ### O zod faz o quê, exatamente
 
@@ -263,8 +263,8 @@ erro). O CI pode conferir que o arquivo commitado está em dia.
 
 ## O modelo de estoque virou ledger
 
-> Decidido em 19/10/2026, em implementação na branch
-> `mess/but-in-a-good-way`. O contrato novo está em
+> Decidido em 19/10/2026, implementado na branch `mess/but-in-a-good-way` em
+> 20/10/2026 (a API) e 21/10/2026 (o frontend). O contrato novo está em
 > [`frozen/modelos-db.md`](frozen/modelos-db.md) e
 > [`frozen/api.md`](frozen/api.md); o modelo anterior, em
 > [`future/README.md`](future/README.md), é leitura histórica.
@@ -318,9 +318,14 @@ Três motivos, em ordem de peso:
 - O `POST /donations/:id/receive` saiu, e `DELETE` em documento com
   movimentações saiu: o caminho é estornar.
 - A tela do ledger é a **primeira com paginação no servidor** do app, porque é
-  a única tabela que cresce sem limite.
+  a única tabela que cresce sem limite. Ela usa um `ServerPagination` próprio,
+  dirigido pela URL, e não o `TablePagination`, que conta as linhas do cliente.
 - O conteúdo de um documento passou a ser **fixo na criação**. Editar é
-  estornar e recriar.
+  estornar e recriar — e a tela mostra isso: a lista de itens do formulário é
+  editável só na criação.
+- O **frontend inteiro** foi migrado para o contrato: os schemas, o envelope
+  `{ data }`, o `itemId`, a data em ISO 8601 e a lista de itens. O
+  `src/schemas/zod/`, que era gerado da tabela, saiu.
 
 ### O que a medição no D1 mudou
 

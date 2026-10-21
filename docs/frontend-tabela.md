@@ -1,22 +1,48 @@
 # Como adicionar a tabela de um recurso
 
-> ⚠️ **O contrato mudou em 20/10/2026, e o frontend ainda não migrou.** Os
+> ✅ **O contrato mudou em 20/10/2026, e o frontend migrou em 21/10/2026.** Os
 > schemas da tabela saíram de `src/schemas/zod/` — que era gerado da tabela, e
 > saiu — e agora vivem em **`src/schemas/api/`**, escritos à mão. A linha da
 > lista é o **`<recurso>ListSchema`**, e ela é **mais estreita** que o detalhe:
-> o `Pick` da tela sai dela, e é ela que a API devolve. A resposta vem no
-> envelope **`{ data: ... }`**, e a chave estrangeira do item é **`itemId`**.
->
-> São **47 erros de tipo** no projeto `app` até a migração, e é ela que segura
-> o `tsc -b` — e portanto o `npm run build`. A lista do que mexer, arquivo por
-> arquivo, está em [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
+> não há `Pick` para escrever, o tipo da tela **é** o schema da lista. A
+> resposta vem no envelope **`{ data: ... }`**, e a chave estrangeira do item é
+> **`itemId`**.
 
 `contacts/beneficiaries` é a referência de uma tabela de **contato**: ela já
-está com a linha clicável, o botão de detalhe e o `Pick` que a tela carrega, e
+está com a linha clicável, o botão de detalhe e o tipo que a tela carrega, e
 é o que o build e o PR validam. `contacts/donors` aplica a mesma receita com
 Nome, Cidade, Telefone, E-mail e Detalhes. O accessor auxiliar `uf` alimenta o
 filtro exato por estado e não é renderizado: a sigla continua aparecendo junto
 da cidade, sem uma coluna visível adicional.
+
+## A linha leva o id, e a tela faz a junção
+
+A lista de doação leva o `donorId` e **não** o nome do doador, e a de entrega
+leva o `beneficiaryId` e não o nome do beneficiário. A tela já tem o catálogo
+em cache — `donorsOptions` e `beneficiariesOptions` — e faz a junção:
+
+```tsx
+const enriched = data.map((row) => ({
+	...row,
+	donorName: donors.find((donor) => donor.id === row.donorId)?.name ?? row.donorId,
+}));
+```
+
+O `columnHelper` é tipado com a linha enriquecida
+(`DonationList & { donorName: string }`), e é o `id` que fica na coluna
+quando o doador não está no cache. É a mesma decisão que vale para o filtro
+das tabelas: a API não manda nome de outro recurso.
+
+## A tabela do ledger é a exceção
+
+O histórico de estoque é a **única** tabela que **pagina no servidor**: é a
+única que cresce sem limite, porque um histórico de movimentos tem uma linha
+por operação, para sempre. As outras recebem a tabela inteira e filtram no
+cliente.
+
+A tela do ledger usa o `ServerPagination`, e não o `TablePagination` — o
+primeiro é dirigido pela URL (`page` e `pageSize` no search param) e pelo
+`total` que a API devolve; o segundo conta as linhas do cliente.
 
 `inventory/item` é a referência de uma tabela de **catálogo**: tem a coluna
 derivada, o filtro e o `sortUndefined` numa coluna anulável. As duas são
@@ -220,7 +246,7 @@ primeira — o `pageSize` novo se perde. `TablePagination` faz
 | `beneficiary`, `donor` | **Implementados** (`main` e branch), 3 modos, em `tables/contacts/`. |
 | `inventory/item`, `inventory/category` | **Implementados** na branch, em `tables/inventory/`. |
 | `inventory/donations`, `inventory/delivery` | **Implementados** na branch, em `tables/inventory/`. Verbo próprio, não CRUD — ver `frozen/api.md`. |
-| `stock`, `ledger` | **A fazer**: a tela do saldo (`GET /api/v1/stock`) e a do histórico (`GET /api/v1/ledger`, com paginação no servidor). |
+| `stock`, `ledger` | **Implementados** na branch, em `tables/inventory/`. A tela do saldo (`GET /api/v1/stock`) e a do histórico (`GET /api/v1/ledger`, com paginação no servidor). |
 
 **Não construa tela para `coleta`, `entrega` ou `item`: saíram do banco.** E
 **não construa tela para `donation_line` nem `delivery_line`: também saíram**, no

@@ -13,10 +13,10 @@ O que era a lista, e o que aconteceu com cada item:
 | 1. Erros de TypeScript em `src/worker/routes/inventory/` | **Superado** — o modelo de contadores foi abandonado; os erros disappear com ele |
 | 2. `DeliveryFormValues` com `beneficiaryId: string \| null` | **Superado** — o tipo não existe mais |
 | 3. Erros em `scripts/generate.ts` e `scripts/seed.ts` | **Superado** — o seed foi reescrito para o ledger, e ele sorteia movimentos e deriva o saldo |
-| 4. Tabela de linhas no formulário de doação | **Ainda vale** — vira a lista de itens do contrato, e é o que faz a entrega reservar estoque. No ledger, a lista de itens **é** o conteúdo do documento |
-| 5. Tabela de linhas no formulário de entrega | **Ainda vale** — idem |
+| 4. Tabela de linhas no formulário de doação | **Resolvido** — a lista de itens do contrato, em `mode="array"`. No ledger, a lista de itens **é** o conteúdo do documento |
+| 5. Tabela de linhas no formulário de entrega | **Resolvido** — idem |
 | 6. `DonationFormValues` com `lines?` | **Superado** — o tipo não existe mais |
-| 7. Rotas de criação precisam do formulário com linhas | **Ainda vale** — o formulário de entrega e o de doação precisam da lista de itens |
+| 7. Rotas de criação precisam do formulário com linhas | **Resolvido** — o formulário de entrega e o de doação têm a lista de itens, em `mode="array"` |
 | 8. `tests/api.ts` só cobre o modelo antigo | **Superado** — 38 casos do contrato novo, com as rotas montadas e um D1 de mentira |
 | 9. `tests/inventory.ts` não roda | **Superado** — a suíte foi reescrita para o ledger, com as rotas montadas, e roda contra o D1 local |
 | 10. `docs/frontend-formulario.md` sem exemplo de `SelectField` | **Superado** — o exemplo existe, em `forms/inventory/delivery.tsx` com o `fkOptions` |

@@ -27,15 +27,17 @@ descrição do código.
 > ⚠️ **O contrato de estoque está em transição.** O modelo de contadores virou
 > **ledger** em 19/10/2026, e [`frozen/api.md`](frozen/api.md) e
 > [`frozen/modelos-db.md`](frozen/modelos-db.md) já descrevem o contrato novo,
-> que está **em implementação** na branch `mess/but-in-a-good-way`. O desenho
-> anterior está em [`future/README.md`](future/README.md), como histórico.
+> que está **implementado** na branch `mess/but-in-a-good-way` — dos dois
+> lados, a API e o frontend. O desenho anterior está em
+> [`future/README.md`](future/README.md), como histórico.
 
 ## Se você está aqui para criar uma tela
 
 1. [`frontend-tabela.md`](frontend-tabela.md) e
    [`frontend-formulario.md`](frontend-formulario.md). Os dois apontam para o
-   código a espelhar; `contacts/beneficiaries` é a referência de um contato e
-   `inventory/item` a de um catálogo.
+   código a espelhar; `contacts/beneficiaries` é a referência de um contato,
+   `inventory/item` a de um catálogo, e `inventory/donation` a de um
+   **documento**, com a lista de itens.
 2. [`../AGENTS.md`](../AGENTS.md) para o estilo e as armadilhas.
 3. O backend está **congelado**: `frozen/` é leitura. A branch
    `mess/but-in-a-good-way` levanta o congelamento, porque o modelo de

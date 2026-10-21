@@ -6,7 +6,7 @@ o modelo que o redesenho de estoque substituiu.
 
 > **O modelo de estoque virou ledger.** As sete operações de contadores
 > (`on_hand` / `reserved_quantity`, tabelas de linha) foram substituídas por
-> movimentos num ledger, decidido em 19/10/2026 e **em implementação** na branch
+> movimentos num ledger, decidido em 19/10/2026 e **implementado** na branch
 > `mess/but-in-a-good-way`. O desenho anterior está em
 > [`../future/README.md`](../future/README.md), como leitura histórica; o porquê
 > da troca, em [`../arquitetura.md`](../arquitetura.md#o-modelo-de-estoque-virou-ledger).
@@ -142,6 +142,11 @@ endereço. A validação da resposta reprova a lista se ela vier com
 `logradouro` a mais. Antes do contrato virar a fonte da verdade, a lista
 devolvia as 26 colunas, endereço incluído.
 
+`GET /donors` devolve 6 campos — `id`, `name`, `phone`, `email`, `cidade` e
+`uf` — e **não** devolve o endereço. A sigla do estado vem junto porque a
+tela mostra a cidade como "cidade / uf", e a linha da tabela do doador
+precisa dela para o filtro por estado.
+
 Os movimentos vêm do ledger, filtrando por `ref_id`:
 
 ```sql
@@ -273,7 +278,7 @@ Lista fechada dos códigos que o cliente pode receber:
 | Código | Status | Quando |
 |---|---|---|
 | `REQUIRED_FIELD` | 400 | Coluna `NOT NULL` ausente ou `null` |
-| `UNKNOWN_FIELD` | 400 | Campo que não existe na tabela |
+| `UNKNOWN_FIELD` | 400 | Campo que não existe no recurso |
 | `READ_ONLY_FIELD` | 400 | Tentou enviar `id` no corpo |
 | `EMPTY_UPDATE` | 400 | `PATCH` sem nenhum campo |
 | `INVALID_VALUE` | 400 | Valor fora do domínio (enum, formato, `>= 0`, regra de domínio) |
@@ -283,7 +288,7 @@ Lista fechada dos códigos que o cliente pode receber:
 | `INVALID_BODY` | 400 | Corpo é JSON, mas não é um objeto |
 | `NOT_FOUND` | 404 | Registro ou rota inexistente |
 | `INSUFFICIENT_STOCK` | 409 | Reserva ou emissão acima do disponível |
-| `NEGATIVE_STOCK` | 409 | Ajuste ou contagem abaixo do reservado |
+| `NEGATIVE_STOCK` | 409 | Ajuste, contagem ou estorno abaixo do reservado |
 | `INVALID_RELEASE` | 409 | Cancelamento acima do reservado |
 | `CONFLICT` | 409 | Unique violado, ou `DELETE` com registro relacionado |
 | `UNSUPPORTED_MEDIA_TYPE` | 415 | `content-type` diferente de `application/json` |
@@ -310,11 +315,11 @@ dois campos ao mesmo tempo.
 - Colunas `NOT NULL` sem valor são rejeitadas com `400 REQUIRED_FIELD` — `null`
   conta como ausente, e não como valor inválido.
 - Um `PATCH` sem nenhum campo é `400 EMPTY_UPDATE`.
-- O corpo é validado por um schema zod gerado da própria tabela com
-  `drizzle-orm/zod`, e convertido no mesmo passo: `renda` chega ao Drizzle como
-  número, `cestaBasica` como booleano e `occurredAt` (ISO 8601) como `Date`.
-  Valor com tipo errado, fora de um `enum` ou fora de um piso sai como
-  `400 INVALID_VALUE`, com o nome do campo na mensagem.
+- O corpo é validado pelo schema zod do contrato, escrito à mão, e convertido no
+  mesmo passo: `renda` chega ao Drizzle como número, `cestaBasica` como
+  booleano e `occurredAt` (ISO 8601) como `Date`. Valor com tipo errado, fora
+  de um `enum` ou fora de um piso sai como `400 INVALID_VALUE`, com o nome do
+  campo na mensagem.
 - `uf` é `z.enum` das 27 UFs, não é normalizado: `uf: "sp"` é
   `400 INVALID_VALUE`. A sigla é a que o banco guarda.
 - `cep` é `z.string().regex(/^\d{8}$/)`: oito dígitos, e nada além deles.

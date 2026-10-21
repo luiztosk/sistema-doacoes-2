@@ -1,6 +1,6 @@
 # Como adicionar o formulário de um recurso
 
-> ⚠️ **O contrato mudou em 20/10/2026, e o frontend ainda não migrou.** O
+> ✅ **O contrato mudou em 20/10/2026, e o frontend migrou em 21/10/2026.** O
 > schema do formulário **saiu de `src/schemas/zod/`** — que era gerado da
 > tabela, e saiu — e agora vive em **`src/schemas/api/`**, escrito à mão e
 > com nome de contrato:
@@ -15,15 +15,14 @@
 >
 > Os nomes de campo também mudaram: a chave estrangeira do item é **`itemId`**
 > (e não `inventoryItemId`), a resposta vem no envelope **`{ data: ... }`**, e
-> o item de estoque é `/api/v1/inventory/items` (no plural). São **47 erros de
-> tipo** no projeto `app` até a migração, e é ela que segura o `tsc -b` — e
-> portanto o `npm run build`. A lista do que mexer, arquivo por arquivo, está
-> em [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
+> o item de estoque é `/api/v1/inventory/items` (no plural).
 
 `contacts/beneficiary` é a referência: ele já está nos três modos, valida com o
 mesmo schema que a API usa, e é o que o build e o PR validam.
 `inventory/item` é a referência de um formulário de **catálogo**, com coluna
 derivada.
+`inventory/donation` e `inventory/delivery` são a referência de um formulário
+**de documento**, com a lista de itens.
 
 `lib/queries/<area>/<recurso>.ts` é o **mesmo arquivo** que a tabela criou — um
 recurso lê e escreve em um arquivo só. Aqui é só a metade que escreve.
@@ -69,7 +68,8 @@ queries do recurso — copie dali.
 
 - **O estado do formulário é o payload.** Não existe passo de tradução no
   `onSubmit`: quem converte é o `onChange` da primitiva. É por isso que dá para
-  validar com o `*CreateSchema` direto, sem duplicar regra.
+  validar com o `*CreateSchema` direto, sem duplicar regra. A `DateField` é o
+  caso disso: ela fala a string ISO 8601 do contrato, e não um `Date`.
 - **Valide com o schema do modo**: `*CreateSchema` para criar, `*UpdateSchema`
   para editar. O de update é mais leniente — `name` fica opcional — e é por isso
   que o formulário **manda todos os campos sempre** (veja o item "Mande os N
@@ -140,12 +140,54 @@ novo está em [`frozen/modelos-db.md`](frozen/modelos-db.md).
 Duas coisas que só aparecem nesses formulários e que valem lembrar:
 
 - **Data tem primitiva.** `DateField` existe em `forms/fields.tsx`, e é o que
-  o `occurred_at` usa — o estado do formulário é `Date | null` e não `string`,
-  porque o `value` de um `<input type="date">` é `"AAAA-MM-DD"`.
+  o `occurred_at` usa. O estado do formulário é a **string ISO 8601** do
+  contrato e não um `Date`: o estado do formulário é o payload, e o que a API
+  aceita é a string. A primitiva converte no `onChange`, e o formulário não
+  traduz nada no `onSubmit`.
 - **A ficha tem a tabela de filhos abaixo do formulário**, com adicionar, ver e
   remover. No modelo novo, a linha de filho é `{ itemId, quantity }` e o
   formulário de entrega e o de doação **precisam** dela — é o que faz a entrega
   reservar estoque.
+
+## O formulário de um documento
+
+A doação e a entrega são os dois formulários que carregam **itens**, e a
+diferença do modelo novo é que a lista de itens **é** o conteúdo do documento:
+
+- O array é um campo do formulário, em `mode="array"`, e o `pushValue` /
+  `removeValue` do handle do campo cuidam das linhas.
+- A linha é `{ itemId, quantity }`, e os dois campos apontam para o mesmo
+  registro de item — o `itemId` é a chave estrangeira.
+- **A lista só é editável na criação.** No modo de visualização e no de
+  edição, o conteúdo é o que foi criado: o `PATCH` do cabeçalho **não** leva
+  os itens, porque o conteúdo de um documento é fixo. Corrigir é estornar e
+  recriar.
+- O `onSubmit` monta o **cabeçalho** à mão, porque ele é um subconjunto do
+  corpo do `POST`:
+
+```ts
+const cabecalho = {
+	donorId: parsed.data.donorId,
+	occurredAt: parsed.data.occurredAt,
+	note: parsed.data.note,
+};
+```
+
+## Os verbos na tela do registro
+
+O registro tem verbos próprios, e eles são botões ao lado do "Editar", no
+topo do formulário — a pessoa está olhando a entrega e quer concluí-la, não
+editar o cabeçalho:
+
+| Botão | Chamada | Quando aparece |
+|---|---|---|
+| Estornar doação | `POST /donations/{id}/void` | a doação está `RECEIVED` |
+| Concluir entrega | `POST /deliveries/{id}/complete` | a entrega está `OPEN` |
+| Cancelar entrega | `POST /deliveries/{id}/cancel` | a entrega está `OPEN` |
+
+O botão só aparece quando a transição é válida, e a API recusa a transição
+errada com `400 INVALID_TRANSITION` de qualquer jeito — a tela não é a
+validação, ela é a conveniência.
 
 ## `SelectField` alimentado por outra lista
 
@@ -166,7 +208,9 @@ UI não resolve sozinho:
 ## Fora de escopo
 
 - **Não mexa em `src/worker/`.** Esquema, rotas e migrations estão congelados
-  nesta rodada.
+  nesta rodada — a branch `mess/but-in-a-good-way` levanta o congelamento,
+  porque o modelo de estoque está sendo trocado por um ledger. Ver a exceção no
+  [`../AGENTS.md`](../AGENTS.md).
 - **Não escreva tela de `coleta`, `entrega` ou `item`.** Eles saíram do banco em
   01/10/2026, e `donation_line` e `delivery_line` saíram no redesenho para
   ledger; ver [`frozen/modelos-db.md`](frozen/modelos-db.md).

@@ -375,12 +375,15 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     `page: 0` junto do `sort`. E como a paginação é controlada, `setPageSize`
     seguido de `setPageIndex(0)` perde a escrita — use
     `setPagination({ pageIndex: 0, pageSize })`, uma chamada só.
-16. **O tipo de exibição da tabela é um `Pick`, não a linha inteira.** Ele vem do
-    `<recurso>SelectSchema`, então não é escrito à mão, e o `Pick` existe para a
-    tela não carregar as ~25 colunas. Para a tabela mostrar mais um campo,
-    acrescente o nome na lista do `Pick` — o endpoint continua devolvendo a linha
-    completa. Quem precisa da linha inteira usa o `ZodInfer` do mesmo schema, e a
-    query de detalhe.
+16. **O tipo de exibição da tabela é o `<recurso>ListSchema`, não a linha
+    inteira.** Ele vem do contrato, então não é escrito à mão, e ele **é** mais
+    estreito que o detalhe — a lista de beneficiário tem 9 campos e o detalhe
+    tem 26. A API devolve a lista com a largura da lista, e a resposta é
+    validada contra o schema antes de sair: o `.strict()` reprova uma lista
+    carregando campo a mais. Para a tela mostrar mais um campo, acrescente o
+    nome no `ListSchema` — o endpoint continua devolvendo a lista estreita.
+    Quem precisa da linha inteira usa o `ZodInfer` do `Schema`, e a query de
+    detalhe.
 17. **`PATCH` nunca leva `id` no corpo** (`READ_ONLY_FIELD`), e `parseBody`
     checa isso *antes* do zod, então nem um `id` válido escapa. É por isso que a
     mutation de update recebe o id como **argumento separado** do payload, e que
@@ -459,31 +462,44 @@ Para um caso novo, acrescente ao array. Não reescreva o runner.
     o Drizzle segue o contrato, e não o contrário. E o `src/schemas/zod/` **saiu
     em 20/10/2026**, com a migração das rotas — o frontend ainda o importa, e é
     o que segura o `tsc -b` do projeto `app`.
-30. **O D1 recusa `DROP TABLE` de uma tabela que outra referencia, e recusa
+30. **A resposta de erro não tem envelope, e o `select` da query precisa
+    aguentar o `null`.** O `401` é a única resposta sem corpo, e o `select`
+    roda também sobre a resposta de erro — sem o `semEnvelope` de
+    `lib/queries/fetch-client.ts`, a tela estoura em `Cannot read properties
+    of null` no lugar de mostrar a mensagem de erro.
+31. **O D1 recusa `DROP TABLE` de uma tabela que outra referencia, e recusa
     desligar a chave estrangeira.** `PRAGMA foreign_keys=OFF` é no-op dentro de
     uma transação, e é por isso que a migration do ledger renomeia a tabela
     antiga, cria a nova, copia e só então derruba a antiga — e recria os filhos
     depois, para que a referência aponte para o nome novo. O `drizzle-kit`
     gera o `DROP` no meio, e ele **não roda** no D1.
-31. **`ApiError` é uma classe própria, e não um `HTTPException`.** O
+32. **`ApiError` é uma classe própria, e não um `HTTPException`.** O
     `handleApiError` precisa distinguir "a API recusou" — que tem código e
     mensagem — de "o Hono recusou" (content-type errado, JSON malformado). Com
     um `HTTPException` para os dois, o ramo do `400` engolia o envelope da API
     e todo erro de domínio virava `INVALID_JSON`.
-32. **A resposta é validada contra o contrato antes de sair, e isso pega bug de
+33. **A resposta é validada contra o contrato antes de sair, e isso pega bug de
     verdade.** O `.strict()` do schema de resposta reprova uma lista carregando
     campo a mais. As listas de beneficiário, doador e ajuste estavam
     selecionando todas as colunas, e a validação estrita acusou — é o que
     garante que a lista não devolva o endereço de todo mundo.
-33. **A ordem do lote de estoque é load-bearing, e o `stockBatch` é quem
+34. **A ordem do lote de estoque é load-bearing, e o `stockBatch` é quem
     garante.** A entrada no ledger vem antes do cache, porque a guarda mora no
     trigger — e o trigger lê o saldo do item. As entradas de um documento
     entram num statement só, via `json_each`, e o `WHERE true` é obrigatório:
     sem ele o parser do SQLite não distingue o `ON` do join do `ON` do
     upsert.
-34. **O `update-openapi` não sobe mais servidor.** Ele monta o app e chama o
+35. **O `update-openapi` não sobe mais servidor.** Ele monta o app e chama o
     `getOpenAPI31Document`, porque o `src/auth.config.ts` importa
     `cloudflare:workers` e não roda fora do runtime do Worker.
+36. **O conteúdo de um documento é fixo na criação, e a tela mostra isso.** A
+    lista de itens do formulário de doação e de entrega é editável **só na
+    criação** — depois disso, corrigir é estornar e recriar. E o `PATCH` do
+    cabeçalho **não** leva os itens: o `PATCH` de uma doação ou de uma entrega
+    manda só `donorId`/`beneficiaryId`, `occurredAt` e `note`.
+37. **A `DateField` fala a string do contrato, e não um `Date`.** O estado do
+    formulário é o payload, e o que a API aceita é o ISO 8601. A primitiva
+    converte no `onChange`, e o formulário não traduz nada no `onSubmit`.
 
 ## Branches e commits
 

@@ -163,10 +163,12 @@ Estado conferido em 05/10/2026.
    ledger. O seed escreve os movimentos **na mesma ordem que a API** — a entrada
    no ledger e, logo depois, o saldo — porque a guarda mora no trigger, e o
    trigger lê o saldo do item.
-7. ⏳ **O frontend migrar para o contrato** — o `src/schemas/zod/` saiu em
-   20/10/2026, e o frontend ainda o importa. São 47 erros de tipo, e é o que
-   segura o `tsc -b` do projeto `app`. Ver
-   [`estado-atual.md`](estado-atual.md#o-frontend-é-o-outro-lado).
+7. ✅ **O frontend migrar para o contrato** — feito em 21/10/2026. O
+   `src/schemas/zod/` saiu em 20/10/2026 e o frontend migrou no dia seguinte:
+   os formulários, as tabelas, as queries e as rotas consume
+   `@/schemas/api/`. Vieram junto as telas de saldo e de histórico, os botões
+   de ação do registro e a lista de itens do formulário de documento. O
+   `tsc -b` do projeto `app` está limpo.
 
 ## Fora do escopo do MVP
 

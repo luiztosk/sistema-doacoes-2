@@ -76,9 +76,19 @@ zero é um comando só:
 bun run db-reset                # apaga o banco local, aplica, e semeia
 ```
 
-No remoto é o mesmo raciocínio, com o cuidado de sempre: criar o banco zerado e
-aplicar. **Rode `--remote` só quando for de verdade** — o `db-seed` em si
-escreve sempre no local, porque usa `getPlatformProxy()`.
+No remoto, o `db-reset-remote` faz o mesmo, e o passo de apagar é o
+`bun run db-wipe --remote`: ele derruba **todas** as tabelas — inclusive a de
+bookkeeping `d1_migrations` — para que as migrations voltem a ser aplicadas do
+zero. Sem derrubar a de bookkeeping, o Wrangler acredita que as migrations
+antigas já rodaram, e não reaplica nenhuma.
+
+> ⚠️ **A ordem de derrubar as tabelas importa.** O D1 **recusa** `DROP TABLE` de
+> uma tabela que outra referencia, e a recusa sai como erro, não como aviso. O
+> `db-wipe` lê o schema do **próprio banco** e derruba os filhos primeiro — e
+> não uma lista escrita à mão, que envelhece sem ninguém perceber.
+
+**Rode `--remote` só quando for de verdade** — o `db-seed` em si escreve sempre
+no local, porque usa `getPlatformProxy()`.
 
 Ordem ao mexer no schema:
 

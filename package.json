@@ -86,6 +86,7 @@
 		"gen-auth": "auth generate --config=./src/auth.config.ts --output=./src/schemas/db/auth.ts --yes",
 		"gen-drizzle": "drizzle-kit generate",
 		"db-seed": "tsx scripts/seed.ts",
+		"db-wipe": "tsx scripts/wipe.ts",
 		"db-init": "bun scripts/db-init.js",
 		"db-reset": "bun scripts/db-init.js --local --force",
 		"db-reset-remote": "bun scripts/db-init.js --remote --force",

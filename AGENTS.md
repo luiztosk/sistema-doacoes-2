@@ -25,6 +25,7 @@ bun run build          # lint + tsc -b + bun run test + vite build
 bun run check          # build + wrangler deploy --dry-run
 bun run update-openapi # gera o openapi.json do contrato e o schema.d.ts
 bun run db-reset      # banco local do zero: apaga, aplica as migrations e semeia
+bun run db-reset-remote  # o mesmo no remoto — DESTRUTIVO
 ```
 
 > **O gerenciador de pacotes é o bun, e há um lockfile só: o `bun.lock`.** O
@@ -557,8 +558,12 @@ nele, e o motivo está escrito para não parecer convite:
   `main.tsx` e é o que alterna a classe `dark`. O `<Toaster>` nunca foi
   montado; quem decidir usar toast monta e pronto. Não remova o pacote.
 - **O banco remoto ainda não foi recriado.** As migrations foram regeradas e o
-  local foi semeado; falta aplicar no remoto. Não rode `--remote` para
-  "resolver", a menos que a tarefa seja essa.
+  local foi semeado; falta aplicar no remoto. Ele não aceita um caminho
+  incremental: o `d1_migrations` dele tem os **nomes antigos** das migrations,
+  e o Wrangler tentaria rodar a primeira de novo. O caminho é
+  `bun run db-reset-remote`, que apaga as tabelas (inclusive a de bookkeeping)
+  e aplica as cinco na ordem. Não rode `--remote` para "resolver", a menos que
+  a tarefa seja essa.
 - **`tsconfig.json` mantém `ignoreDeprecations: "6.0"`** porque o TypeScript 6
   reclama do uso antigo. Não remova para silenciar.
 

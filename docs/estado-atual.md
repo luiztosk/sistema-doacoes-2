@@ -287,9 +287,22 @@ invariantes.
 
 ### Pendências do banco
 
-1. **O banco remoto ainda não recebeu a migration do ledger.** O
-   `db-reset-remote` continua sendo um passo manual, e o `wrangler.jsonc`
-   continua apontando para o banco local.
+1. **O banco remoto ainda não recebeu a migration do ledger.** E ele não pode
+   receber por um caminho incremental: as migrations do repo foram **regeradas**
+   três vezes desde que o remoto foi criado, e o `d1_migrations` dele carrega os
+   **nomes antigos**. Aplicar por cima tentaria rodar a primeira migration de
+   novo, e ela falharia com "table assistido already exists".
+   O caminho é o do zero, e é um comando:
+
+   ```bash
+   bun run db-reset-remote
+   ```
+
+   Ele apaga todas as tabelas do remoto — inclusive a de bookkeeping —, aplica
+   as cinco migrations na ordem, e semeia. O passo de apagar é o
+   `bun run db-wipe --remote`, que lê o schema do próprio banco para derrubar
+   os filhos antes dos pais, porque o D1 recusa `DROP TABLE` de uma tabela que
+   outra referencia.
 2. **A migration do ledger muda `beneficiary` e `donor`** (o `telefone`, o
    `bairro`, a `cidade` e a `uf` viram `NOT NULL`), e o D1 **recusa**
    `DROP TABLE` de uma tabela que outra referencia. A migration renomeia a

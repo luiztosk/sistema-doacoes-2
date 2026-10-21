@@ -35,7 +35,8 @@ if (force && local) {
 }
 
 if (force && remote) {
-	console.log("[force] Modo remote: migrations serao reaplicadas no remoto (destrutivo).");
+	console.log("[force] Modo remote: o banco sera apagado e recriado (destrutivo).");
+	run("bun", ["run", "db-wipe", "--remote"]);
 }
 
 function run(cmd, argsArr) {
@@ -54,7 +55,14 @@ run("bun", ["run", "gen-auth"]);
 run("bun", ["run", "gen-drizzle"]);
 
 // Passo 3: apply migrations
-run("npx", ["wrangler", "d1", "migrations", "apply", "prod-sistema-doacoes-2", flag]);
+run("npx", [
+	"wrangler",
+	"d1",
+	"migrations",
+	"apply",
+	"prod-sistema-doacoes-2",
+	flag,
+]);
 
 // Passo 4: tipos
 run("bun", ["run", "cf-typegen"]);

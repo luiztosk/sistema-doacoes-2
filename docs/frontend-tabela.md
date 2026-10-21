@@ -248,17 +248,18 @@ primeira — o `pageSize` novo se perde. `TablePagination` faz
 | `inventory/donations`, `inventory/delivery` | **Implementados** na branch, em `tables/inventory/`. Verbo próprio, não CRUD — ver `frozen/api.md`. |
 | `stock`, `ledger` | **Implementados** na branch, em `tables/inventory/`. A tela do saldo (`GET /api/v1/stock`) e a do histórico (`GET /api/v1/ledger`, com paginação no servidor). |
 
-**Não construa tela para `coleta`, `entrega` ou `item`: saíram do banco.** E
-**não construa tela para `donation_line` nem `delivery_line`: também saíram**, no
-redesenho para ledger — o conteúdo de um documento se lê no ledger filtrando
-por `ref_id`. Tela feita contra `coleta`/`entrega`/`item` morre no rename, porque
-os nomes novos são em inglês. O desenho do modelo anterior está em
-[`future/README.md`](future/README.md) e o novo, em
-[`frozen/modelos-db.md`](frozen/modelos-db.md).
+**Não construa tela para `coleta`, `entrega` nem `item`:** eles saíram do banco
+no redesenho do estoque, e os recursos que os substituiram já têm tela —
+`donation`, `delivery` e `inventory/item`. Do mesmo jeito, **não construa tela
+para `donation_line` nem `delivery_line`:** o conteúdo de um documento se lê no
+ledger filtrando por `ref_id`, e a linha do documento é `{ itemId, quantity }`.
 
-`item-category` e `inventory-item` **não ganham tela de catálogo separada**: a
-deduplicação de nome foi fundida em `inventory_item.name`, e `item-category` é o
-único catálogo remanescente.
+O desenho do modelo anterior está em [`future/README.md`](future/README.md) e o
+novo, em [`frozen/modelos-db.md`](frozen/modelos-db.md).
+
+`inventory/item` é a **única** tabela de catálogo: a deduplicação de nome do
+`item-category` foi fundida em `inventory_item.name`, e `inventory/category` é o
+catálogo remanescente.
 
 ## Fora de escopo
 

@@ -14,7 +14,7 @@ Protótipo (apenas rascunho por enquanto) hospedado em: [sd2.tosk.dev](https://s
 Comece por [`docs/README.md`](docs/README.md) — é o índice com o estado de cada
 documento (ativo, congelado, previsto, histórico).
 
-- [`docs/frontend-tabela.md`](docs/frontend-tabela.md) e [`docs/frontend-formulario.md`](docs/frontend-formulario.md) — como criar as telas de um recurso, espelhando o `assistido`
+- [`docs/frontend-tabela.md`](docs/frontend-tabela.md) e [`docs/frontend-formulario.md`](docs/frontend-formulario.md) — como criar as telas de um recurso, espelhando o `beneficiary`
 - [`docs/arquitetura.md`](docs/arquitetura.md) — stack, fluxo de deploy, o que roda a cada build, fluxo de contribuição
 - [`docs/backlog-pi2.md`](docs/backlog-pi2.md) — o que falta implementar neste trimestre
 - [`docs/frozen/`](docs/frozen/README.md) — contrato da API, modelo do banco e política de segurança. **Leitura obrigatória, não mexa**

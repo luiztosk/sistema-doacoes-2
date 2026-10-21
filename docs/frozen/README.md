@@ -16,16 +16,17 @@ Leitura obrigatória para as telas. **Não mexa em nada daqui nesta rodada.**
 Aqui é o que **funciona e não deve ser tocado**: é o contrato em que a tela
 opera, não uma lista de coisas a atualizar.
 
-> ⚠️ **O contrato de estoque está em transição.** O modelo de contadores virou
+> ✅ **O contrato de estoque já é o novo.** O modelo de contadores virou
 > ledger em 19/10/2026, e [`api.md`](api.md) e
-> [`modelos-db.md`](modelos-db.md) já descrevem o **novo** contrato, que está
-> **em implementação** na branch `mess/but-in-a-good-way`. O desenho anterior
-> está em [`../future/README.md`](../future/README.md) como leitura histórica.
+> [`modelos-db.md`](modelos-db.md) descrevem o contrato que está **implementado**,
+> dos dois lados — a API e o frontend. O desenho anterior está em
+> [`../future/README.md`](../future/README.md) como leitura histórica.
 
 O código é a fonte da verdade do modelo, não estes documentos. As colunas e os
-tipos saem de `src/schemas/db/` — do `*SelectSchema`, do
-`*InsertSchema` e dos enums exportados. Um doc de 150 linhas sobre colunas
-envelhece; o schema é conferido pelo gerador do seed a cada linha.
+tipos saem de `src/schemas/db/`, e o **contrato** da API sai do zod escrito à
+mão, em `src/schemas/api/`. Um doc de 150 linhas sobre colunas envelhece; o
+schema é conferido pelo gerador do seed a cada linha, e a resposta da API é
+validada contra o contrato antes de sair.
 
 Quando o backend voltar a mudar, o que muda é: mova o arquivo para `docs/`,
 atualize os links, e troque a frase de congelamento do

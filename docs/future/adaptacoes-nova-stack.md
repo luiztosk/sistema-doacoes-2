@@ -154,14 +154,14 @@ edição fiquem juntas:
 tela inicial é `/painel`, que abre em "Início" do menu lateral, e todas as
 telas protegidas usam o shell de `_authenticated.tsx`.
 
-`/assistidos` está implementada como
-[`src/react-app/routes/_authenticated/assistidos/index.tsx`](../../src/react-app/routes/_authenticated/assistidos/index.tsx):
-lista as colunas `nome`, cidade/UF, `telefone`, `email`, `renda`,
-`tipoImovel` e `cestaBasica`, com célula vazia para campo nulo. O tipo das
-linhas vem de `assistidoSelectSchema`, em `src/worker/db/schema.ts`, e não de
-uma lista escrita à mão. O endpoint devolve a tabela inteira — não há
-paginação, busca ou ordenação no servidor — então qualquer uma dessas
-capacidades nasce no cliente.
+`/beneficiaries` está implementada como
+[`src/react-app/routes/_authenticated/contacts/beneficiaries/index.tsx`](../../src/react-app/routes/_authenticated/contacts/beneficiaries/index.tsx):
+lista as colunas `nome`, cidade/UF, `phone`, `email`, `renda`, `tipoImovel` e
+`cestaBasica`, com célula vazia para campo nulo. O tipo das linhas vem do
+`beneficiaryListSchema`, em `src/schemas/api/beneficiary.ts`, e não de uma
+lista escrita à mão. O endpoint devolve a tabela inteira — não há paginação,
+busca ou ordenação no servidor — então qualquer uma dessas capacidades nasce no
+cliente.
 
 O fluxo `nova coleta`/`nova entrega` pode ser modal ou rota própria. A decisão
 deve considerar salvamento atômico, retorno/cancelamento e acessibilidade.

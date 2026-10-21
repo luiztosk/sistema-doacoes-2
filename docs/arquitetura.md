@@ -46,17 +46,17 @@ Previews (isolamento por branch) ou criar um `env` de staging no `wrangler.jsonc
 O Cloudflare executa o script `build` do `package.json`, que hoje é:
 
 ```
-bun run lint && tsc -b && vite build
+bun run lint && tsc -b && bun run test && vite build
 ```
 
 O `&&` faz o build parar no primeiro erro: um problema de lint **impede o
 deploy**. Esse build também reporta um status check no GitHub, e a `main`
 exige que ele passe — ou seja, um merge com lint quebrado não entra.
 
-> ⚠️ **O `bun run test` saiu do gate.** A cadeia já teve `bun run test` no meio, e
-> documentos ainda diziam que um teste vermelho bloqueava o deploy. Não bloqueia
-> mais, porque o teste não roda no build. **Ele volta ao gate** como parte do
-> plano do ledger — ver [`estado-atual.md`](estado-atual.md).
+> ✅ **O `bun run test` está no gate desde 20/10/2026**, com o ledger. Um
+> teste vermelho agora bloqueia o deploy, como a cadeia sempre prometeu. A
+> suíte do ledger (`bun run test:inventory`) **não** está no gate: ela precisa
+> do D1 local semeado, e o CI não tem esse estado.
 
 Como esse gate é automático, ele também bloqueia o merge por motivos que não são
 código: cota de build esgotada, token de API inválido ou timeout de 20 min. Se

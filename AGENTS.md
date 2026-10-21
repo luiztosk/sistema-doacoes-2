@@ -8,7 +8,7 @@ fonte da verdade de cada assunto.
 
 > **O branch `mess/but-in-a-good-way` já migrou o modelo de estoque.** O
 > contrato novo (estoque como **ledger**) está escrito em
-> [`docs/frozen/`](frozen/README.md), e o código — a API e o frontend — está
+> [`docs/frozen/`](docs/frozen/README.md), e o código — a API e o frontend — está
 > sobre ele. O estado exato do que está pronto e do que falta está em
 > [`docs/estado-atual.md`](docs/estado-atual.md). Leia os dois antes de
 > mexer em qualquer coisa de estoque.
@@ -234,9 +234,9 @@ query saem de uma factory por recurso (`beneficiaryKeys`), no spirit do
 para o `invalidateQueries` ter um alvo nomeado em vez de um array solto.
 
 **O estado do formulário é o payload** — o tipo dos valores é o
-`<recurso>InsertSchema` sem o `undefined`, e quem converte é o `onChange` da
-primitiva, não o `onSubmit`. Por isso dá para validar com o `*InsertSchema`
-direto, nos dois modos: o de update torna `name` opcional e o de insert é o mais
+`<recurso>CreateSchema` sem o `undefined`, e quem converte é o `onChange` da
+primitiva, não o `onSubmit`. Por isso dá para validar com o `*CreateSchema`
+direto, nos dois modos: o de update torna `name` opcional e o de create é o mais
 estrito.
 
 ## Telas: leia antes de escrever
@@ -296,11 +296,16 @@ rotas de verdade, sem D1, sem rede. Ele sai com código 1 se algum caso falhar.
 
 Para um caso novo, acrescente ao array. Não reescreva o runner.
 
-> ⚠️ **As duas suítes estão desligadas no meio da migração.** `registerResources`
-> está comentado em `tests/api.ts` e em `tests/inventory.ts`, então nenhuma rota
-> é montada, e `tests/api.ts` ainda aponta para endpoints que saíram
-> (`/api/v1/assistidos`, `/api/v1/coletas`, `/api/v1/itens`). As duas suítes são
-> reescritas no plano do ledger.
+`tests/inventory.ts` é a **segunda** suíte, e ela roda contra o **D1 local**,
+não contra o stub: o modelo de estoque depende do que o stub não tem — o saldo
+de cada item só faz sentido como resultado de uma sequência de operações sobre o
+mesmo banco, e a guarda mora num trigger do D1. Ela confere as **duas
+invariantes** depois de cada passo, a integridade do `ref_id` (que não é uma FK,
+e por isso é uma consulta) e o `id` em minúscula.
+
+> ⚠️ **A suíte do ledger precisa do banco semeado.** Ela não entra no gate do
+> build, porque o CI não tem o D1 local no estado. Antes de rodar:
+> `bun run db-reset`.
 
 ## Coisas que vão te morder
 
@@ -551,15 +556,9 @@ nele, e o motivo está escrito para não parecer convite:
 - **O `sonner` e o `<Toaster>`.** `next-themes` monta o `ThemeProvider` em
   `main.tsx` e é o que alterna a classe `dark`. O `<Toaster>` nunca foi
   montado; quem decidir usar toast monta e pronto. Não remova o pacote.
-- **`src/react-app/lib/utils.ts`** só faz `export { cn } from "cn"` e ninguém
-  importa. Os componentes importam `cn` do pacote direto. Apagar só no momento
-  em que alguém mexer nesse arquivo.
 - **O banco remoto ainda não foi recriado.** As migrations foram regeradas e o
   local foi semeado; falta aplicar no remoto. Não rode `--remote` para
   "resolver", a menos que a tarefa seja essa.
-- **`docs/inventory-pattern.md`** é órfão: não está no índice do
-  `docs/README.md` e ninguém referencia. Ele descreve um padrão de query que o
-  código não segue. Apagar ou reescrever, quando alguém mexer no `docs/`.
 - **`tsconfig.json` mantém `ignoreDeprecations: "6.0"`** porque o TypeScript 6
   reclama do uso antigo. Não remova para silenciar.
 

@@ -27,22 +27,19 @@ Estado conferido em 05/10/2026.
    [`frozen/seguranca.md`](frozen/seguranca.md).
 2. ✅ **Autenticação** — Better Auth com plugin Organization, login e cadastro
    funcionando.
-3. ⏳ **As telas dos outros recursos** — `assistido` é a referência e está nos
-   três modos (`/assistidos`, `/assistidos/novo`, `/assistidos/id/$id`).
-   `doador` também está nos três modos (`/doadores`, `/doadores/novo`,
-   `/doadores/id/$id`), com os 10 campos de identificação e endereço. Vale o
-   aviso do item 9: `doador` vira `donor` no redesenho do estoque, então a tela
-   nasce com o nome que vai morrer — mas já existe.
-   `coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**: o
-   modelo de estoque já foi decidido (`inventory_item`, `donation`, `delivery`,
-   reserva e ajuste) e implementado nesta branch, em
-   [`future/README.md`](future/README.md). As receitas estão em
+3. ✅ **As telas dos recursos** — todas as telas existem, nos três modos, e
+   consumem o contrato. `beneficiary` é a referência de um contato, `donor`
+   aplica a mesma receita, e `inventory/item` e `inventory/category` são
+   catálogo. O modelo de estoque ganhou as suas: `inventory/donations` e
+   `inventory/delivery` (com a lista de itens no formulário, e os verbos de
+   concluir, cancelar e estornar no registro), mais as telas de **saldo**
+   (`/inventory/stock`) e de **histórico** (`/inventory/ledger`, a única que
+   pagina no servidor). Busca, ordenação e paginação estão nas tabelas,
+   reutilizando `components/tables/utils/table-*.ts(x)`; página e ordenação
+   ficam na URL e são preservadas ao voltar do detalhe. As receitas estão em
    [`frontend-tabela.md`](frontend-tabela.md) e
-   [`frontend-formulario.md`](frontend-formulario.md). Busca, ordenação e
-   paginação já estão nas tabelas de `assistido` e `doador`, reutilizando
-   `components/tables/table-*.ts(x)`. Doadores também têm filtro por UF;
-   página e ordenação ficam na URL e são preservadas ao voltar do detalhe.
-4. ⛔ **Coluna "cadastrado em"** — `assistido` não tem nenhuma coluna de data,
+   [`frontend-formulario.md`](frontend-formulario.md).
+4. ⛔ **Coluna "cadastrado em"** — `beneficiary` não tem nenhuma coluna de data,
    nenhuma das 26. Ordenar por mais recentes e mostrar quando a pessoa foi
    cadastrada depende de uma coluna que o backend congelado não tem, então não
    foi inventada e a ordenação padrão ficou em `nome.asc`. Quando o backend for
@@ -53,8 +50,8 @@ Estado conferido em 05/10/2026.
 5. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem
    `errorMap` por campo para falha de servidor. As mensagens do zod em
-   `schema.ts` cobrem validação de campo, mas a API responde em inglês via
-   `errors.ts`. O `catch` do `onSubmit` já segura a navegação; falta mostrar a
+   `src/schemas/api/` cobrem validação de campo, mas a API responde em inglês
+   via `errors.ts`. O `catch` do `onSubmit` já segura a navegação; falta mostrar a
    mensagem.
 6. ⏳ **Fluxo de convite por link** — admin convita, usuário aceita e entra na
    organização. Depende do item 7.
@@ -67,7 +64,7 @@ Estado conferido em 05/10/2026.
    Rastreado pela
    [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13); o
    raciocínio, em [`frozen/seguranca.md`](frozen/seguranca.md).
-8. ✅ **Redesenho do estoque** — **decidido e em implementação**. A primeira
+8. ✅ **Redesenho do estoque** — **decidido e implementado**. A primeira
    versão (contadores `on_hand` / `reserved_quantity` e tabelas de linha) saiu;
    o modelo final é um **ledger de movimentos**, com o saldo como cache
    reconstruível e a guarda num trigger do D1. `coleta`/`entrega`/`item` já
@@ -84,8 +81,9 @@ Estado conferido em 05/10/2026.
    | `json_each` | existe |
    | `ON CONFLICT` sobre índice único de expressão | funciona, e a dedup por `lower()` vale |
 
-   Consequência: criar N itens numa doação custa **2 statements**, e não 2 por
-   linha. O `WHERE true` é obrigatório —
+   Consequência: as entradas de um documento entram num statement só, via
+   `json_each`, e o saldo é atualizado item a item — são N+2 statements por
+   documento. O `WHERE true` é obrigatório —
    `INSERT ... SELECT ... FROM json_each(...) WHERE true ON CONFLICT DO NOTHING` —
    porque sem ele o parser do SQLite não distingue o `ON` do upsert do `ON` de join
    e o statement nem compila (`near "DO": syntax error`).
@@ -97,15 +95,17 @@ Estado conferido em 05/10/2026.
 
    **O que segue sem confirmação:** o teto de 50 queries por invocação no plano Free
    é limite de plataforma e só dá para medir no remoto. Com o custo por entrega em
-   2N, é ele que corta os "~45 itens distintos por entrega".
+   N+2, é ele que corta os "~45 itens distintos por entrega".
 
    Uma ressalva: a recusa de escrita na coluna gerada sai como `SQLITE_ERROR` cru,
    que o `handleApiError` não traduz — a mesma classe do `CHECK constraint failed`.
    Não é problema enquanto ninguém escreve nela.
 
    O rename já foi aplicado, pela migration `20261006192118_mushy_karen_page`:
-   `assistido` vira `beneficiary` e `doador` vira `donor`. A migration do ledger
-   vem depois, e é a que tira `donation_line` e `delivery_line`.
+   `assistido` vira `beneficiary` e `doador` vira `donor`. A migration do ledger,
+   `20261020220341_flaky_mysterio`, veio depois, e é a que tira `donation_line` e
+   `delivery_line`, cria o `ledger` e a `reconciliation`, e instala o
+   `ledger_guard`.
 
 ### O que já está feito na branch
 
@@ -147,15 +147,20 @@ Estado conferido em 05/10/2026.
    `/deliveries/:id/complete`, `/deliveries/:id/cancel`) e a reescrita das duas
    suítes de teste. Feito em 20/10/2026; o estado está em
    [`estado-atual.md`](estado-atual.md).
-2. **A tela do saldo e a do histórico** — `GET /api/v1/stock` (item, em estoque,
+2. ✅ **A tela do saldo e a do histórico** — `GET /api/v1/stock` (item, em estoque,
    reservado, disponível) e `GET /api/v1/ledger`, que é a **primeira tela com
-   paginação no servidor** do app.
-3. **A tabela de itens no formulário de entrega e no de doação** — o que faz a
-   entrega reservar estoque. É o item 4 e o 5 do [`TODO.md`](../TODO.md), ainda
-   abertos.
-4. **Os botões de ação** — concluir entrega, cancelar entrega e estornar
+   paginação no servidor** do app. As duas existem desde 21/10/2026, em
+   `components/tables/inventory/`, e o histórico usa o `ServerPagination`, que é
+   dirigido pela URL, e não o `TablePagination`, que conta as linhas do cliente.
+3. ✅ **A tabela de itens no formulário de entrega e no de doação** — o que faz a
+   entrega reservar estoque. A lista de itens é um campo do formulário, em
+   `mode="array"`, e ela é editável **só na criação**: o conteúdo de um
+   documento é fixo, e o `PATCH` do cabeçalho não leva os itens.
+4. ✅ **Os botões de ação** — concluir entrega, cancelar entrega e estornar
    doação. As transições de estoque não são CRUD: são verbos com a
-   `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário.
+   `409 INSUFFICIENT_STOCK` ao lado, não abas de um formulário. Eles estão no
+   topo do registro, ao lado do "Editar", e só aparecem quando a transição é
+   válida.
 5. ✅ **O `bun run test` de volta ao gate do build** — `package.json` tem
    `lint && tsc -b && bun run test && vite build` desde 20/10/2026.
 6. ✅ **`db-seed` e o caminho do `getPlatformProxy()`** — o `apply --local` e o

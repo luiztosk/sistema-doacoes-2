@@ -111,14 +111,15 @@ queries do recurso — copie dali.
 - **Voltar para a lista é `<a>`, não `<button>`.** Sai de um `Button` com
   `nativeButton={false}` e `render={<Link />}`, então quem procura o botão por
   seletor `button` no teste não acha — e é o que a navegação por teclado precisa.
-- Três modos num componente só: `assistido` ausente cria, presente visualiza, e
+- Três modos num componente só: `beneficiary` ausente cria, presente visualiza, e
   `isEditing` interno libera a edição. `Cancelar` faz `form.reset()` antes de
   voltar, senão a tela mostraria alteração não salva.
 - Mande todos os campos sempre. A API aceita `PATCH` parcial, mas um corpo vazio
   é `400 EMPTY_UPDATE`.
-- Enums: `UFS`, `TIPOS_IMOVEL` e `ESTADOS_CIVIS` já são exportados de
-  `src/schemas/db/contacts.ts`. O *rótulo* em português é interface e fica no
-  frontend; o valor `UPPER_SNAKE` é o contrato com o servidor.
+- Enums: `UFS`, `TIPOS_IMOVEL` e `ESTADOS_CIVIS` são exportados de
+  `src/schemas/api/enums.ts` — o **contrato**, e não o Drizzle. O *rótulo* em
+  português é interface e fica no frontend; o valor `UPPER_SNAKE` é o contrato
+  com o servidor.
 - `Button` com `render={<Link />}` precisa de `nativeButton={false}`, senão o
   Base UI reclama que espera um `<button>` nativo.
 - A rota do registro é `<area>/<recurso>/$id.tsx` e a de criação é
@@ -128,14 +129,15 @@ queries do recurso — copie dali.
 
 ## O que vem depois
 
-`doador` já aplica esta receita: os 10 campos de identificação e endereço,
-com texto e o enum `uf`, nos modos de criação, visualização e edição. O retorno
-do detalhe preserva página e ordenação; após criar, a lista abre na página 1.
+`donor` já aplica esta receita: os campos de identificação e endereço, com
+texto e o enum `uf`, nos modos de criação, visualização e edição. O retorno do
+detalhe preserva página e ordenação; após criar, a lista abre na página 1.
 
-`coleta`, `entrega` e `item` **não ganham tela porque saíram do banco**, e
-`donation_line` e `delivery_line` **também saíram** no redesenho para ledger: o
-conteúdo de um documento se lê no ledger filtrando por `ref_id`. O desenho
-novo está em [`frozen/modelos-db.md`](frozen/modelos-db.md).
+`inventory/item` e `inventory/category` são catálogo, e `inventory/donation` e
+`inventory/delivery` são documentos — com a lista de itens, que é o conteúdo, e
+com os verbos de concluir, cancelar e estornar. O desenho novo está em
+[`frozen/modelos-db.md`](frozen/modelos-db.md), e o desenho do modelo anterior,
+em [`future/README.md`](future/README.md), é leitura histórica.
 
 Duas coisas que só aparecem nesses formulários e que valem lembrar:
 

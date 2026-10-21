@@ -3,7 +3,8 @@
 > **O modelo de estoque virou ledger.** O redesenho de 01/10/2026 — contadores
 > `on_hand` / `reserved_quantity` e tabelas `donation_line` / `delivery_line` —
 > está **substituído** pelo ledger de movimentos descrito aqui, decidedo em
-> 19/10/2026 e **em implementação** na branch `mess/but-in-a-good-way`.
+> 19/10/2026 e **implementado** na branch `mess/but-in-a-good-way` — a API e o
+> frontend.
 >
 > O desenho anterior — sete operações, "escreve, confere, compensa" — está em
 > [`../future/README.md`](../future/README.md), como leitura histórica.

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 
+import { formatDate, formatPhone } from "@/react-app/lib/format";
+
 import { Button } from "@/react-app/components/ui/button";
 import { Checkbox } from "@/react-app/components/ui/checkbox";
 import {
@@ -84,7 +86,11 @@ export function TextField({
 				autoComplete={autoComplete}
 				placeholder={placeholder}
 				disabled={!editable}
-				value={field.state.value ?? ""}
+				value={
+					!editable && type === "tel"
+						? formatPhone(field.state.value)
+						: field.state.value ?? ""
+				}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value || null)}
 				aria-invalid={invalid(error)}
@@ -235,10 +241,10 @@ export function DateField({ field, label }: BaseFieldProps<string | null>) {
 	const error = firstError(field.state.meta);
 	const editable = useEditable();
 
-	const valueStr = field.state.value
+	const date = field.state.value ? new Date(field.state.value) : null;
+	const valueStr = date && !Number.isNaN(date.getTime())
 		? new Date(
-				new Date(field.state.value).getTime() -
-					new Date(field.state.value).getTimezoneOffset() * 60000,
+				date.getTime() - date.getTimezoneOffset() * 60000,
 			)
 				.toISOString()
 				.split("T")[0]
@@ -250,9 +256,9 @@ export function DateField({ field, label }: BaseFieldProps<string | null>) {
 			<Input
 				id={field.name}
 				name={field.name}
-				type="date"
+				type={editable ? "date" : "text"}
 				disabled={!editable}
-				value={valueStr}
+				value={editable ? valueStr : formatDate(field.state.value)}
 				onBlur={field.handleBlur}
 				onChange={(e) => {
 					const d = e.target.value ? new Date(e.target.value + "T00:00:00") : null;

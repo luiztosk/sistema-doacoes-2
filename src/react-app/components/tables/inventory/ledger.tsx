@@ -4,6 +4,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { LedgerEntry } from "@/schemas/api/ledger";
+import { compareDates, formatDate } from "@/react-app/lib/format";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { features } from "@/react-app/components/tables/utils/table-features";
 import { ServerPagination } from "@/react-app/components/tables/utils/server-pagination";
@@ -73,7 +74,9 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("occurredAt", {
 		id: "occurredAt",
 		header: "Quando",
-		sortFn: "alphanumeric",
+		cell: ({ getValue }) => formatDate(getValue()),
+		sortFn: (left, right, columnId) =>
+			compareDates(left.getValue(columnId), right.getValue(columnId)),
 	}),
 ]);
 

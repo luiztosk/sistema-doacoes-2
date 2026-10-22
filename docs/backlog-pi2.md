@@ -206,7 +206,7 @@ de execução é esta — e a primeira é a que resolve a reclamação mais urge
 |---|---|---|---|---|
 | 1 | [#66] erro de mutation na tela | média | 1 dia | nenhum |
 | 2 | [#67] Insomnia na API autenticada | média | 1 dia | nenhum (dev only) |
-| 3 | [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
+| 3 | ✅ [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
 | 4 | [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
 | 5 | [#70] select de item buscável e alfabético | média | 2 dias | baixo |
 | 6 | [#71] o disponível do item e o teto | média | 1 dia | médio |
@@ -259,12 +259,13 @@ negativo, mas uma contagem errada re-baselineia em silêncio.
 5. ✅ **A coluna de doador e de beneficiário na tabela do documento** — já
    está: a linha leva o `donorId` e a tela faz a junção com o catálogo em
    cache, que é a mesma decisão do filtro das tabelas.
-6. ⏳ **Data e telefone no formato brasileiro — só na exibição.** O
-   contrato fala ISO 8601 e E.164, e **não** muda: o que vai para o banco e
-   para a API continua sendo o que é. O que muda é a **tela**: `10/10/2026`
-   em vez de `2026-10-10T12:00:00.000Z`, e `(11) 99999-9999` em vez de
-   `+5511999999999`. A formatação é do **client**, e nunca do servidor — o
-   fuso e o formato são do contexto de quem lê.
+6. ✅ **Data e telefone no formato brasileiro — só na exibição (#68).**
+   `lib/format.ts` centraliza a apresentação: data em `dd/mm/aaaa` no fuso de
+   leitura e telefone brasileiro fixo/celular com DDD. As células e os campos
+   bloqueados usam os helpers; a edição e o payload continuam em ISO 8601 e
+   E.164. Busca e ordenação usam os valores originais, e a comparação de data
+   respeita offsets. Casos unitários em `tests/format.ts`, incluídos em
+   `bun run test`, cobrem também valores ausentes e números internacionais.
 7. ⏳ **A ordenação padrão de cada tabela.** Hoje a ordenação padrão é a
    ordem em que a API devolveu, que é a ordem de inserção do seed — e não
    significa nada para quem está olhando. Cada tabela precisa do seu

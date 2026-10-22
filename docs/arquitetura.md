@@ -86,7 +86,13 @@ mantém um lote longo confiável.
 
 ### Uma terceira camada, que só roda com banco
 
-`bun run test` roda contra um **stub em memória**: o D1 é substituído por um objeto
+`bun run test` executa a suíte de contrato e os testes unitários de formatação.
+`bun run test:format` roda apenas `tests/format.ts`, sem React, rede ou banco:
+datas no fuso de leitura, telefones fixos/celulares, ordenação por instante e
+preservação do payload. Os testes usam assertions do Node e o executor `tsx`
+existente, sem um framework novo.
+
+A suíte de contrato (`tests/api.ts`) roda contra um **stub em memória**: o D1 é substituído por um objeto
 que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
 pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma
 requisição anterior fez, e não executa `db.batch()` de verdade.

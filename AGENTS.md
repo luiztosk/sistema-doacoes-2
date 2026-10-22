@@ -18,7 +18,8 @@ fonte da verdade de cada assunto.
 ```bash
 bun install             # instala as dependências (o lockfile é o bun.lock)
 bun run dev            # Vite dev server (não wrangler dev)
-bun run test               # tsx tests/api.ts — 38 casos do contrato, com D1 de mentira
+bun run test           # contrato da API + testes unitários de formatação
+bun run test:format    # tsx tests/format.ts — sem rede ou banco
 bun run test:inventory # tsx tests/inventory.ts — a suíte do ledger, contra o D1 local
 bun run lint           # eslint .
 bun run build          # lint + tsc -b + bun run test + vite build
@@ -296,6 +297,15 @@ array `casos` em `tests/api.ts`, com `nome`, `method`, `path`, e o `status`/
 rotas de verdade, sem D1, sem rede. Ele sai com código 1 se algum caso falhar.
 
 Para um caso novo, acrescente ao array. Não reescreva o runner.
+
+`tests/format.ts` verifica os helpers de apresentação de data e telefone, com
+assertions do Node, sem React, rede ou banco. Ele roda junto de `bun run test`
+e também sozinho com `bun run test:format`. O contrato continua coberto por
+`tests/api.ts`; a suíte de formatação não muda esse runner.
+Como `tests/` pertence ao projeto composto `tsconfig.worker.json`, o helper
+puro `src/react-app/lib/format.ts` também entra no `include` desse projeto
+para ser verificado com os testes. Isso não importa o helper no worker nem
+altera seu bundle de produção.
 
 `tests/inventory.ts` é a **segunda** suíte, e ela roda contra o **D1 local**,
 não contra o stub: o modelo de estoque depende do que o stub não tem — o saldo

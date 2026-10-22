@@ -300,6 +300,16 @@ lê. A formatação entra na **célula**, e a coluna continua sendo `occurredAt`
 `phone` — o `accessorKey` é identificador e vai em inglês, o rótulo é
 interface e vai em português.
 
+Implementado na #68 em `lib/format.ts`: `formatDate` usa `pt-BR` e o fuso local
+do navegador; `formatPhone` mostra fixos brasileiros com oito dígitos e celulares
+com nove, sem alterar o E.164 original. Números de outros países ou fora desse
+padrão são preservados, sem inventar um DDD brasileiro. Valor ausente vira `—`.
+O telefone é formatado nas células de contatos e a data na célula do histórico;
+os accessors mantêm os valores originais, usados pela busca e pela ordenação.
+`compareDates` compara os instantes ISO, incluindo seus offsets, não as strings
+`dd/mm/aaaa`. A ordem e a paginação do ledger continuam sendo as do servidor;
+a ordenação padrão das demais tabelas é a #69 e não muda nesta entrega.
+
 Duas armadilhas:
 
 - **a ordenação usa o valor cru**, não o formatado. `10/10/2026` ordena como

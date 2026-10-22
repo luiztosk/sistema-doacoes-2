@@ -46,6 +46,12 @@ coerção do `onChange`, o `aria-invalid` e a mensagem de erro, e o `EditablePro
 trava todos os campos de uma vez. **Não escreva um `<Input>` solto dentro do
 formulário.**
 
+Na visualização, `TextField` com `type="tel"` mostra o telefone brasileiro
+formatado, e `DateField` mostra `dd/mm/aaaa` no fuso local. Isso só muda o
+`value` exibido pelo campo bloqueado, nunca o estado do formulário. Ao editar,
+o telefone volta ao E.164 e a data continua no input nativo, que já converte
+para ISO 8601 no `onChange`. Não há máscara nem conversão adicional no envio.
+
 As mutations, espelhando o nome do guia de `queryOptions` do TanStack:
 `createBeneficiaryMutation()`, `updateBeneficiaryMutation()` e
 `beneficiaryOptions(id)`. As duas primeiras são **hooks** (`$api.useMutation`),

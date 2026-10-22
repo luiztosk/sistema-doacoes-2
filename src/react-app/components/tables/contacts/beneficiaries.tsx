@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { BeneficiaryList } from "@/schemas/api/beneficiary";
+import { formatPhone } from "@/react-app/lib/format";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -84,7 +85,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor((row) => row.phone ?? undefined, {
 		id: "phone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
-		cell: ({ getValue }) => getValue() ?? empty,
+		cell: ({ getValue }) => formatPhone(getValue()),
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 		sortUndefined: "last",

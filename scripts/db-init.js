@@ -67,32 +67,46 @@ run("npx", [
 // Passo 4: tipos
 run("bun", ["run", "cf-typegen"]);
 
-// Passo 5: seed (se remote, edita wrangler.jsonc temporariamente)
-if (remote) {
-	const wranglerPath = "wrangler.jsonc";
-	const original = readFileSync(wranglerPath, "utf8");
+// Passo 5: seed (se remote, aponta a binding para o remoto temporariamente)
+//
+// O `getPlatformProxy()` resolve a binding D1 pelo wrangler.jsonc, e ele
+// escreve no **local** por padrão. Para escrever no remoto, a binding
+// precisa de `"remote": true` — e no arquivo a linha está comentada, como
+// dica. Por isso o comento é **descomentado** em vez de procurado por
+// texto: procurar por `"remote": true` encontra a linha comentada e
+// acha que já está ligado, e o seed vai para o banco local sem avisar.
+const wranglerPath = "wrangler.jsonc";
+const original = readFileSync(wranglerPath, "utf8");
 
-	if (!original.includes('"remote": true')) {
-		const updated = original.replace(
-			'"binding": "prod_sistema_doacoes_2",',
-			'"binding": "prod_sistema_doacoes_2",\n            "remote": true,',
-		);
-		writeFileSync(wranglerPath, updated);
-		console.log("[seed] wrangler.jsonc atualizado para remote temporariamente.");
+function apontarParaRemote(conteudo) {
+	const comentado = /^(\s*)\/\/\s*"remote": true,\s*$/m;
+
+	if (comentado.test(conteudo)) {
+		return conteudo.replace(comentado, '$1"remote": true,');
 	}
+
+	if (/^\s*"remote": true,/m.test(conteudo)) {
+		return conteudo;
+	}
+
+	return conteudo.replace(
+		/"binding": "prod_sistema_doacoes_2",/,
+		'"binding": "prod_sistema_doacoes_2",\n\t\t\t"remote": true,',
+	);
 }
 
-run("bun", ["run", "db-seed"]);
-
 if (remote) {
-	const wranglerPath = "wrangler.jsonc";
-	const content = readFileSync(wranglerPath, "utf8");
-	const restored = content.replace(
-		/"binding": "prod_sistema_doacoes_2",\n\s*"remote": true,/,
-		'"binding": "prod_sistema_doacoes_2",',
-	);
-	writeFileSync(wranglerPath, restored);
-	console.log("[seed] wrangler.jsonc restaurado.");
+	writeFileSync(wranglerPath, apontarParaRemote(original));
+	console.log("[seed] wrangler.jsonc apontado para o remoto.");
+}
+
+try {
+	run("bun", ["run", "db-seed"]);
+} finally {
+	if (remote) {
+		writeFileSync(wranglerPath, original);
+		console.log("[seed] wrangler.jsonc restaurado.");
+	}
 }
 
 console.log("DB init concluido (modo:", mode + (force ? ", force" : ""), ").");

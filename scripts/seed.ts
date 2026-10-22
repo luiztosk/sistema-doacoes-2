@@ -1,7 +1,7 @@
 import { getPlatformProxy } from "wrangler";
 import { drizzle } from "drizzle-orm/d1";
 import { D1Database } from "@cloudflare/workers-types";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { gerarSeed } from "./generate";
 import { beneficiary, donor } from "../src/schemas/db/contacts";
 import {
@@ -34,6 +34,21 @@ async function seed() {
 
 	const { env, dispose } = await getPlatformProxy();
 	const db = drizzle(env.prod_sistema_doacoes_2 as D1Database);
+
+	/**
+	 * O seed **não** aceita um banco com dados. Ele é determinístico — o
+	 * mesmo `seed(42)` gera os mesmos ids — então rodar duas vezes sem
+	 * recriar o banco bate no `UNIQUE` do primeiro insert, e a mensagem do
+	 * SQLite (`UNIQUE constraint failed: beneficiary.id`) não diz o que
+	 * fazer. Aqui ela diz.
+	 */
+	const [existente] = await db.select({ total: count() }).from(beneficiary);
+	if (existente && existente.total > 0) {
+		throw new Error(
+			`o banco ja tem ${existente.total} beneficiario(s) — o seed nao aceita um banco com dados. ` +
+				"Rode `bun run db-reset` para recriar o banco do zero.",
+		);
+	}
 
 	console.log("Seeding database...");
 

@@ -87,6 +87,15 @@ antigas já rodaram, e não reaplica nenhuma.
 > `db-wipe` lê o schema do **próprio banco** e derruba os filhos primeiro — e
 > não uma lista escrita à mão, que envelhece sem ninguém perceber.
 
+> ⚠️ **O seed escreve no remoto por um truque de configuração.** O
+> `getPlatformProxy()` resolve a binding D1 pelo `wrangler.jsonc`, e ela aponta
+> para o **local** por padrão. Para escrever no remoto, a binding precisa de
+> `"remote": true` — e no arquivo a linha está **comentada**, como dica. O
+> `db-init` descomenta a linha antes do seed e restaura o arquivo depois. Por
+> isso ele **descomenta** a linha em vez de procurá-la por texto: procurar por
+> `"remote": true` encontra a linha comentada, acha que já está ligado, e o
+> seed vai para o banco local sem avisar.
+
 **Rode `--remote` só quando for de verdade** — o `db-seed` em si escreve sempre
 no local, porque usa `getPlatformProxy()`.
 
@@ -127,6 +136,17 @@ a cada execução. Os dados de entrada do gerador são dois JSONs versionados em
 id repetido ou um nome de catálogo repetido estoura o `UNIQUE` e o seed sai com
 código 1, em vez de pular a linha em silêncio. Rodar o seed duas vezes seguidas
 falha — isso é intencional, o banco de demonstração se recria do zero.
+
+E o seed **recusa um banco que já tem dados**, antes do primeiro insert, com
+uma mensagem que diz o que fazer:
+
+```
+o banco ja tem 100 beneficiario(s) — o seed nao aceita um banco com dados.
+Rode `bun run db-reset` para recriar o banco do zero.
+```
+
+Sem essa checagem, o erro que aparece é o do SQLite — `UNIQUE constraint
+failed: beneficiary.id` — que não diz se o problema é o banco ou o seed.
 
 ### O seed do modelo com ledger
 

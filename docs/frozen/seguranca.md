@@ -9,6 +9,29 @@
 > três regras de isolamento por tenant caem por construção — não há o que
 > filtrar. O que resta é autenticação, autorização, segredos e LGPD.
 
+## Registro da decisão
+
+| | |
+|---|---|
+| **Decisão** | Instância única por instituição. O sistema é **single-tenant**, e isso é definitivo, não provisório. |
+| **Quando** | 19/10/2026, na branch `mess/but-in-a-good-way` |
+| **Rastreada por** | [#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13) — *Middleware multi-tenant (filtro por organization_id)* — **encerrada**, porque o que ela pedia é exatamente o que a decisão descarta |
+| **Documentos** | Este arquivo, [`api.md`](api.md) (a seção "A instituição é a instância"), [`../backlog-pi2.md`](../backlog-pi2.md) (item 7) e o [`../../AGENTS.md`](../../AGENTS.md) |
+
+**O que a decisão proíbe, e é a parte que costuma ser esquecida:**
+
+- **não criar** `organization_id` em nenhuma tabela de domínio;
+- **não filtrar** nenhuma query por organização — não há o que filtrar;
+- **não reintroduzir** o middleware multi-tenant, nem "só por segurança".
+
+E o que ela **não** resolve: o modelo de **papéis**. `owner`, `admin`,
+`staff` e `viewer` continuam pendentes, e são o que falta para o checklist de
+prontidão da rota ter a caixa do "permissão verificada no backend" marcada.
+
+O plugin `organization()` do Better Auth continua ativo, e as tabelas de
+organização continuam existindo. Isso é **a isca mais fácil do repo**,
+porque parece que o filtro existe — e ele não existe.
+
 Resumo das decisões de segurança do sistema. Como o sistema armazena dados
 socioeconômicos de famílias assistidas (dados sensíveis, LGPD), o controle de
 acesso é requisito de segurança, não detalhe técnico.

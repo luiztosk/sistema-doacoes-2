@@ -47,7 +47,7 @@ Estado conferido em 05/10/2026.
    produzindo datas em ordem — senão "mais recentes primeiro" sobre o seed
    ordena linhas que nasceram no mesmo instante. A troca na tela é uma linha, o
    `initialSort` de `table-view-state.ts`.
-5. ⏳ **Erro de mutation na tela** — hoje o `MutationCache` em
+5. ⏳ **Erro de mutation na tela** — [#66]. Hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e não há `Alert`, `toast` nem
    `errorMap` por campo para falha de servidor. As mensagens do zod em
    `src/schemas/api/` cobrem validação de campo, mas a API responde em inglês
@@ -55,7 +55,9 @@ Estado conferido em 05/10/2026.
    mensagem.
 6. ⏳ **Fluxo de convite por link** — admin convita, usuário aceita e entra na
    organização. Depende do item 7.
-7. ✅ **Multi-tenancy** — **não vai existir, e essa é a decisão.** Uma
+7. ✅ **Multi-tenancy** — **não vai existir, e essa é a decisão**
+   ([#13](https://github.com/luiztosk/sistema-doacoes-2/issues/13), encerrada).
+   Uma
    instância do sistema serve **uma** instituição, e outra instituição é outro
    deployment, com o seu próprio banco. Não existe `organization_id` em
    nenhuma tabela de domínio, e nenhuma query filtra por instituição. O
@@ -196,6 +198,33 @@ Estado conferido em 05/10/2026.
 > frontend — [`frontend-tabela.md`](frontend-tabela.md) e
 > [`frontend-formulario.md`](frontend-formulario.md) — e o código a espelhar
 > está lá.
+
+Cada uma tem uma **issue** com o detalhe, a dificuldade e o risco. A ordem
+de execução é esta — e a primeira é a que resolve a reclamação mais urgente:
+
+| # | Issue | Dificuldade | Esforço | Risco ao sistema |
+|---|---|---|---|---|
+| 1 | [#66] erro de mutation na tela | média | 1 dia | nenhum |
+| 2 | [#67] Insomnia na API autenticada | média | 1 dia | nenhum (dev only) |
+| 3 | [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
+| 4 | [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
+| 5 | [#70] select de item buscável e alfabético | média | 2 dias | baixo |
+| 6 | [#71] o disponível do item e o teto | média | 1 dia | médio |
+| 7 | [#72] o histórico do item no detalhe | fácil | meio dia | nenhum |
+| 8 | [#73] telas de contagem e ajuste | difícil | 3 dias | **médio-alto** |
+
+**Comece por [#66].** Hoje, uma pessoa que clica em "Salvar" e leva um
+`409 INSUFFICIENT_STOCK` **não vê nada acontecer** — ela acredita que salvou.
+Enquanto a tela não mostra o erro, nenhuma das outras sete é verificável por
+quem não está olhando o console.
+
+**#N5 e #N6** são o mesmo arquivo e o mesmo componente: o select de item do
+formulário de documento. O select primeiro, porque o disponível é exibido **na
+linha do select**.
+
+**#N8 fica por último** porque é a maior, e a que mais mexe no estoque: uma
+contagem re-baselineia o saldo, e um ajuste o move. O trigger protege o caso
+negativo, mas uma contagem errada re-baselineia em silêncio.
 
 1. ⏳ **O erro de mutation na tela.** Hoje o `MutationCache` em
    `lib/query-client.ts` joga no `console` e pronto: quem clica em "Salvar" e

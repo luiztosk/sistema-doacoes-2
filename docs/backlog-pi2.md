@@ -16,8 +16,8 @@ Estado conferido em 05/10/2026.
 | Hospedagem em nuvem | ✅ | Cloudflare Workers, deploy automático na `main` |
 | Controle de versão | ✅ | Git + GitHub + PRs, `main` protegida por status check |
 | Testes | ✅ | `bun run test` (38 casos do contrato, com D1 de mentira) e `bun run test:inventory` (a suíte do ledger, contra o D1 local). As duas passam, e o `bun run test` está no gate do build |
-| Consumo de API externa | ⏳ | ViaCEP — ver [`future/`](future/README.md) |
-| Acessibilidade | ⏳ | Parcial: `label` associado e foco visível nas telas; falta teste com axe |
+| Consumo de API externa | ⏳ | ViaCEP — ver [`future/`](future/README.md). A separação do endereço em sete campos **já está feita** (veio com o contrato); falta a consulta e o tratamento de erro. [#16](https://github.com/luiztosk/sistema-doacoes-2/issues/16) |
+| Acessibilidade | ⏳ | Parcial: `label` associado e foco visível nas telas; falta teste com axe. O `aria-live` das mensagens de erro nasce com o [#66](https://github.com/luiztosk/sistema-doacoes-2/issues/66). [#17](https://github.com/luiztosk/sistema-doacoes-2/issues/17) |
 
 ## O que falta fazer
 

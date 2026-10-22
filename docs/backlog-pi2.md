@@ -188,6 +188,69 @@ Estado conferido em 05/10/2026.
    suítes automatizadas não cobrem (elas não passam pelo middleware de
    sessão).
 
+## O acabamento das telas
+
+> Estas sete coisas são o que separates **"funciona"** de **"pronto para
+> usar"**. Nenhuma delas muda o contrato da API: são todas de tela, e todas
+> cabem numa rodada. A receita de cada uma está nos dois documentos de
+> frontend — [`frontend-tabela.md`](frontend-tabela.md) e
+> [`frontend-formulario.md`](frontend-formulario.md) — e o código a espelhar
+> está lá.
+
+1. ⏳ **O erro de mutation na tela.** Hoje o `MutationCache` em
+   `lib/query-client.ts` joga no `console` e pronto: quem clica em "Salvar" e
+   leva um `409 INSUFFICIENT_STOCK` **não vê nada acontecer**. Falta um lugar
+   para a mensagem: um `Alert` no topo do formulário, ou um `toast`, e a
+   decisão de qual dos dois é do time de UI. O `errorMap` por campo do zod já
+   existe e é para erro de **validação**; o de **servidor** é outro, e a
+   distinção importa — o código do erro é o contrato
+   (`INSUFFICIENT_STOCK`, `INVALID_TRANSITION`, `NOT_FOUND`…), e a `message` é
+   em inglês. O `catch` do `onSubmit` já segura a navegação, que é o que
+   importa; falta **mostrar**.
+2. ⏳ **O select de item, buscável e em ordem alfabética.** O `SelectField` de
+   `forms/fields.tsx` é um `<select>` nativo, e com 130 itens no catálogo ele
+   é inutilizável: a pessoa rola a lista procurando "arroz" e não acha. O
+   select precisa de **busca** e de **ordem alfabética** — e o item também
+   aparece no doador e no beneficiário, que são catálogos menores, mas a
+   mesma receita serve aos três.
+3. ⏳ **O disponível do item, e o teto da quantidade.** No formulário de
+   doação e no de entrega, a linha do item precisa mostrar **quanto há
+   disponível** ao lado do nome — o saldo físico menos o reservado, que é o
+   `available` do `GET /api/v1/stock` — e a quantidade não pode passar
+   desse valor. Hoje a pessoa pode digitar 500 de um item que tem 3, e só
+   descobre quando a API responde `409 INSUFFICIENT_STOCK`. A regra é do
+   domínio, e ela já está no banco: o `ledger_guard` recusa. Na tela, o
+   **teto** é a regra, e o `409` é a rede de segurança.
+4. ⏳ **O histórico do item, no detalhe.** A tela de `inventory/item` mostra o
+   saldo, e não o **porquê** dele. Com o ledger, a resposta está a uma
+   consulta: os movimentos daquele item, com data, tipo e delta. É a mesma
+   tela do `GET /api/v1/ledger`, filtrada por `itemId` — a API já aceita o
+   filtro `itemId` na query. A tabela do item passa a ter duas abas, ou a
+   página vira detalhe + histórico.
+5. ✅ **A coluna de doador e de beneficiário na tabela do documento** — já
+   está: a linha leva o `donorId` e a tela faz a junção com o catálogo em
+   cache, que é a mesma decisão do filtro das tabelas.
+6. ⏳ **Data e telefone no formato brasileiro — só na exibição.** O
+   contrato fala ISO 8601 e E.164, e **não** muda: o que vai para o banco e
+   para a API continua sendo o que é. O que muda é a **tela**: `10/10/2026`
+   em vez de `2026-10-10T12:00:00.000Z`, e `(11) 99999-9999` em vez de
+   `+5511999999999`. A formatação é do **client**, e nunca do servidor — o
+   fuso e o formato são do contexto de quem lê.
+7. ⏳ **A ordenação padrão de cada tabela.** Hoje a ordenação padrão é a
+   ordem em que a API devolveu, que é a ordem de inserção do seed — e não
+   significa nada para quem está olhando. Cada tabela precisa do seu
+   padrão, e ele precisa estar **na URL**, como o resto do estado da tela:
+   - **contatos e itens** (beneficiário, doador, item, categoria):
+     **alfabética**, por nome, crescente;
+   - **documentos** (doação, entrega): **do mais recente para o mais
+     antigo**, por data;
+   - **saldo e histórico**: o saldo por nome, e o histórico pela ordem do
+     ledger (que é a ordem do tempo).
+
+   Hoje só as tabelas de documento ligam a ordenação na URL, e o padrão
+   delas é o mesmo das de contato — que, para uma tabela sem coluna `nome`,
+   não ordena nada.
+
 ## Fora do escopo do MVP
 
 - Google Maps / rotas de coleta (exige faturamento Google e cuidados de LGPD)

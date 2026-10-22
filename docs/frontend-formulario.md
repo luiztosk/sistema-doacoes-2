@@ -175,8 +175,47 @@ const cabecalho = {
 };
 ```
 
-## Os verbos na tela do registro
+## O select de item: busca, ordem e o teto da quantidade
 
+O `SelectField` de `forms/fields.tsx` é um `<select>` nativo, e com 130 itens
+no catálogo ele não serve: a pessoa rola a lista procurando "arroz" e não
+acha. O select de item precisa de três coisas:
+
+### Busca
+
+Um `<select>` nativo não busca. O campo precisa de um **combo**: um input que
+filtra e uma lista de opções, e o valor continua sendo o **id** — a linha do
+formulário é `{ itemId, quantity }`, e o `itemId` é o que a API quer.
+
+O filtro é o mesmo das tabelas: sem acento, e case-insensitive.
+
+### Ordem alfabética
+
+As opções vão em **ordem alfabética**, pelo nome, e não na ordem em que a API
+devolveu. A ordem da API é a de inserção, que é a do seed, e que não significa
+nada para quem está procurando. O `label` é o nome, e o `value` é o id.
+
+### O disponível, e o teto da quantidade
+
+A linha do item mostra **quanto há disponível** ao lado do nome — o físico
+menos o reservado, que é o `available` do `GET /api/v1/stock`:
+
+```
+Arroz 5kg (KG) — disponível 14
+[ Arroz 5kg (KG) ▾ ]  [ 3 ]
+```
+
+E a quantidade **não pode passar do disponível**. É a mesma regra que o
+`ledger_guard` aplica no banco — a tela é a conveniência, o trigger é a
+garantia. A API responde `409 INSUFFICIENT_STOCK` quando o teto é furado, e
+quem escreve a mensagem na tela é o item 1 do
+[`backlog-pi2.md`](backlog-pi2.md#o-acabamento-das-telas).
+
+O `available` vem do `GET /api/v1/stock`, que já devolve item por item com
+físico, reservado e disponível. A tela de documento já usa o catálogo em cache
+(`itemsOptions`); o saldo é outra query, e é ela que dá o número.
+
+## Os verbos na tela do registro
 O registro tem verbos próprios, e eles são botões ao lado do "Editar", no
 topo do formulário — a pessoa está olhando a entrega e quer concluí-la, não
 editar o cabeçalho:

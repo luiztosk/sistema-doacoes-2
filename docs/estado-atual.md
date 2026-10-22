@@ -205,6 +205,13 @@ em toda coluna de chave.
    de sessão estava escrito em todos eles. A camada manual agora é o **dev
    server, no navegador** — e um script de *smoke* contra ele (o fluxo inteiro
    do ledger, com sessão de verdade) é o item aberto.
+5. **O acabamento das telas.** São sete coisas de tela, listadas em
+   [`backlog-pi2.md`](backlog-pi2.md#o-acabamento-das-telas): o erro de
+   mutation na tela, o select de item buscável e em ordem alfabética, o
+   disponível do item com o teto da quantidade, o histórico do item no
+   detalhe, a formatação brasileira de data e telefone, e a ordenação padrão
+   de cada tabela. A coluna de doador e de beneficiário na tabela do
+   documento já está feita.
 
 ## A limpeza de 21/10/2026
 

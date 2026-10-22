@@ -261,6 +261,64 @@ novo, em [`frozen/modelos-db.md`](frozen/modelos-db.md).
 `item-category` foi fundida em `inventory_item.name`, e `inventory/category` é o
 catálogo remanescente.
 
+## A ordenação padrão de cada tabela
+
+A ordenação padrão é a **de cada tabela**, e ela fica na URL como o resto do
+estado da tela — o `sort` do search param, ao lado de `page` e `pageSize`.
+
+| Tabela | Padrão |
+|---|---|
+| contato (beneficiário, doador) | **alfabética**, por nome, crescente |
+| catálogo (item, categoria) | **alfabética**, por nome, crescente |
+| documento (doação, entrega) | **do mais recente para o mais antigo**, por data |
+| saldo | **alfabética**, por nome |
+| histórico (ledger) | pela ordem do **ledger**, que é a ordem do tempo |
+
+Hoje a ordenação padrão é a ordem em que a API devolveu — que é a ordem de
+inserção do seed, e que não significa nada para quem está olhando. E só as
+tabelas de documento ligam a ordenação na URL: as de contato e as de catálogo
+não têm `state.sorting`, e o `initialSort` global (`nome`, crescente) não
+ordena nada em uma tabela sem coluna `nome`.
+
+A receita é a mesma das tabelas de documento: `sortingFromView(view.sort)` no
+`state`, e `onSortingChange` escrevendo o `sort` na URL. O que muda por
+tabela é **o padrão**, e ele é por tabela — não global.
+
+## A formatação é de exibição, e só de exibição
+
+O contrato fala **ISO 8601** e **E.164**, e não muda: o que vai para o banco
+e para a API continua sendo o que é, e o `occurredAt` do detalhe é a string
+crua. A formatação brasileira é do **client**, e vale para a exibição:
+
+| Dado | Na API | Na tela |
+|---|---|---|
+| data | `2026-10-01T12:00:00.000Z` | `01/10/2026` |
+| telefone | `+5511999999999` | `(11) 99999-9999` |
+
+O fuso e o formato são do contexto de quem lê, e a tela é o contexto de quem
+lê. A formatação entra na **célula**, e a coluna continua sendo `occurredAt` e
+`phone` — o `accessorKey` é identificador e vai em inglês, o rótulo é
+interface e vai em português.
+
+Duas armadilhas:
+
+- **a ordenação usa o valor cru**, não o formatado. `10/10/2026` ordena como
+  texto, e `01/10/2026` vem antes de `02/10/2026` por acaso, não por data. A
+  coluna ordena pelo `Date` que o dado traz, e formata na célula;
+- **a busca também usa o valor cru**, e é por isso que o filtro sem acento
+  importa: `setembro` tem que achar `Setembro`.
+
+## O histórico de um item, no detalhe
+
+A tela de `inventory/item` mostra o saldo, e não o **porquê** dele. Com o
+ledger, a resposta está a uma query: os movimentos daquele item, com data,
+tipo e delta.
+
+A API já aceita o filtro: `GET /api/v1/ledger?itemId=…` devolve a página
+com os movimentos do item. A tela do item pode, então, mostrar a mesma tabela
+do histórico, filtrada — e o filtro já é o que a query da API pede, sem
+nenhuma query nova.
+
 ## Fora de escopo
 
 - **Não mexa em `src/worker/`.** Esquema, rotas e migrations estão congelados

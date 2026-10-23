@@ -1,3 +1,4 @@
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { ItemsTable } from "@/react-app/components/tables/inventory/item";
@@ -7,6 +8,7 @@ import { categoriesOptions } from "@/react-app/lib/queries/inventory/categories"
 import { itemsOptions } from "@/react-app/lib/queries/inventory/items";
 
 function ItemsTablePage() {
+	const view = Route.useSearch();
 	const items = useQuery(itemsOptions);
 	const categories = useQuery(categoriesOptions);
 	if (items.isLoading || categories.isLoading) {
@@ -29,7 +31,7 @@ function ItemsTablePage() {
 				</Link>
 			</div>
 			<ItemsTable
-				items={items.data ?? []}
+				items={items.data ?? []} view={view}
 				categories={categories.data ?? []}
 			/>
 		</section>
@@ -37,6 +39,7 @@ function ItemsTablePage() {
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/item/")({
+	validateSearch: tableViewSchemaFor("/inventory/item"),
 	loader: ({ context }) => {
 		context.queryClient.query({ ...itemsOptions });
 		context.queryClient.query({ ...categoriesOptions });

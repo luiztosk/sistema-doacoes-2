@@ -18,7 +18,7 @@ fonte da verdade de cada assunto.
 ```bash
 bun install             # instala as dependências (o lockfile é o bun.lock)
 bun run dev            # Vite dev server (não wrangler dev)
-bun run test           # contrato da API + testes unitários de formatação
+bun run test           # contrato da API + testes unitários de frontend
 bun run test:format    # tsx tests/format.ts — sem rede ou banco
 bun run test:inventory # tsx tests/inventory.ts — a suíte do ledger, contra o D1 local
 bun run lint           # eslint .
@@ -297,6 +297,12 @@ array `casos` em `tests/api.ts`, com `nome`, `method`, `path`, e o `status`/
 rotas de verdade, sem D1, sem rede. Ele sai com código 1 se algum caso falhar.
 
 Para um caso novo, acrescente ao array. Não reescreva o runner.
+
+`bun run test:table` verifica os helpers de `lib/table-view.ts` e `lib/text.ts`.
+As políticas de ordenação são por rota; não restaure o padrão global `nome.asc`.
+O ledger mantém a ordem do servidor (`seq.asc`), sem ordenar só a página atual.
+`sort` fica explícito na URL, inclusive quando é o padrão. Os hooks de controle
+e clamp ficam em `tables/utils/use-table-view.ts`.
 
 `tests/format.ts` verifica os helpers de apresentação de data e telefone, com
 assertions do Node, sem React, rede ou banco. Ele roda junto de `bun run test`

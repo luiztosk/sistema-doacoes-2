@@ -15,7 +15,9 @@
 		"tests",
 		"src/schemas",
 		"src/auth.config.ts",
-		"src/react-app/lib/format.ts"
+		"src/react-app/lib/format.ts",
+		"src/react-app/lib/table-view.ts",
+		"src/react-app/lib/text.ts"
 	],
 	"exclude": ["scripts"]
 }

@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
+import { compareDates, formatDate } from "@/react-app/lib/format";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
+import { createContext, useContext } from "react";
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
-	functionalUpdate,
 	useTable,
 } from "@tanstack/react-table";
 
@@ -15,12 +16,6 @@ import { TablePagination } from "@/react-app/components/tables/utils/table-pagin
 import { SortableHeader } from "@/react-app/components/tables/utils/table-sortable-header";
 import { TableToolbar } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
-import {
-	paginationFromView,
-	sortingFromView,
-	sortingToView,
-	viewForUrl,
-} from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -58,6 +53,11 @@ function DetalhesLink({ id }: { id: string }) {
 }
 
 const columns = columnHelper.columns([
+	columnHelper.accessor("occurredAt", {
+		header: ({ column }) => <SortableHeader column={column} label="Data" />,
+		cell: ({ getValue }) => formatDate(getValue()),
+		sortFn: (left, right, columnId) => compareDates(left.getValue(columnId), right.getValue(columnId)),
+	}),
 	columnHelper.accessor((row) => row.donorName, {
 		id: "donorId",
 		header: ({ column }) => <SortableHeader column={column} label="Doador" />,
@@ -94,54 +94,27 @@ type DonationsTableProps = {
 };
 
 export function DonationsTable({ data, donors, view }: DonationsTableProps) {
-	/**
-	 * A linha leva o `donorId` e não o nome: o cliente já tem o cadastro em
-	 * cache e faz a junção — a mesma decisão que vale para o filtro das
-	 * tabelas.
-	 */
 	const enriched = data.map((row) => ({
 		...row,
 		donorName: donors.find((donor) => donor.id === row.donorId)?.name ?? row.donorId,
 	}));
 	const navigate = useNavigate();
 
-	const irPara = useCallback(
-		(next: TableViewState) =>
-			navigate({ to: "/inventory/donations", search: viewForUrl(next), replace: true }),
-		[navigate],
-	);
+	const { navigateToView, ...viewOptions } = useTableView(view, "/inventory/donations");
 
 	const table = useTable({
 		features,
 		columns,
 		data: enriched ?? emptyRows,
 		getRowId: (row) => row.id,
-		state: {
-			pagination: paginationFromView(view),
-			sorting: sortingFromView(view.sort),
-		},
-		onPaginationChange: (updater) => {
-			const next = functionalUpdate(updater, paginationFromView(view));
-			irPara({ page: next.pageIndex, pageSize: next.pageSize, sort: view.sort });
-		},
-		onSortingChange: (updater) => {
-			const next = functionalUpdate(updater, sortingFromView(view.sort));
-			irPara({ page: 0, pageSize: view.pageSize, sort: sortingToView(next) });
-		},
+		...viewOptions,
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	const { pageIndex, pageSize } = table.state.pagination;
-	const total = table.getFilteredRowModel().rows.length;
-
-	useEffect(() => {
-		if (pageIndex > 0 && pageIndex * pageSize >= total) {
-			irPara({ page: 0, pageSize: view.pageSize, sort: view.sort });
-		}
-	}, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
 
 	const abrir = (id: string) =>
 		navigate({ to: "/inventory/donations/$id", params: { id }, state: { lista: view } });

@@ -92,6 +92,12 @@ datas no fuso de leitura, telefones fixos/celulares, ordenação por instante e
 preservação do payload. Os testes usam assertions do Node e o executor `tsx`
 existente, sem um framework novo.
 
+`bun run test:table` executa `tests/table-view.ts`, também incluído em
+`bun run test`: políticas por tabela, serialização da URL, paginação, parâmetros
+inválidos e comparação alfabética em português. Os helpers puros de frontend
+usados pelos testes entram no `include` do projeto composto `worker`, só para
+checagem de tipos; não são importados no bundle do Worker.
+
 A suíte de contrato (`tests/api.ts`) roda contra um **stub em memória**: o D1 é substituído por um objeto
 que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
 pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma

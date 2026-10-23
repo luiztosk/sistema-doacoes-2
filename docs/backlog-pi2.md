@@ -207,7 +207,7 @@ de execução é esta — e a primeira é a que resolve a reclamação mais urge
 | 1 | [#66] erro de mutation na tela | média | 1 dia | nenhum |
 | 2 | [#67] Insomnia na API autenticada | média | 1 dia | nenhum (dev only) |
 | 3 | ✅ [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
-| 4 | [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
+| 4 | ✅ [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
 | 5 | [#70] select de item buscável e alfabético | média | 2 dias | baixo |
 | 6 | [#71] o disponível do item e o teto | média | 1 dia | médio |
 | 7 | [#72] o histórico do item no detalhe | fácil | meio dia | nenhum |
@@ -266,20 +266,13 @@ negativo, mas uma contagem errada re-baselineia em silêncio.
    E.164. Busca e ordenação usam os valores originais, e a comparação de data
    respeita offsets. Casos unitários em `tests/format.ts`, incluídos em
    `bun run test`, cobrem também valores ausentes e números internacionais.
-7. ⏳ **A ordenação padrão de cada tabela.** Hoje a ordenação padrão é a
-   ordem em que a API devolveu, que é a ordem de inserção do seed — e não
-   significa nada para quem está olhando. Cada tabela precisa do seu
-   padrão, e ele precisa estar **na URL**, como o resto do estado da tela:
-   - **contatos e itens** (beneficiário, doador, item, categoria):
-     **alfabética**, por nome, crescente;
-   - **documentos** (doação, entrega): **do mais recente para o mais
-     antigo**, por data;
-   - **saldo e histórico**: o saldo por nome, e o histórico pela ordem do
-     ledger (que é a ordem do tempo).
-
-   Hoje só as tabelas de documento ligam a ordenação na URL, e o padrão
-   delas é o mesmo das de contato — que, para uma tabela sem coluna `nome`,
-   não ordena nada.
+7. ✅ **A ordenação padrão de cada tabela (#69).** Contatos, catálogo e saldo
+   usam `name.asc`; documentos, `occurredAt.desc`; histórico, `seq.asc`.
+   O padrão também fica explícito na URL. Todas as listas de cliente controlam
+   ordenação e paginação, preservam o contexto no detalhe e recusam colunas de
+   ordenação inexistentes. O ledger mantém a ordem do servidor, sem reordenar
+   uma página isolada. Testes puros em `tests/table-view.ts` e roteiro em
+   [`validacao-ordenacao-69.md`](validacao-ordenacao-69.md).
 
 ## Fora do escopo do MVP
 

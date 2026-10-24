@@ -208,7 +208,7 @@ de execução é esta — e a primeira é a que resolve a reclamação mais urge
 | 2 | [#67] Insomnia na API autenticada | média | 1 dia | nenhum (dev only) |
 | 3 | ✅ [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
 | 4 | ✅ [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
-| 5 | [#70] select de item buscável e alfabético | média | 2 dias | baixo |
+| 5 | ✅ [#70] select de item buscável e alfabético | média | 2 dias | baixo |
 | 6 | [#71] o disponível do item e o teto | média | 1 dia | médio |
 | 7 | [#72] o histórico do item no detalhe | fácil | meio dia | nenhum |
 | 8 | [#73] telas de contagem e ajuste | difícil | 3 dias | **médio-alto** |
@@ -236,12 +236,14 @@ negativo, mas uma contagem errada re-baselineia em silêncio.
    (`INSUFFICIENT_STOCK`, `INVALID_TRANSITION`, `NOT_FOUND`…), e a `message` é
    em inglês. O `catch` do `onSubmit` já segura a navegação, que é o que
    importa; falta **mostrar**.
-2. ⏳ **O select de item, buscável e em ordem alfabética.** O `SelectField` de
-   `forms/fields.tsx` é um `<select>` nativo, e com 130 itens no catálogo ele
-   é inutilizável: a pessoa rola a lista procurando "arroz" e não acha. O
-   select precisa de **busca** e de **ordem alfabética** — e o item também
-   aparece no doador e no beneficiário, que são catálogos menores, mas a
-   mesma receita serve aos três.
+2. ✅ **O select de catálogo buscável e alfabético (#70).**
+   `SearchableSelectField` usa o combobox Base UI existente nas referências
+   de item, doador, beneficiário e categoria. Busca por trecho sem acento/caixa,
+   ordem pt-BR, seleção por teclado e mensagem de lista vazia. O formulário
+   continua guardando ids, nunca o rótulo. Casos puros em
+   `tests/select-options.ts`, inclusive com os 130 itens do catálogo, e
+   verificação local de criação de doação e entrega. O teto de quantidade é #71.
+
 3. ⏳ **O disponível do item, e o teto da quantidade.** No formulário de
    doação e no de entrega, a linha do item precisa mostrar **quanto há
    disponível** ao lado do nome — o saldo físico menos o reservado, que é o

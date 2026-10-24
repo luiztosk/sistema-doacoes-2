@@ -98,6 +98,11 @@ inválidos e comparação alfabética em português. Os helpers puros de fronten
 usados pelos testes entram no `include` do projeto composto `worker`, só para
 checagem de tipos; não são importados no bundle do Worker.
 
+`bun run test:select` executa `tests/select-options.ts`, incluído no mesmo gate:
+normalização da busca, ordenação sem mutar o catálogo, seleção/fallback por id,
+130 itens reais do catálogo fictício e payloads de doação/entrega validados
+pelos schemas existentes. Não há dependência nem runner novo.
+
 A suíte de contrato (`tests/api.ts`) roda contra um **stub em memória**: o D1 é substituído por um objeto
 que devolve as linhas que o caso declara e falha como o D1 falha quando o caso
 pede. Ele é rápido e determinístico, mas não tem estado — não sabe o que uma

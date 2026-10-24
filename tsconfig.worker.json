@@ -17,7 +17,9 @@
 		"src/auth.config.ts",
 		"src/react-app/lib/format.ts",
 		"src/react-app/lib/table-view.ts",
-		"src/react-app/lib/text.ts"
+		"src/react-app/lib/text.ts",
+		"src/react-app/lib/select-options.ts",
+		"src/react-app/lib/fk-factory.ts"
 	],
 	"exclude": ["scripts"]
 }

@@ -304,6 +304,12 @@ O ledger mantém a ordem do servidor (`seq.asc`), sem ordenar só a página atua
 `sort` fica explícito na URL, inclusive quando é o padrão. Os hooks de controle
 e clamp ficam em `tables/utils/use-table-view.ts`.
 
+`bun run test:select` cobre os helpers puros dos campos de catálogo. Use
+`SearchableSelectField` para referências (item, doador, beneficiário, categoria)
+e `SelectField` para enums. O combobox usa objetos `{ value, label }`, mas o
+formulário recebe apenas o id. Não guarde o texto digitado como chave estrangeira.
+`normalizeText` é compartilhado pela busca dos selects e das tabelas.
+
 `tests/format.ts` verifica os helpers de apresentação de data e telefone, com
 assertions do Node, sem React, rede ou banco. Ele roda junto de `bun run test`
 e também sozinho com `bun run test:format`. O contrato continua coberto por

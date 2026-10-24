@@ -41,7 +41,7 @@ chegar aqui.
 ## Reutilizar, não reescrever
 
 As primitivas de `components/forms/fields.tsx` — `TextField`, `NumberField`,
-`SelectField`, `CheckboxField`, `TextareaField` e `SubmitField`. Elas já fazem a
+`SelectField`, `SearchableSelectField`, `CheckboxField`, `TextareaField` e `SubmitField`. Elas já fazem a
 coerção do `onChange`, o `aria-invalid` e a mensagem de erro, e o `EditableProvider`
 trava todos os campos de uma vez. **Não escreva um `<Input>` solto dentro do
 formulário.**
@@ -183,9 +183,11 @@ const cabecalho = {
 
 ## O select de item: busca, ordem e o teto da quantidade
 
-O `SelectField` de `forms/fields.tsx` é um `<select>` nativo, e com 130 itens
-no catálogo ele não serve: a pessoa rola a lista procurando "arroz" e não
-acha. O select de item precisa de três coisas:
+Implementado na #70 com `SearchableSelectField`, sobre o combobox Base UI
+já disponível em `components/ui/combobox.tsx`. O `SelectField` anterior já
+usava Base UI (não era nativo), mas não oferecia busca. As referências a item,
+doador, beneficiário e categoria usam o novo campo; enums como UF e unidade
+continuam no select simples.
 
 ### Busca
 
@@ -193,15 +195,29 @@ Um `<select>` nativo não busca. O campo precisa de um **combo**: um input que
 filtra e uma lista de opções, e o valor continua sendo o **id** — a linha do
 formulário é `{ itemId, quantity }`, e o `itemId` é o que a API quer.
 
-O filtro é o mesmo das tabelas: sem acento, e case-insensitive.
+O filtro é o mesmo das tabelas: `normalizeText` em `lib/text.ts`, sem acento
+ou distinção de maiúsculas. A busca é por trecho do rótulo, não pelo id.
+`ComboboxEmpty` anuncia quando não há resultados; setas, Enter e Escape
+ficam com o Base UI, sem recriar a interação de teclado.
 
 ### Ordem alfabética
 
 As opções vão em **ordem alfabética**, pelo nome, e não na ordem em que a API
-devolveu. A ordem da API é a de inserção, que é a do seed, e que não significa
-nada para quem está procurando. O `label` é o nome, e o `value` é o id.
+devolveu. `sortOptions` usa `Intl.Collator("pt-BR")`, sem mutar o array da
+query. O `label` é o nome, e o `value` é o id. O combobox trabalha com objetos
+`{ value, label }`, mas o `onValueChange` escreve somente `option.value` no
+formulário. Digitar um nome não o transforma num id válido.
+
+O campo tem `label` associado ao input, `aria-invalid` e `aria-describedby`
+ligados ao erro, além de nome acessível no botão de abrir opções. Um id já
+selecionado não é apagado se o catálogo ainda não chegou: ele é mostrado como
+fallback e passa ao nome quando a opção aparece. Cancelar edição restaura o
+valor do formulário. O provider bloqueia os itens de documentos existentes,
+inclusive em edição: o PATCH continua só com o cabeçalho.
 
 ### O disponível, e o teto da quantidade
+
+**Pendente na #71; não faz parte da #70.**
 
 A linha do item mostra **quanto há disponível** ao lado do nome — o físico
 menos o reservado, que é o `available` do `GET /api/v1/stock`:
@@ -236,21 +252,20 @@ O botão só aparece quando a transição é válida, e a API recusa a transiç�
 errada com `400 INVALID_TRANSITION` de qualquer jeito — a tela não é a
 validação, ela é a conveniência.
 
-## `SelectField` alimentado por outra lista
+## `SearchableSelectField` alimentado por outra lista
 
-**Já tem exemplo**: `forms/inventory/delivery.tsx` usa o `SelectField` com as
-opções vindas de `fkOptions("beneficiaries", beneficiariesData ?? [])`, que está
-em `lib/fk-factory.ts`. A query da tabela de origem já existe, e as opções são
-o array dela (`{ value: linha.id, label: linha.name }` — o `value` é o que vai no
-corpo, e é o `id` que a coluna espera). Cuide de três coisas que o `Select` do Base
-UI não resolve sozinho:
+**Exemplo**: `forms/inventory/delivery.tsx` usa `SearchableSelectField`
+com `fkOptions(beneficiaries)`, de `lib/fk-factory.ts`. A query do recurso de
+origem já existe e as opções são `{ value: linha.id, label: linha.name }`.
+O campo ordena uma cópia, sem alterar a query.
 
-1. **Lista vazia.** Sem doadores não há o que selecionar; deixe o `placeholder`
-   aparecer em vez de um item em branco.
-2. **Rótulo em vez de id.** O `value` do item é o `id`, e o texto mostrado é o
-   rótulo.
-3. **`notNull`.** Se a coluna é `notNull`, o `SelectField` precisa começar com um
-   valor real, e não com o `null` do `initialValues`.
+1. **Lista vazia.** Exibe placeholder e "Nenhuma opção encontrada.", sem criar
+   item vazio.
+2. **Rótulo em vez de id.** O nome é apresentado; somente o id vai para o
+   estado/payload. Rótulos iguais não confundem registros com ids diferentes.
+3. **Referência obrigatória.** O formulário pode começar sem seleção, mas o
+   schema exige um id válido antes de enviar. Não selecione arbitrariamente
+   o primeiro registro para esconder a validação.
 
 ## Fora de escopo
 

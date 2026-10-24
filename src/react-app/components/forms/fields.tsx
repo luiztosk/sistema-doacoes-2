@@ -1,5 +1,20 @@
+import type { SelectOption } from "@/react-app/lib/select-options";
+import { matchesOption, selectedOption, sortOptions } from "@/react-app/lib/select-options";
+import {
+	Combobox,
+	ComboboxInput,
+	ComboboxContent,
+	ComboboxList,
+	ComboboxItem,
+	ComboboxEmpty,
+	ComboboxTrigger,
+} from "@/react-app/components/ui/combobox";
+import { InputGroupAddon, InputGroupButton } from "@/react-app/components/ui/input-group";
+
 import type { ReactNode } from "react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
+
+import { formatDate, formatPhone } from "@/react-app/lib/format";
 
 import { Button } from "@/react-app/components/ui/button";
 import { Checkbox } from "@/react-app/components/ui/checkbox";
@@ -84,7 +99,11 @@ export function TextField({
 				autoComplete={autoComplete}
 				placeholder={placeholder}
 				disabled={!editable}
-				value={field.state.value ?? ""}
+				value={
+					!editable && type === "tel"
+						? formatPhone(field.state.value)
+						: field.state.value ?? ""
+				}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value || null)}
 				aria-invalid={invalid(error)}
@@ -150,10 +169,7 @@ export function NumberField({
 	);
 }
 
-export type SelectOption = {
-	value: string;
-	label: string;
-};
+export type { SelectOption } from "@/react-app/lib/select-options";
 
 export function SelectField({
 	field,
@@ -198,6 +214,68 @@ export function SelectField({
 	);
 }
 
+export function SearchableSelectField({
+	field,
+	label,
+	options,
+	placeholder = "Digite para buscar",
+}: BaseFieldProps<string | null> & {
+	options: readonly SelectOption[];
+	placeholder?: string;
+}) {
+	const error = firstError(field.state.meta);
+	const editable = useEditable();
+	const sorted = useMemo(() => sortOptions(options), [options]);
+	const selected = selectedOption(sorted, field.state.value);
+	const errorId = `${field.name}-error`;
+
+	return (
+		<Field data-invalid={invalid(error)}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+			<Combobox
+				items={sorted}
+				value={selected}
+				name={field.name}
+				disabled={!editable}
+				filter={matchesOption}
+				autoHighlight
+				isItemEqualToValue={(option, value) => option.value === value.value}
+				onValueChange={(option) => field.handleChange(option?.value ?? null)}
+			>
+				<ComboboxInput
+					id={field.name}
+					placeholder={placeholder}
+					disabled={!editable}
+					onBlur={field.handleBlur}
+					aria-invalid={invalid(error)}
+					aria-describedby={error ? errorId : undefined}
+					showTrigger={false}
+					className="w-full"
+				>
+					<InputGroupAddon align="inline-end">
+						<InputGroupButton
+							render={<ComboboxTrigger />}
+							aria-label={`Mostrar opções: ${label}`}
+							disabled={!editable}
+							size="icon-xs"
+							variant="ghost"
+						/>
+					</InputGroupAddon>
+				</ComboboxInput>
+				<ComboboxContent>
+					<ComboboxEmpty>Nenhuma opção encontrada.</ComboboxEmpty>
+					<ComboboxList>
+						{(option: SelectOption) => (
+							<ComboboxItem key={option.value} value={option}>{option.label}</ComboboxItem>
+						)}
+					</ComboboxList>
+				</ComboboxContent>
+			</Combobox>
+			<FieldError id={errorId}>{error}</FieldError>
+		</Field>
+	);
+}
+
 export function CheckboxField({ field, label }: BaseFieldProps<boolean | null | undefined>) {
 	const labelId = `${field.name}-label`;
 	const editable = useEditable();
@@ -235,10 +313,10 @@ export function DateField({ field, label }: BaseFieldProps<string | null>) {
 	const error = firstError(field.state.meta);
 	const editable = useEditable();
 
-	const valueStr = field.state.value
+	const date = field.state.value ? new Date(field.state.value) : null;
+	const valueStr = date && !Number.isNaN(date.getTime())
 		? new Date(
-				new Date(field.state.value).getTime() -
-					new Date(field.state.value).getTimezoneOffset() * 60000,
+				date.getTime() - date.getTimezoneOffset() * 60000,
 			)
 				.toISOString()
 				.split("T")[0]
@@ -250,9 +328,9 @@ export function DateField({ field, label }: BaseFieldProps<string | null>) {
 			<Input
 				id={field.name}
 				name={field.name}
-				type="date"
+				type={editable ? "date" : "text"}
 				disabled={!editable}
-				value={valueStr}
+				value={editable ? valueStr : formatDate(field.state.value)}
 				onBlur={field.handleBlur}
 				onChange={(e) => {
 					const d = e.target.value ? new Date(e.target.value + "T00:00:00") : null;

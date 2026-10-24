@@ -4,8 +4,9 @@ import {
 } from "@tanstack/react-table";
 
 import type { LedgerEntry } from "@/schemas/api/ledger";
+import { compareDates, formatDate } from "@/react-app/lib/format";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
-import { features } from "@/react-app/components/tables/utils/table-features";
+import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { ServerPagination } from "@/react-app/components/tables/utils/server-pagination";
 import {
 	Table,
@@ -73,7 +74,9 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("occurredAt", {
 		id: "occurredAt",
 		header: "Quando",
-		sortFn: "alphanumeric",
+		cell: ({ getValue }) => formatDate(getValue()),
+		sortFn: (left, right, columnId) =>
+			compareDates(left.getValue(columnId), right.getValue(columnId)),
 	}),
 ]);
 
@@ -98,6 +101,8 @@ export function LedgerTable({
 		features,
 		columns,
 		data: entries,
+		getRowId: (row) => row.id,
+		state: { sorting: [{ id: "seq", desc: false }] },
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
@@ -110,7 +115,7 @@ export function LedgerTable({
 					{table.getHeaderGroups().map((group) => (
 						<TableRow key={group.id}>
 							{group.headers.map((header) => (
-								<TableHead key={header.id}>
+								<TableHead key={header.id} aria-sort={ariaSort(header.column.getIsSorted())}>
 									{header.isPlaceholder ? null : (
 										<table.FlexRender header={header} />
 									)}

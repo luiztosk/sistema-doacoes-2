@@ -1,13 +1,15 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
+import { compareText } from "@/react-app/lib/text";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
+import { createContext, useContext } from "react";
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	createColumnHelper,
-	functionalUpdate,
 	useTable,
 } from "@tanstack/react-table";
 
 import type { DonorList } from "@/schemas/api/donor";
+import { formatPhone } from "@/react-app/lib/format";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -17,12 +19,6 @@ import {
   TableToolbar,
 } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
-import {
-  paginationFromView,
-  sortingFromView,
-  sortingToView,
-  viewForUrl,
-} from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import {
 	Table,
@@ -61,7 +57,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
-		sortFn: "alphanumeric",
+		sortFn: (left, right, columnId) => compareText(left.getValue(columnId), right.getValue(columnId)),
 	}),
 	columnHelper.accessor(cityLabel, {
 		id: "cityLabel",
@@ -73,7 +69,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor((row) => row.phone ?? undefined, {
 		id: "telefone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
-		cell: ({ getValue }) => getValue() ?? empty,
+		cell: ({ getValue }) => formatPhone(getValue()),
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 		sortUndefined: "last",
@@ -105,58 +101,21 @@ type DonorsTableProps = {
 export function DonorsTable({ data, view }: DonorsTableProps) {
 	const navigate = useNavigate();
 
-	const navigateToView = useCallback(
-		(next: TableViewState) =>
-			navigate({ to: "/contacts/donors", search: viewForUrl(next), replace: true }),
-		[navigate],
-	);
+	const { navigateToView, ...viewOptions } = useTableView(view, "/contacts/donors");
 
 	const table = useTable({
 		features,
 		columns,
 		data: data ?? emptyRows,
 		getRowId: (row) => row.id,
-		state: {
-			pagination: paginationFromView(view),
-			sorting: sortingFromView(view.sort),
-		},
-		onPaginationChange: (updater) => {
-			const next = functionalUpdate(updater, paginationFromView(view));
-			navigateToView({
-				page: next.pageIndex,
-				pageSize: next.pageSize,
-				sort: view.sort,
-			});
-		},
-		onSortingChange: (updater) => {
-			const next = functionalUpdate(updater, sortingFromView(view.sort));
-			navigateToView({
-				page: 0,
-				pageSize: view.pageSize,
-				sort: sortingToView(next),
-			});
-		},
+		...viewOptions,
 		autoResetPageIndex: false,
 		autoResetSorting: false,
 		globalFilterFn: "includesString",
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	const { pageIndex, pageSize } = table.state.pagination;
-	const total = table.getFilteredRowModel().rows.length;
-
-	useEffect(() => {
-		if (pageIndex > 0 && pageIndex * pageSize >= total) {
-			navigateToView({ page: 0, pageSize: view.pageSize, sort: view.sort });
-		}
-	}, [
-		navigateToView,
-		pageIndex,
-		pageSize,
-		total,
-		view.pageSize,
-		view.sort,
-	]);
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
 
 	const openDonor = (id: string) =>
 		navigate({

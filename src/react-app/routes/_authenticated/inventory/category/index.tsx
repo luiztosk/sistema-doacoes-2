@@ -1,3 +1,4 @@
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { ItemCategoriesTable } from "@/react-app/components/tables/inventory/categories";
@@ -6,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { categoriesOptions } from "@/react-app/lib/queries/inventory/categories";
 
 function CategoriesTablePage() {
+	const view = Route.useSearch();
 	const categories = useQuery(categoriesOptions);
 
 	if (categories.isLoading) {
@@ -27,12 +29,13 @@ function CategoriesTablePage() {
 					Nova categoria
 				</Link>
 			</div>
-			<ItemCategoriesTable data={categories.data ?? []} />
+			<ItemCategoriesTable data={categories.data ?? []} view={view} />
 		</section>
 	);
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/category/")({
+	validateSearch: tableViewSchemaFor("/inventory/category"),
 	loader: ({ context }) => {
 		context.queryClient.query({ ...categoriesOptions });
 	},

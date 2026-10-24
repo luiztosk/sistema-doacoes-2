@@ -11,6 +11,9 @@ descrição do código.
 | [`backlog-pi2.md`](backlog-pi2.md) | **ativo** | O que falta, só deste trimestre |
 | [`estado-atual.md`](estado-atual.md) | **ativo** | A branch `mess/but-in-a-good-way`: o que mudou, o que está quebrado e as pendências |
 | [`validacao-doadores.md`](validacao-doadores.md) | **ativo** | Registro da verificação local das telas de doador (#60 e #62) |
+| [`validacao-formatacao-68.md`](validacao-formatacao-68.md) | **ativo** | Formatação brasileira de datas e telefones: escopo, testes e roteiro manual (#68) |
+| [`validacao-ordenacao-69.md`](validacao-ordenacao-69.md) | **ativo** | Padrões por tabela, URL e roteiro manual (#69) |
+| [`validacao-selecao-70.md`](validacao-selecao-70.md) | **ativo** | Campos buscáveis de catálogo, testes e roteiro manual (#70) |
 | [`frozen/`](frozen/README.md) | **congelado** | Contrato da API e modelo do banco. Leitura obrigatória, **não mexa** |
 | [`future/`](future/README.md) | **previsto** | ViaCEP, papéis, acessibilidade. Também guarda o desenho do modelo de estoque **anterior**, substituído pelo ledger — é leitura histórica |
 | [`archive/`](archive/README.md) | **histórico** | O que já aconteceu. Não use como referência do estado atual |

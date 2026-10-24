@@ -1,3 +1,6 @@
+import { compareText } from "@/react-app/lib/text";
+import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
 import {
 	createColumnHelper,
 	useTable,
@@ -24,8 +27,12 @@ const searchable = new Set(["name", "categoryName", "unit"]);
 
 const columnHelper = createColumnHelper<DataTableFeatures, Stock>();
 
-export function StockTable({ stock }: { stock: Stock[] }) {
+export function StockTable({ stock, view }: { stock: Stock[]; view: TableViewState }) {
+	const { navigateToView, ...viewOptions } = useTableView(view, "/inventory/stock");
+
 	const table = useTable({
+		...viewOptions,
+		getRowId: (row) => row.itemId,
 		features,
 		columns,
 		data: stock,
@@ -34,6 +41,8 @@ export function StockTable({ stock }: { stock: Stock[] }) {
 		globalFilterFn: "includesString",
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
+
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
 
 	return (
 		<div className="space-y-4">
@@ -76,7 +85,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
-		sortFn: "alphanumeric",
+		sortFn: (left, right, columnId) => compareText(left.getValue(columnId), right.getValue(columnId)),
 	}),
 	columnHelper.accessor((row) => row.categoryName, {
 		id: "categoryName",

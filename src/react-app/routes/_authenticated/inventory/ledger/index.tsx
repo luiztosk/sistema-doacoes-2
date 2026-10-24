@@ -1,20 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
+import { useEffect } from "react";
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 
 import { LedgerTable } from "@/react-app/components/tables/inventory/ledger";
 import { ledgerOptions } from "@/react-app/lib/queries/inventory/ledger";
 
-const ledgerViewSchema = z.object({
-	page: z.coerce.number().int().min(0).optional().catch(undefined),
-	pageSize: z.coerce.number().int().min(1).optional().catch(undefined),
-});
+const ledgerViewSchema = tableViewSchemaFor("/inventory/ledger");
 
 const defaultPageSize = 50;
 
 function Ledger() {
 	const view = Route.useSearch();
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (!view.sort) navigate({ to: "/inventory/ledger", search: { ...view, sort: "seq.asc" }, replace: true });
+	}, [navigate, view]);
 
 	const page = view.page ?? 0;
 	const pageSize = view.pageSize ?? defaultPageSize;
@@ -25,6 +27,7 @@ function Ledger() {
 		navigate({
 			to: "/inventory/ledger",
 			search: {
+				sort: "seq.asc",
 				page: next.page && next.page > 0 ? next.page : undefined,
 				pageSize:
 					next.pageSize && next.pageSize !== defaultPageSize

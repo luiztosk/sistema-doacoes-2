@@ -1,12 +1,5 @@
-export type SelectOption = {
-	value: string;
-	label: string;
-};
+import type { SelectOption } from "./select-options";
 
-/**
- * As opções de um campo que aponta para outro registro. O label é o nome do
- * registro, e o valor é o id — a mesma linha que a API devolve.
- */
 export function fkOptions(
 	items?: readonly { id: string; name: string }[],
 ): SelectOption[] {

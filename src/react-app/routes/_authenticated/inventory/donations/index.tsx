@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DonationsTable } from "@/react-app/components/tables/inventory/donations";
-import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { donationsOptions } from "@/react-app/lib/queries/inventory/donations";
@@ -36,7 +36,7 @@ function Donations() {
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/donations/")({
-	validateSearch: tableViewSchema,
+	validateSearch: tableViewSchemaFor("/inventory/donations"),
 	loader: ({ context }) => {
 		context.queryClient.query({ ...donationsOptions });
 		context.queryClient.query({ ...donorsOptions });

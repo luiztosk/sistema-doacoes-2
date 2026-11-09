@@ -1,3 +1,4 @@
+import { normalizeText } from "@/react-app/lib/text";
 import {
 	columnFilteringFeature,
 	constructFilterFn,
@@ -14,16 +15,11 @@ import {
 	tableFeatures,
 } from "@tanstack/react-table";
 
-const semAcento = (value: unknown) =>
-	String(value ?? "")
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "");
 
 const includesString = constructFilterFn({
 	...filterFn_includesString,
-	resolveDataValue: semAcento,
-	resolveFilterValue: semAcento,
+	resolveDataValue: normalizeText,
+	resolveFilterValue: normalizeText,
 });
 
 export const features = tableFeatures({

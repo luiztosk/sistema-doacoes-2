@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DonorsTable } from "@/react-app/components/tables/contacts/donors";
-import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { donorsOptions } from "@/react-app/lib/queries/contacts/donors";
@@ -35,7 +35,7 @@ function Donors() {
 }
 
 export const Route = createFileRoute("/_authenticated/contacts/donors/")({
-	validateSearch: tableViewSchema,
+	validateSearch: tableViewSchemaFor("/contacts/donors"),
 	loader: ({ context }) => {
 		context.queryClient.query({ ...donorsOptions });
 	},

@@ -298,8 +298,10 @@ migration:
 - **Papéis `user` e `supervisor`** — ver a seção acima.
 - **`403` cross-tenant** e os testes de isolamento. Não há `403` em lugar nenhum
   da API hoje.
-- **ViaCEP** — preencher endereço pelo CEP. Proposta em
-  [`../backlog-pi2.md`](../backlog-pi2.md).
+- **ViaCEP** — preenchimento do endereço pelo CEP (client-side, nos formulários
+  de `beneficiary` e `donor`, sem nada no backend): **implementado**. Ver
+  [`../frontend-formulario.md`](../frontend-formulario.md). Ficou aqui porque
+  recaiu no backlog.
 - **Tratar `CHECK constraint failed`** em `handleApiError`, que hoje vira `500`.
 - **Teste de acessibilidade** com axe.
 - **Exibir erro de mutation na tela.** Hoje o `MutationCache` joga no

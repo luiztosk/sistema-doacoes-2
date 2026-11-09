@@ -15,7 +15,7 @@ descrição do código.
 | [`validacao-ordenacao-69.md`](validacao-ordenacao-69.md) | **ativo** | Padrões por tabela, URL e roteiro manual (#69) |
 | [`validacao-selecao-70.md`](validacao-selecao-70.md) | **ativo** | Campos buscáveis de catálogo, testes e roteiro manual (#70) |
 | [`frozen/`](frozen/README.md) | **congelado** | Contrato da API e modelo do banco. Leitura obrigatória, **não mexa** |
-| [`future/`](future/README.md) | **previsto** | ViaCEP, papéis, acessibilidade. Também guarda o desenho do modelo de estoque **anterior**, substituído pelo ledger — é leitura histórica |
+| [`future/`](future/README.md) | **previsto** | Papéis, acessibilidade. Também guarda o desenho do modelo de estoque **anterior**, substituído pelo ledger — é leitura histórica |
 | [`archive/`](archive/README.md) | **histórico** | O que já aconteceu. Não use como referência do estado atual |
 
 ## Estado, em uma linha

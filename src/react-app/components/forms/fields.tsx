@@ -81,10 +81,14 @@ export function TextField({
 	placeholder,
 	autoComplete,
 	type = "text",
+	onChange,
+	loading = false,
 }: BaseFieldProps<string | null | undefined> & {
 	placeholder?: string;
 	autoComplete?: string;
 	type?: "text" | "email" | "tel";
+	onChange?: (value: string) => void;
+	loading?: boolean;
 }) {
 	const error = firstError(field.state.meta);
 	const editable = useEditable();
@@ -98,15 +102,21 @@ export function TextField({
 				type={type}
 				autoComplete={autoComplete}
 				placeholder={placeholder}
-				disabled={!editable}
+				disabled={!editable || loading}
 				value={
 					!editable && type === "tel"
 						? formatPhone(field.state.value)
 						: field.state.value ?? ""
 				}
 				onBlur={field.handleBlur}
-				onChange={(e) => field.handleChange(e.target.value || null)}
+				onChange={(e) => {
+					const raw = e.target.value;
+					field.handleChange(raw || null);
+					onChange?.(raw);
+				}}
 				aria-invalid={invalid(error)}
+				aria-busy={loading ? true : undefined}
+				data-loading={loading ? true : undefined}
 			/>
 			<FieldError>{error}</FieldError>
 		</Field>

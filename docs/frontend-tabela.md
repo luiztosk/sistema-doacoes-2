@@ -130,9 +130,9 @@ da lista.
 
 Duas consequências honestas desse desenho:
 
-- `viewForUrl` remove o que é o padrão, então `/contacts/beneficiaries` sem
-  param é a visão padrão e `?page=2` é a terceira página. O param é **índice**,
-  não número.
+- `viewForUrl` remove página zero e tamanho padrão, mas preserva `sort`,
+  inclusive a ordem padrão. `?page=2&sort=name.asc` é a terceira página:
+  o param é **índice**, não número.
 - Cada escrita usa `replace: true`, porque página e ordenação são estado de
   visualização e não navegação. Back do navegador volta da tela de registro para
   a página de onde saiu, mas não "desfaz" um clique de página.
@@ -218,7 +218,7 @@ Nenhuma delas quebra o `tsc`, e nenhuma aparece na API.
    é zero e qualquer `page` parece fora do alcance, então `?page=2` é apagado no
    primeiro render. Carga direta em `?page=2` abria na página 1.
 
-Uma que não é da biblioteca, e sim do fato de a ordenação padrão ser `nome.asc`:
+Uma que não é da biblioteca, e sim do fato de a ordenação padrão ser `name.asc`:
 **renomear um registro o move.** Salvar com o nome trocado muda a chave de
 ordenação, então a linha pode sair da página em que a pessoa está — o mesmo
 limite do registro recém-criado, que pode não cair na página 1 porque a rota de
@@ -274,15 +274,24 @@ estado da tela — o `sort` do search param, ao lado de `page` e `pageSize`.
 | saldo | **alfabética**, por nome |
 | histórico (ledger) | pela ordem do **ledger**, que é a ordem do tempo |
 
-Hoje a ordenação padrão é a ordem em que a API devolveu — que é a ordem de
-inserção do seed, e que não significa nada para quem está olhando. E só as
-tabelas de documento ligam a ordenação na URL: as de contato e as de catálogo
-não têm `state.sorting`, e o `initialSort` global (`nome`, crescente) não
-ordena nada em uma tabela sem coluna `nome`.
+Implementado na #69. As políticas ficam em `lib/table-view.ts`, por rota:
+`name.asc` para contatos, catálogo e saldo; `occurredAt.desc` para documentos;
+`seq.asc` para o histórico. Cada lista valida somente suas colunas ordenáveis,
+e uma coluna inexistente (inclusive o antigo `nome`) cai no padrão.
 
-A receita é a mesma das tabelas de documento: `sortingFromView(view.sort)` no
-`state`, e `onSortingChange` escrevendo o `sort` na URL. O que muda por
-tabela é **o padrão**, e ele é por tabela — não global.
+`useTableView` controla paginação e ordenação e grava o padrão na URL com
+`replace`. `useTablePageClamp` corrige páginas fora do alcance; ele só é
+montado depois da carga das queries. As listas de catálogo e beneficiários
+também passam `view` ao contexto dos links de detalhe. Categorias agora têm
+o link de detalhe, para permitir esse mesmo retorno.
+
+As colunas de data dos documentos usam `compareDates`, sobre o ISO original.
+Nomes usam `Intl.Collator("pt-BR")`, ignorando caixa/acento e comparando números
+naturalmente. O cabeçalho mostra a direção real via `aria-sort`.
+
+O ledger **não permite reordenar uma página isolada**: mantém a sequência
+crescente que a API pagina e explicita `sort=seq.asc`. Não foi alterado o
+contrato nem adicionada ordenação de cliente sobre páginas do servidor.
 
 ## A formatação é de exibição, e só de exibição
 
@@ -299,6 +308,16 @@ O fuso e o formato são do contexto de quem lê, e a tela é o contexto de quem
 lê. A formatação entra na **célula**, e a coluna continua sendo `occurredAt` e
 `phone` — o `accessorKey` é identificador e vai em inglês, o rótulo é
 interface e vai em português.
+
+Implementado na #68 em `lib/format.ts`: `formatDate` usa `pt-BR` e o fuso local
+do navegador; `formatPhone` mostra fixos brasileiros com oito dígitos e celulares
+com nove, sem alterar o E.164 original. Números de outros países ou fora desse
+padrão são preservados, sem inventar um DDD brasileiro. Valor ausente vira `—`.
+O telefone é formatado nas células de contatos e a data na célula do histórico;
+os accessors mantêm os valores originais, usados pela busca e pela ordenação.
+`compareDates` compara os instantes ISO, incluindo seus offsets, não as strings
+`dd/mm/aaaa`. A ordem e a paginação do ledger continuam sendo as do servidor;
+a ordenação padrão das demais tabelas foi implementada na #69.
 
 Duas armadilhas:
 

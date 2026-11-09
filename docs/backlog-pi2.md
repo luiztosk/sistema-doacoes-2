@@ -206,9 +206,9 @@ de execução é esta — e a primeira é a que resolve a reclamação mais urge
 |---|---|---|---|---|
 | 1 | [#66] erro de mutation na tela | média | 1 dia | nenhum |
 | 2 | [#67] Insomnia na API autenticada | média | 1 dia | nenhum (dev only) |
-| 3 | [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
-| 4 | [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
-| 5 | [#70] select de item buscável e alfabético | média | 2 dias | baixo |
+| 3 | ✅ [#68] data e telefone em pt-BR | fácil | meio dia | nenhum |
+| 4 | ✅ [#69] a ordenação padrão de cada tabela | média | 1 dia | baixo |
+| 5 | ✅ [#70] select de item buscável e alfabético | média | 2 dias | baixo |
 | 6 | [#71] o disponível do item e o teto | média | 1 dia | médio |
 | 7 | [#72] o histórico do item no detalhe | fácil | meio dia | nenhum |
 | 8 | [#73] telas de contagem e ajuste | difícil | 3 dias | **médio-alto** |
@@ -236,12 +236,14 @@ negativo, mas uma contagem errada re-baselineia em silêncio.
    (`INSUFFICIENT_STOCK`, `INVALID_TRANSITION`, `NOT_FOUND`…), e a `message` é
    em inglês. O `catch` do `onSubmit` já segura a navegação, que é o que
    importa; falta **mostrar**.
-2. ⏳ **O select de item, buscável e em ordem alfabética.** O `SelectField` de
-   `forms/fields.tsx` é um `<select>` nativo, e com 130 itens no catálogo ele
-   é inutilizável: a pessoa rola a lista procurando "arroz" e não acha. O
-   select precisa de **busca** e de **ordem alfabética** — e o item também
-   aparece no doador e no beneficiário, que são catálogos menores, mas a
-   mesma receita serve aos três.
+2. ✅ **O select de catálogo buscável e alfabético (#70).**
+   `SearchableSelectField` usa o combobox Base UI existente nas referências
+   de item, doador, beneficiário e categoria. Busca por trecho sem acento/caixa,
+   ordem pt-BR, seleção por teclado e mensagem de lista vazia. O formulário
+   continua guardando ids, nunca o rótulo. Casos puros em
+   `tests/select-options.ts`, inclusive com os 130 itens do catálogo, e
+   verificação local de criação de doação e entrega. O teto de quantidade é #71.
+
 3. ⏳ **O disponível do item, e o teto da quantidade.** No formulário de
    doação e no de entrega, a linha do item precisa mostrar **quanto há
    disponível** ao lado do nome — o saldo físico menos o reservado, que é o
@@ -259,26 +261,20 @@ negativo, mas uma contagem errada re-baselineia em silêncio.
 5. ✅ **A coluna de doador e de beneficiário na tabela do documento** — já
    está: a linha leva o `donorId` e a tela faz a junção com o catálogo em
    cache, que é a mesma decisão do filtro das tabelas.
-6. ⏳ **Data e telefone no formato brasileiro — só na exibição.** O
-   contrato fala ISO 8601 e E.164, e **não** muda: o que vai para o banco e
-   para a API continua sendo o que é. O que muda é a **tela**: `10/10/2026`
-   em vez de `2026-10-10T12:00:00.000Z`, e `(11) 99999-9999` em vez de
-   `+5511999999999`. A formatação é do **client**, e nunca do servidor — o
-   fuso e o formato são do contexto de quem lê.
-7. ⏳ **A ordenação padrão de cada tabela.** Hoje a ordenação padrão é a
-   ordem em que a API devolveu, que é a ordem de inserção do seed — e não
-   significa nada para quem está olhando. Cada tabela precisa do seu
-   padrão, e ele precisa estar **na URL**, como o resto do estado da tela:
-   - **contatos e itens** (beneficiário, doador, item, categoria):
-     **alfabética**, por nome, crescente;
-   - **documentos** (doação, entrega): **do mais recente para o mais
-     antigo**, por data;
-   - **saldo e histórico**: o saldo por nome, e o histórico pela ordem do
-     ledger (que é a ordem do tempo).
-
-   Hoje só as tabelas de documento ligam a ordenação na URL, e o padrão
-   delas é o mesmo das de contato — que, para uma tabela sem coluna `nome`,
-   não ordena nada.
+6. ✅ **Data e telefone no formato brasileiro — só na exibição (#68).**
+   `lib/format.ts` centraliza a apresentação: data em `dd/mm/aaaa` no fuso de
+   leitura e telefone brasileiro fixo/celular com DDD. As células e os campos
+   bloqueados usam os helpers; a edição e o payload continuam em ISO 8601 e
+   E.164. Busca e ordenação usam os valores originais, e a comparação de data
+   respeita offsets. Casos unitários em `tests/format.ts`, incluídos em
+   `bun run test`, cobrem também valores ausentes e números internacionais.
+7. ✅ **A ordenação padrão de cada tabela (#69).** Contatos, catálogo e saldo
+   usam `name.asc`; documentos, `occurredAt.desc`; histórico, `seq.asc`.
+   O padrão também fica explícito na URL. Todas as listas de cliente controlam
+   ordenação e paginação, preservam o contexto no detalhe e recusam colunas de
+   ordenação inexistentes. O ledger mantém a ordem do servidor, sem reordenar
+   uma página isolada. Testes puros em `tests/table-view.ts` e roteiro em
+   [`validacao-ordenacao-69.md`](validacao-ordenacao-69.md).
 
 ## Fora do escopo do MVP
 

@@ -1,7 +1,9 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
+import { compareDates, formatDate } from "@/react-app/lib/format";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
+import { createContext, useContext } from "react";
 
 import { Link, useNavigate } from "@tanstack/react-router";
-import { createColumnHelper, functionalUpdate, useTable } from "@tanstack/react-table";
+import { createColumnHelper, useTable } from "@tanstack/react-table";
 
 import type { DeliveryList } from "@/schemas/api/delivery";
 import type { BeneficiaryList } from "@/schemas/api/beneficiary";
@@ -11,7 +13,6 @@ import { TablePagination } from "@/react-app/components/tables/utils/table-pagin
 import { SortableHeader } from "@/react-app/components/tables/utils/table-sortable-header";
 import { TableToolbar } from "@/react-app/components/tables/utils/table-toolbar";
 import type { TableViewState } from "@/react-app/components/tables/utils/table-view-state";
-import { paginationFromView, sortingFromView, sortingToView, viewForUrl } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/react-app/components/ui/table";
 
@@ -34,6 +35,11 @@ function DetalhesLink({ id }: { id: string }) {
 }
 
 const columns = columnHelper.columns([
+	columnHelper.accessor("occurredAt", {
+		header: ({ column }) => <SortableHeader column={column} label="Data" />,
+		cell: ({ getValue }) => formatDate(getValue()),
+		sortFn: (left, right, columnId) => compareDates(left.getValue(columnId), right.getValue(columnId)),
+	}),
 	columnHelper.accessor((row) => row.beneficiaryName, { id: "beneficiaryId", header: ({ column }) => <SortableHeader column={column} label="Beneficiário" />, filterFn: "includesString", sortFn: "alphanumeric" }),
 	columnHelper.accessor("status", { id: "status", header: ({ column }) => <SortableHeader column={column} label="Status" />, cell: ({ getValue }) => getValue() === "OPEN" ? "Em aberto" : getValue() === "COMPLETED" ? "Concluída" : getValue() === "CANCELLED" ? "Cancelada" : getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric" }),
 	columnHelper.accessor("note", { id: "note", header: ({ column }) => <SortableHeader column={column} label="Observação" />, cell: ({ getValue }) => getValue() || empty, filterFn: "includesString", sortFn: "alphanumeric", sortUndefined: "last" }),
@@ -51,11 +57,6 @@ export function DeliveriesTable({
 	beneficiaries,
 	view,
 }: DeliveriesTableProps) {
-	/**
-	 * A linha leva o `beneficiaryId` e não o nome: o cliente já tem o
-	 * cadastro em cache e faz a junção — a mesma decisão que vale para o
-	 * filtro das tabelas.
-	 */
 	const enriched = data.map((row) => ({
 		...row,
 		beneficiaryName:
@@ -64,19 +65,15 @@ export function DeliveriesTable({
 	}));
 	const navigate = useNavigate();
 
-	const irPara = useCallback((next: TableViewState) => navigate({ to: "/inventory/delivery", search: viewForUrl(next), replace: true }), [navigate]);
+	const { navigateToView, ...viewOptions } = useTableView(view, "/inventory/delivery");
 
 	const table = useTable({
 		features, columns, data: enriched, getRowId: (row) => row.id,
-		state: { pagination: paginationFromView(view), sorting: sortingFromView(view.sort) },
-		onPaginationChange: (updater) => { const next = functionalUpdate(updater, paginationFromView(view)); irPara({ page: next.pageIndex, pageSize: next.pageSize, sort: view.sort }); },
-		onSortingChange: (updater) => { const next = functionalUpdate(updater, sortingFromView(view.sort)); irPara({ page: 0, pageSize: view.pageSize, sort: sortingToView(next) }); },
+		...viewOptions,
 		autoResetPageIndex: false, autoResetSorting: false, globalFilterFn: "includesString", getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
-	const { pageIndex, pageSize } = table.state.pagination;
-	const total = table.getFilteredRowModel().rows.length;
-	useEffect(() => { if (pageIndex > 0 && pageIndex * pageSize >= total) irPara({ page: 0, pageSize: view.pageSize, sort: view.sort }); }, [irPara, pageIndex, pageSize, total, view.pageSize, view.sort]);
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
 
 	const abrir = (id: string) => navigate({ to: "/inventory/delivery/$id", params: { id }, state: { lista: view } });
 	const rows = table.getRowModel().rows;

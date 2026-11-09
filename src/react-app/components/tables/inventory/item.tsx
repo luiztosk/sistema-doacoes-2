@@ -1,3 +1,5 @@
+import { compareText } from "@/react-app/lib/text";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
 import { createContext, useContext } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -64,7 +66,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
-		sortFn: "alphanumeric",
+		sortFn: (left, right, columnId) => compareText(left.getValue(columnId), right.getValue(columnId)),
 	}),
 	columnHelper.accessor((row) => row.categoryName, {
 		id: "categoryName",
@@ -133,14 +135,18 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-export function ItemsTable({ items, categories }: { items: InventoryItem[], categories: ItemCategory[] }) {
+export function ItemsTable({ items, categories, view }: { items: InventoryItem[]; categories: ItemCategory[]; view: TableViewState }) {
 	const data = items.map((item) => ({
 		...item,
 		categoryName: categories.find(a => a.id === item.categoryId)?.name ?? ""
 	})
 	)
 
+	const { navigateToView, ...viewOptions } = useTableView(view, "/inventory/item");
+
 	const table = useTable({
+		...viewOptions,
+		getRowId: (row) => row.id,
 		features,
 		columns: columns,
 		data: data,
@@ -150,7 +156,10 @@ export function ItemsTable({ items, categories }: { items: InventoryItem[], cate
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
+
 	return (
+		<ListViewContext value={view}>
 		<div className="space-y-4">
 			<TableToolbar table={table} searchLabel="Buscar item de estoque">
 				<TableColumnFilter
@@ -178,25 +187,23 @@ export function ItemsTable({ items, categories }: { items: InventoryItem[], cate
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.map((row) => 
-					// {
-						// console.log(table.getRowModel().rows);
-						//  return (
-							<TableRow
-								key={row.id}
-							>
-								{row.getAllCells().map((cell) => (
-									<TableCell key={cell.id}>
-										<table.FlexRender cell={cell} />
-									</TableCell>
-								))}
-							</TableRow>
-						)
-					// })
-					}
+					{table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => (
+						<TableRow key={row.id}>
+							{row.getAllCells().map((cell) => (
+								<TableCell key={cell.id}><table.FlexRender cell={cell} /></TableCell>
+							))}
+						</TableRow>
+					)) : (
+						<TableRow>
+							<TableCell colSpan={columns.length} className="h-24 text-center">
+								Nenhum registro encontrado.
+							</TableCell>
+						</TableRow>
+					)}
 				</TableBody>
 			</Table>
 			<TablePagination table={table} totalLabel="item" />
 		</div>
+		</ListViewContext>
 	);
 }

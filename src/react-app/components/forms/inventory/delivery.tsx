@@ -8,7 +8,7 @@ import {
 	DateField,
 	EditableProvider,
 	NumberField,
-	SelectField,
+	SearchableSelectField,
 	SubmitField,
 	TextField,
 } from "@/react-app/components/forms/fields";
@@ -31,11 +31,6 @@ function errorFor(values: DeliveryFormValues, field: string) {
 	return parsed.error.issues.find((issue) => issue.path[0] === field)?.message;
 }
 
-/**
- * O conteúdo de uma entrega é **fixo na criação**, e é ele que reserva o
- * estoque. A lista de itens é editável só na criação — depois disso, a
- * entrega muda de estado pelos verbos.
- */
 function initialValues(record?: Delivery): DeliveryFormValues {
 	return {
 		beneficiaryId: record?.beneficiaryId ?? null,
@@ -189,7 +184,7 @@ export function DeliveryForm({ delivery }: { delivery?: Delivery }) {
 										errorFor(fieldApi.form.state.values, "beneficiaryId"),
 								}}
 								children={(field) => (
-									<SelectField
+									<SearchableSelectField
 										field={field}
 										label="Beneficiário"
 										options={fkOptions(beneficiaries)}
@@ -217,62 +212,65 @@ export function DeliveryForm({ delivery }: { delivery?: Delivery }) {
 
 						<FieldSet>
 							<FieldLegend variant="label">Itens entregues</FieldLegend>
-							<form.Field
-								name="items"
-								mode="array"
-								children={(field) => (
-									<div className="space-y-4">
-										{field.state.value.map((_, index) => (
-											<div
-												key={index}
-												className="grid items-end gap-2 sm:grid-cols-[1fr_10rem_auto]"
-											>
-												<form.Field
-													name={`items[${index}].itemId`}
-													mode="value"
-													children={(itemField) => (
-														<SelectField
-															field={itemField}
-															label="Item"
-															options={itemOptions}
-															placeholder="Selecione"
-														/>
-													)}
-												/>
-												<form.Field
-													name={`items[${index}].quantity`}
-													mode="value"
-													children={(quantityField) => (
-														<NumberField
-															field={quantityField}
-															label="Quantidade"
-															min={1}
-														/>
-													)}
-												/>
+							<EditableProvider editable={isEditing && !delivery}>
+								<form.Field
+									name="items"
+									mode="array"
+									children={(field) => (
+										<div className="space-y-4">
+											{field.state.value.map((_, index) => (
+												<div
+													key={index}
+													className="grid items-end gap-2 sm:grid-cols-[1fr_10rem_auto]"
+												>
+													<form.Field
+														name={`items[${index}].itemId`}
+														mode="value"
+														children={(itemField) => (
+															<SearchableSelectField
+																field={itemField}
+																label="Item"
+																options={itemOptions}
+																placeholder="Selecione"
+															/>
+														)}
+													/>
+													<form.Field
+														name={`items[${index}].quantity`}
+														mode="value"
+														children={(quantityField) => (
+															<NumberField
+																field={quantityField}
+																label="Quantidade"
+																min={1}
+															/>
+														)}
+													/>
+													<Button
+														type="button"
+														variant="outline"
+														disabled={Boolean(delivery) || !isEditing}
+														onClick={() => field.removeValue(index)}
+													>
+														Remover
+													</Button>
+												</div>
+											))}
+											{!delivery ? (
 												<Button
 													type="button"
 													variant="outline"
-													onClick={() => field.removeValue(index)}
+													onClick={() =>
+														field.pushValue({ itemId: null, quantity: 1 })
+													}
 												>
-													Remover
+													Adicionar item
 												</Button>
-											</div>
-										))}
-										{!delivery ? (
-											<Button
-												type="button"
-												variant="outline"
-												onClick={() =>
-													field.pushValue({ itemId: null, quantity: 1 })
-												}
-											>
-												Adicionar item
-											</Button>
-										) : null}
-									</div>
-								)}
-							/>
+											) : null}
+										</div>
+									)}
+								/>
+							</EditableProvider>
 						</FieldSet>
 
 						{isEditing ? (

@@ -1,3 +1,5 @@
+import { compareText } from "@/react-app/lib/text";
+import { useTableView, useTablePageClamp } from "@/react-app/components/tables/utils/use-table-view";
 import { createContext, useContext } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -6,6 +8,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { BeneficiaryList } from "@/schemas/api/beneficiary";
+import { formatPhone } from "@/react-app/lib/format";
 import type { DataTableFeatures } from "@/react-app/components/tables/utils/table-features";
 import { ariaSort, features } from "@/react-app/components/tables/utils/table-features";
 import { TablePagination } from "@/react-app/components/tables/utils/table-pagination";
@@ -72,7 +75,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor("name", {
 		header: ({ column }) => <SortableHeader column={column} label="Nome" />,
 		filterFn: "includesString",
-		sortFn: "alphanumeric",
+		sortFn: (left, right, columnId) => compareText(left.getValue(columnId), right.getValue(columnId)),
 	}),
 	columnHelper.accessor(cityLabel, {
 		id: "cityLabel",
@@ -84,7 +87,7 @@ const columns = columnHelper.columns([
 	columnHelper.accessor((row) => row.phone ?? undefined, {
 		id: "phone",
 		header: ({ column }) => <SortableHeader column={column} label="Telefone" />,
-		cell: ({ getValue }) => getValue() ?? empty,
+		cell: ({ getValue }) => formatPhone(getValue()),
 		filterFn: "includesString",
 		sortFn: "alphanumeric",
 		sortUndefined: "last",
@@ -135,10 +138,14 @@ const columns = columnHelper.columns([
 	}),
 ]);
 
-export function BeneficiariesTable({ beneficiaries }: { beneficiaries: BeneficiaryList[] }) {
+export function BeneficiariesTable({ beneficiaries, view }: { beneficiaries: BeneficiaryList[]; view: TableViewState }) {
 	const data = beneficiaries;
 
+	const { navigateToView, ...viewOptions } = useTableView(view, "/contacts/beneficiaries");
+
 	const table = useTable({
+		...viewOptions,
+		getRowId: (row) => row.id,
 		features,
 		columns,
 		data: data,
@@ -148,7 +155,10 @@ export function BeneficiariesTable({ beneficiaries }: { beneficiaries: Beneficia
 		getColumnCanGlobalFilter: (column) => searchable.has(column.id),
 	});
 
+	useTablePageClamp(view, table.getFilteredRowModel().rows.length, navigateToView);
+
 	return (
+		<ListViewContext value={view}>
 		<div className="space-y-4">
 			<TableToolbar table={table} searchLabel="Buscar beneficiário">
 				<TableColumnFilter
@@ -182,21 +192,23 @@ export function BeneficiariesTable({ beneficiaries }: { beneficiaries: Beneficia
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.map((row) => 
-						<TableRow
-							key={row.id}
-							className="cursor-pointer"
-						>
+					{table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => (
+						<TableRow key={row.id}>
 							{row.getAllCells().map((cell) => (
-								<TableCell key={cell.id}>
-									<table.FlexRender cell={cell} />
-								</TableCell>
+								<TableCell key={cell.id}><table.FlexRender cell={cell} /></TableCell>
 							))}
+						</TableRow>
+					)) : (
+						<TableRow>
+							<TableCell colSpan={columns.length} className="h-24 text-center">
+								Nenhum registro encontrado.
+							</TableCell>
 						</TableRow>
 					)}
 				</TableBody>
 			</Table>
 			<TablePagination table={table} totalLabel="beneficiário" />
 		</div>
+		</ListViewContext>
 	);
 }

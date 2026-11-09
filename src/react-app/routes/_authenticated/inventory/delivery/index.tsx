@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DeliveriesTable } from "@/react-app/components/tables/inventory/deliveries";
-import { tableViewSchema } from "@/react-app/components/tables/utils/table-view-state";
+import { tableViewSchemaFor } from "@/react-app/components/tables/utils/table-view-state";
 import { buttonVariants } from "@/react-app/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { deliveriesOptions } from "@/react-app/lib/queries/inventory/deliveries";
@@ -36,7 +36,7 @@ function Deliveries() {
 }
 
 export const Route = createFileRoute("/_authenticated/inventory/delivery/")({
-	validateSearch: tableViewSchema,
+	validateSearch: tableViewSchemaFor("/inventory/delivery"),
 	loader: ({ context }) => {
 		context.queryClient.query({ ...deliveriesOptions });
 		context.queryClient.query({ ...beneficiariesOptions });

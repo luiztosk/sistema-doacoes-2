@@ -28,6 +28,7 @@ import { UFS } from "@/schemas/api/enums";
 import { queryClient } from "@/react-app/lib/query-client";
 import type { DonorFormValues } from "@/react-app/lib/queries/contacts/donors";
 import { donorKeys } from "@/react-app/lib/queries/contacts/donors";
+import { buscarEnderecoPorCep } from "@/react-app/lib/queries/viacep";
 
 const ufOptions: SelectOption[] = UFS.map((value) => ({ value, label: value }));
 
@@ -92,6 +93,29 @@ export function DonorForm({ donor }: { donor?: Donor }) {
 	});
 
 	const isPending = (createIsPending ?? false) || (updateIsPending ?? false);
+	const [viacepLoading, setViacepLoading] = useState(false);
+
+	const handleCepChange = async (raw: string) => {
+		const digits = raw.replace(/\D/g, "");
+		if (!/^\d{8}$/.test(digits)) {
+			setViacepLoading(false);
+			return;
+		}
+
+		setViacepLoading(true);
+		const endereco = await buscarEnderecoPorCep(digits);
+		setViacepLoading(false);
+		if (!endereco) {
+			return;
+		}
+		if ((form.getFieldValue("cep") ?? "").replace(/\D/g, "") !== digits) {
+			return;
+		}
+		form.setFieldValue("logradouro", endereco.logradouro);
+		form.setFieldValue("bairro", endereco.bairro);
+		form.setFieldValue("cidade", endereco.cidade);
+		form.setFieldValue("uf", endereco.uf);
+	};
 
 	return (
 		<section className="space-y-6">
@@ -176,11 +200,17 @@ export function DonorForm({ donor }: { donor?: Donor }) {
 							<FieldLegend variant="label">Endereço</FieldLegend>
 							<form.Field
 								name="cep"
+								validators={{
+									onBlur: ({ fieldApi }) =>
+										errorFor(fieldApi.form.state.values, "cep"),
+								}}
 								children={(field) => (
 									<TextField
 										field={field}
 										label="CEP"
 										placeholder="01310100"
+										onChange={handleCepChange}
+										loading={viacepLoading}
 									/>
 								)}
 							/>

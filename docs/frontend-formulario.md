@@ -127,6 +127,60 @@ queries do recurso — copie dali.
   mesmo segmento, porque o roteador ranqueia a estática acima da dinâmica.
 - Não edite `route-tree.tsx`, ele é gerado.
 
+## ViaCEP: preencher o endereço pelo CEP
+
+`beneficiary` e `donor` buscam o endereço no **ViaCEP** a partir do `cep`, sem
+nada no backend — é uma chamada client-side, e é o requisito "consumo de API
+externa" do tema ([#16](https://github.com/luiztosk/sistema-doacoes-2/issues/16)).
+
+| Arquivo | Papel |
+|---|---|
+| `lib/queries/viacep.ts` | `buscarEnderecoPorCep(cep)` — `GET https://viacep.com.br/ws/{8 dígitos}/json/`, com o mapeamento para `{ logradouro, bairro, cidade, uf }` |
+| `components/forms/fields.tsx` | `TextField` aceita `onChange` e `loading` opcionais |
+| `components/forms/contacts/{beneficiary,donor}.tsx` | `handleCepChange` — quando o CEP tem 8 dígitos, busca e preenche os quatro campos |
+
+A consulta mora em `lib/queries/viacep.ts`, ao lado das queries do app — é o
+único cliente de API externa, e não passa pelo `$api` do contrato (o OpenAPI
+não descreve o ViaCEP). Ela normaliza com `replace(/\D/g, "")` e só busca com
+8 dígitos; o traço `01310-100` vira `01310100` antes da requisição, porque a
+API externa aceita os dois e o contrato só aceita o sem traço — a
+normalização é do cliente, nunca da API.
+
+A resposta do ViaCEP é mapeada campo a campo:
+
+```ts
+{
+	logradouro: textoOuNulo(body.logradouro),  // vazio vira null
+	bairro:     textoOuNulo(body.bairro),
+	cidade:     textoOuNulo(body.localidade),
+	uf:         ufOuNulo(body.uf),             // fora das 27 UFs vira null
+}
+```
+
+E o formulário preenche com `form.setFieldValue`, que é o que o estado do
+formulário espera — não há passo de tradução no `onSubmit`, e o preenchimento
+entra no payload como se a pessoa tivesse digitado. `numero` e `complemento`
+ficam manuais: o ViaCEP não os tem.
+
+Três detalhes que decidem o comportamento:
+
+- **Só preenche com 8 dígitos.** Com menos que isso (ou com o campo esvaziado)
+  o `handleCepChange` encerra e desliga o `loading`. O `TextField` continua
+  validando pelo `*CreateSchema` no `onBlur`, como sempre.
+- **Não sobrescreve um CEP que mudou no meio da busca.** Depois do `await`, o
+  handler confere `form.getFieldValue("cep")` contra os dígitos buscados; se
+  a pessoa já trocou o CEP, a resposta chega tarde e é descartada. E se a
+  busca falha ou o ViaCEP responde `erro: true`, os campos ficam vazios para
+  preenchimento manual.
+- **A busca é client-side e livre.** Não entra no `queryKey` nem no cache do
+  TanStack Query: é um `fetch` direto, sem `useQuery`, e não afeta o
+  `invalidateQueries` do save. O `loading` do `TextField` — `aria-busy`,
+  `data-loading` e `disabled` — é só um sinal visual da consulta em voo.
+
+O `onChange` da primitiva recebe o valor **cru** do input, e é o formulário
+quem normaliza. O `TextField` continua convertendo `""` em `null` no estado;
+o que o `onChange` do ViaCEP viu é o digitado.
+
 ## O que vem depois
 
 `donor` já aplica esta receita: os campos de identificação e endereço, com
